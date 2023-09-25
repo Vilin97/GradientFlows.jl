@@ -1,5 +1,5 @@
 module LandauGradientFlows
 
-# Write your package code here.
-
+return_true() = true
+export return_true
 end

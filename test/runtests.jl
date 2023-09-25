@@ -2,5 +2,5 @@ using LandauGradientFlows
 using Test
 
 @testset "LandauGradientFlows.jl" begin
-    @test true
+    @test return_true()
 end
