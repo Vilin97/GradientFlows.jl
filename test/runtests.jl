@@ -1,6 +1,6 @@
-using LandauGradientFlows
+using GradientFlows
 using Test
 
-@testset "LandauGradientFlows.jl" begin
+@testset "GradientFlows.jl" begin
     @test return_true()
 end

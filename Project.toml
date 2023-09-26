@@ -1,4 +1,4 @@
-name = "LandauGradientFlows"
+name = "GradientFlows"
 uuid = "56c30b72-7363-4d7b-b6e0-26dd2260074f"
 authors = ["Vasily Ilin <vasilin97@gmail.com> and contributors"]
 version = "1.0.0-DEV"
