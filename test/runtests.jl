@@ -1,6 +1,6 @@
 using GradientFlows
-using Test
+using SafeTestsets
 
-@testset "GradientFlows.jl" begin
-    @test return_true()
+@time begin
+    @time @safetestset "Diffusion Tests" begin include("diffusion.jl") end
 end

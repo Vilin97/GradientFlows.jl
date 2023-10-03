@@ -1,0 +1,2 @@
+score(ρ :: MultivariateDistribution, u :: AbstractArray{T,1}) where T = gradlogpdf(ρ, u)
+score(ρ :: MultivariateDistribution, u :: AbstractArray{T,2}) where T = reshape(hcat([gradlogpdf(ρ, @view u[:,i]) for i in axes(u, 2)]...), size(u))
