@@ -1,5 +1,4 @@
-using GradientFlows
-using SafeTestsets
+using GradientFlows, SafeTestsets
 
 @time begin
     @time @safetestset "Diffusion Tests" begin include("diffusion.jl") end
