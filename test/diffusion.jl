@@ -13,3 +13,4 @@ u = solution[end]
 end_dist = true_dist(problem, problem.tspan[2])
 @test emp_mean(u) ≈ mean(end_dist) atol = 0.1
 @test emp_cov(u) ≈ cov(end_dist) rtol = 0.1
+@test Lp_error(u, end_dist; p = 2) ≈ 0 atol = 0.1

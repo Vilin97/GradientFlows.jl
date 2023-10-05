@@ -13,7 +13,7 @@ function Base.show(io::IO, prob::GradFlowProblem{D}) where {D}
     println(io, "GradFlowProblem with \n  ρ₀ = $(prob.ρ0) \n  tspan = $(prob.tspan) \n  dt = $(prob.dt) \n  params = $(prob.params) \n  solver = $(prob.solver)")
 end
 
-true_dist(prob, t) = prob.ρ(t, prob.params)
+true_dist(prob :: GradFlowProblem, t) = prob.ρ(t, prob.params)
 
 function diffusion_problem(d, n, solver_; t0 :: F = 1f0, t_end :: F = 10f0, rng = DEFAULT_RNG) where F
     f!(du, u, prob, t) = (du .= -prob.solver.score_values)
@@ -22,7 +22,7 @@ function diffusion_problem(d, n, solver_; t0 :: F = 1f0, t_end :: F = 10f0, rng 
     dt = F(0.01)
     params = nothing
     ρ0 = ρ(t0, params)
-    u0 = F.(reshape(rand(rng, ρ0, n), d, n))
+    u0 = F.(rand(rng, ρ0, n))
     solver = initialize(solver_, score(ρ0, u0))
     return GradFlowProblem(f!, ρ0, u0, ρ, tspan, dt, params, solver)
 end

@@ -3,7 +3,9 @@ module GradientFlows
 using OrdinaryDiffEq, DiffEqCallbacks
 using LinearAlgebra, Distributions, Random
 import OrdinaryDiffEq.solve
+
 import Statistics.mean, Statistics.cov
+using HCubature
 
 const DEFAULT_RNG = Random.default_rng()
 
@@ -12,7 +14,11 @@ include("problem.jl")
 include("solver.jl")
 include("solve.jl")
 
+include("analysis/linalg.jl")
 include("analysis/moments.jl")
+include("analysis/kde.jl")
+include("analysis/Lp.jl")
+
 
 export GradFlowProblem, Solver
 export Exact
@@ -22,5 +28,7 @@ export diffusion_problem
 
 export true_dist
 export emp_mean, emp_cov
+export kde
+export Lp_distance, Lp_error
 
 end
