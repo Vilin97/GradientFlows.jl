@@ -14,11 +14,11 @@ function Base.show(io::IO, solver::Exact)
     Base.print(io, "Exact")
 end
 
-function initialize(solver :: Exact, score_values)
+function initialize(solver::Exact, score_values)
     Exact(score_values)
 end
 
-function update!(solver :: Exact, integrator)
+function update!(solver::Exact, integrator)
     prob = integrator.p
     t = integrator.t
     true_dist = prob.ρ(t, prob.params)

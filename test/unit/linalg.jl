@@ -25,7 +25,7 @@ end
     end
     z1 = rand(rng, 3)
     z2 = rand(rng, 3)
-    (@elapsed normsq(z1,z2)) < (@elapsed sum(abs2.(z1.-z2)))
+    (@elapsed normsq(z1, z2)) < (@elapsed sum(abs2.(z1 .- z2)))
 end
 
 # Test fastdot(z, v)
@@ -37,5 +37,5 @@ end
     end
     z = rand(rng, 3)
     v = rand(rng, 3)
-    (@elapsed fastdot(z,v)) < (@elapsed dot(z,v))
+    (@elapsed fastdot(z, v)) < (@elapsed dot(z, v))
 end

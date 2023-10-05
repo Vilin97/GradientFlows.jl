@@ -1,5 +1,5 @@
 "Compute Lp distance between two functions."
-function Lp_distance(f1::F1, f2::F2; p, d, xlim, verbose = false, rtol = 0.05, kwargs...) where {F1<:Function, F2<:Function}
+function Lp_distance(f1::F1, f2::F2; p, d, xlim, verbose=false, rtol=0.05, kwargs...) where {F1<:Function,F2<:Function}
     result, integration_error = hcubature(x -> abs.(f1(x) - f2(x))^p, fill(-xlim, d), fill(xlim, d); rtol=rtol)
     result = max(zero(result), result)^(1 / p)
     verbose > 0 && (println("relative integration error ~ $(integration_error/abs(result))"))
