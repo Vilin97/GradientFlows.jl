@@ -1,7 +1,7 @@
-struct GradFlowProblem{D,F}
+struct GradFlowProblem{D,F,M}
     f! # f!(du, u, prob :: GradFlowProblem, t) 
     ρ0::D # initial distribution
-    u0::Matrix{F} # sample of initial distribution
+    u0::M # sample of initial distribution
     ρ  # ρ(t, params) target distribution, if known
     tspan::Tuple{F,F} # (t0, t_end)
     dt::F # time step
@@ -9,8 +9,8 @@ struct GradFlowProblem{D,F}
     solver # the solver to use
 end
 
-function Base.show(io::IO, prob::GradFlowProblem{D}) where {D}
-    println(io, "GradFlowProblem with \n  ρ₀ = $(prob.ρ0) \n  tspan = $(prob.tspan) \n  dt = $(prob.dt) \n  params = $(prob.params) \n  solver = $(prob.solver)")
+function Base.show(io::IO, prob::GradFlowProblem{D,F,M}) where {D,F,M}
+    println(io, "$GradFlowProblem{D,$F,$M} with \n  ρ₀ = $(prob.ρ0) \n  tspan = $(prob.tspan) \n  dt = $(prob.dt) \n  params = $(prob.params) \n  solver = $(prob.solver)")
 end
 
 true_dist(prob::GradFlowProblem, t) = prob.ρ(t, prob.params)
@@ -25,4 +25,12 @@ function diffusion_problem(d, n, solver_; t0::F=1.0f0, t_end::F=10.0f0, rng=DEFA
     u0 = F.(rand(rng, ρ0, n))
     solver = initialize(solver_, score(ρ0, u0))
     return GradFlowProblem(f!, ρ0, u0, ρ, tspan, dt, params, solver)
+end
+
+function cu(problem::GradFlowProblem)
+    @unpack f!, ρ0, u0, ρ, tspan, dt, params, solver = problem
+    cu_u = cu(u0)
+    cu_params = cu.(params)
+    cu_solver = initialize(solver, score(ρ0, cu_u))
+    return GradFlowProblem(f!, ρ0, cu_u, ρ, tspan, dt, cu_params, cu_solver)
 end

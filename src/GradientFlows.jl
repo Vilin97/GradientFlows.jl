@@ -1,8 +1,10 @@
 module GradientFlows
 
+using UnPack
 using OrdinaryDiffEq, DiffEqCallbacks
 using LinearAlgebra, Distributions, Random
 import OrdinaryDiffEq.solve
+using CUDA
 
 import Statistics.mean, Statistics.cov
 using HCubature
