@@ -9,7 +9,7 @@ function test_prob(problem)
     @test emp_mean(u) ≈ mean(end_dist) atol = 0.1
     @test emp_cov(u) ≈ cov(end_dist) rtol = 0.1
     @test Lp_error(u, end_dist; p=2) ≈ 0 atol = 0.1
-    @test show(problem) isa String
+    @test "$problem" isa String # just to increase coverage
 end
 
 d = 2
