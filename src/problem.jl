@@ -26,11 +26,3 @@ function diffusion_problem(d, n, solver_; t0::F=1.0f0, t_end::F=10.0f0, rng=DEFA
     solver = initialize(solver_, score(ρ0, u0))
     return GradFlowProblem(f!, ρ0, u0, ρ, tspan, dt, params, solver)
 end
-
-function cu(problem::GradFlowProblem)
-    @unpack f!, ρ0, u0, ρ, tspan, dt, params, solver = problem
-    cu_u = cu(u0)
-    cu_params = cu.(params)
-    cu_solver = initialize(solver, score(ρ0, cu_u))
-    return GradFlowProblem(f!, ρ0, cu_u, ρ, tspan, dt, cu_params, cu_solver)
-end

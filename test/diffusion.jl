@@ -16,4 +16,4 @@ d = 2
 n = 5000
 problem = diffusion_problem(d, n, Exact(); rng=rng)
 test_prob(problem)
-CUDA.functional() && test_prob(cu(problem))
+# CUDA.functional() && test_prob(cu(problem))
