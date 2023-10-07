@@ -15,18 +15,6 @@ end
 
 true_dist(prob::GradFlowProblem, t) = prob.ρ(t, prob.params)
 
-function diffusion_problem(d, n, solver_; t0::F=1.0, t_end::F=5.0, rng=DEFAULT_RNG) where {F}
-    f!(du, u, prob, t) = (du .= -prob.solver.score_values)
-    tspan = (t0, t_end)
-    ρ(t, params) = MvNormal(2t * I(d))
-    dt = F(0.01)
-    params = nothing
-    ρ0 = ρ(t0, params)
-    u0 = F.(rand(rng, ρ0, n))
-    solver = initialize(solver_, score(ρ0, u0))
-    return GradFlowProblem(f!, ρ0, u0, ρ, tspan, dt, params, solver)
-end
-
 function set_solver(problem::GradFlowProblem, solver_)
     @unpack f!, ρ0, u0, ρ, tspan, dt, params, solver = problem
     return GradFlowProblem(f!, ρ0, u0, ρ, tspan, dt, params, initialize(solver_, score(ρ0, u0)))

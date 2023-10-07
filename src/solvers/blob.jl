@@ -3,6 +3,7 @@ struct Blob{S,F,A} <: Solver
     ε::F
     allocated_memory::A
 end
+# TODO: pick ε using rec_epsilon?
 Blob(ε=0.025) = Blob(nothing, ε, nothing)
 
 struct BlobAllocMemCPU{T}
