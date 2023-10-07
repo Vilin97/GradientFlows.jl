@@ -5,6 +5,7 @@ using OrdinaryDiffEq, DiffEqCallbacks
 using LinearAlgebra, Distributions, Random
 import OrdinaryDiffEq.solve
 using CUDA
+using LoopVectorization
 
 import Statistics.mean, Statistics.cov
 using HCubature
@@ -13,8 +14,11 @@ const DEFAULT_RNG = Random.default_rng()
 
 include("score.jl")
 include("problem.jl")
-include("solver.jl")
 include("solve.jl")
+
+include("solvers/solver.jl")
+include("solvers/exact.jl")
+include("solvers/blob.jl")
 
 include("analysis/linalg.jl")
 include("analysis/moments.jl")
@@ -23,7 +27,8 @@ include("analysis/Lp.jl")
 
 
 export GradFlowProblem, Solver
-export Exact
+export Exact, Blob
+export set_solver
 export solve
 export update!
 export diffusion_problem
