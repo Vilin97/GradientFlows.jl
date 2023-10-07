@@ -31,11 +31,3 @@ function set_solver(problem::GradFlowProblem, solver_)
     @unpack f!, ρ0, u0, ρ, tspan, dt, params, solver = problem
     return GradFlowProblem(f!, ρ0, u0, ρ, tspan, dt, params, initialize(solver_, score(ρ0, u0)))
 end
-
-function cu(problem::GradFlowProblem)
-    @unpack f!, ρ0, u0, ρ, tspan, dt, params, solver = problem
-    cu_u = cu(u0)
-    cu_params = cu.(params)
-    cu_solver = initialize(solver, score(ρ0, cu_u))
-    return GradFlowProblem(f!, ρ0, cu_u, ρ, tspan, dt, cu_params, cu_solver)
-end
