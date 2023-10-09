@@ -1,5 +1,5 @@
 using GradientFlows
-problem = diffusion(2, 10, Exact())
+problem = diffusion_problem(2, 10, Exact())
 
 @test "$problem" isa String
 @test true_dist(problem, problem.tspan[1]) isa MvNormal
