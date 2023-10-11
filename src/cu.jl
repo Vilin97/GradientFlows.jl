@@ -4,7 +4,7 @@ function CUDA.cu(problem::GradFlowProblem{D,F,M}) where {D,F,M}
     cu_u = cu(u0)
     cu_params = cu.(params)
     cu_ρ0 = cu(ρ0)
-    cu_solver = initialize(solver, score(cu_ρ0, cu_u))
+    cu_solver = initialize(solver, u0, score(cu_ρ0, cu_u))
     cu_ρ(t, params) = cu(ρ(t, params))
     return GradFlowProblem(f!, cu_ρ0, cu_u, cu_ρ, tspan, dt, cu_params, cu_solver)
 end

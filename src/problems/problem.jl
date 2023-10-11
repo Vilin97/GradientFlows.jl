@@ -10,12 +10,23 @@ struct GradFlowProblem{FU,D,M,DF,F,P,S}
 end
 
 function Base.show(io::IO, prob::GradFlowProblem)
-    println(io, "$(typeof(prob)) with \n  ρ₀ = $(prob.ρ0) \n  tspan = $(prob.tspan) \n  dt = $(prob.dt) \n  params = $(prob.params) \n  solver = $(prob.solver)")
+    print(io, "$GradFlowProblem with \n tspan = $(prob.tspan) \n  dt = $(prob.dt) \n  params = $(prob.params) \n  solver = $(prob.solver)")
 end
 
 true_dist(prob::GradFlowProblem, t) = prob.ρ(t, prob.params)
 
 function set_solver(problem::GradFlowProblem, solver_)
     @unpack f!, ρ0, u0, ρ, tspan, dt, params, solver = problem
-    return GradFlowProblem(f!, ρ0, u0, ρ, tspan, dt, params, initialize(solver_, score(ρ0, u0)))
+    return GradFlowProblem(f!, ρ0, u0, ρ, tspan, dt, params, initialize(solver_, u0, score(ρ0, u0)))
 end
+
+function reset!(problem::GradFlowProblem)
+    reset!(problem.solver, problem.u0, score(problem.ρ0, problem.u0))
+    nothing
+end
+
+# Want to be able to do:
+# - use a pre-trained NN in SBTM. Can do with SBTM(s) where s is a pre-trained NN
+# - solve the same problem multiple times in a row. Can do with set_solver
+
+# Need a separate function to train the NN, train!(s, u0, score_values)

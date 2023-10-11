@@ -2,14 +2,7 @@ using GradientFlows, StableRNGs, Test, Distributions
 using GradientFlows: BlobAllocMemCPU
 import Base.==
 
-function ==(p1::T, p2::T) where {T <: Union{Solver, GradFlowProblem, BlobAllocMemCPU}}
-    for field in fieldnames(T)
-        if getfield(p1, field) != getfield(p2, field)
-            return false
-        end
-    end
-    return true
-end
+==(a::T, b::T) where {T <: Union{Solver, GradFlowProblem, BlobAllocMemCPU}} = all(f->getfield(a,f)==getfield(b,f), fieldnames(T))
 
 @testset "GradFlowProblem tests" begin
     problem = diffusion_problem(2, 10, Exact(); rng = StableRNG(123))

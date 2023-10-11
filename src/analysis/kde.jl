@@ -3,7 +3,7 @@ function Mol(ε, x, u::AbstractArray{T,2}) where {T}
     d = length(x)
     eps_recip = 1 / ε
     for x_q in eachcol(u)
-        res += exp(-normsq(x, x_q) * eps_recip)
+        res += exp(-sum(abs2, x .- x_q) * eps_recip)
     end
     res / sqrt((π * ε)^d)
 end

@@ -13,7 +13,7 @@ struct BlobAllocMemCPU{T}
 end
 
 "Initialize solver."
-function initialize(solver::Blob, score_values::Matrix{T}) where {T}
+function initialize(solver::Blob, u0, score_values::Matrix{T}) where {T}
     n = size(score_values, 2)
     diff_norm2s = zeros(T, n, n)
     mol_sum = zeros(T, n)

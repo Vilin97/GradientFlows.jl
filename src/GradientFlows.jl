@@ -3,10 +3,11 @@ module GradientFlows
 using UnPack: @unpack
 using OrdinaryDiffEq: solve, ODEProblem, Euler, u_modified!
 using DiffEqCallbacks: PresetTimeCallback
-using LinearAlgebra, Random
-using CUDA
 using HCubature: hcubature
-using LoopVectorization
+using Zygote: withgradient
+using Optimisers: Leaf, Optimisers
+using Flux
+using LinearAlgebra, Random, CUDA, LoopVectorization
 
 import Distributions: MvNormal, Distribution, MultivariateDistribution, mean, cov, gradlogpdf, pdf
 import OrdinaryDiffEq.solve
@@ -26,6 +27,7 @@ include("cu.jl")
 include("solvers/solver.jl")
 include("solvers/exact.jl")
 include("solvers/blob.jl")
+include("solvers/sbtm.jl")
 
 include("analysis/linalg.jl")
 include("analysis/moments.jl")
@@ -34,10 +36,11 @@ include("analysis/Lp.jl")
 
 
 export GradFlowProblem, Solver
-export Exact, Blob
+export Exact, Blob, SBTM
+export mlp
+export Logger
 export set_solver
 export solve
-export update!
 export diffusion_problem
 export cu
 
