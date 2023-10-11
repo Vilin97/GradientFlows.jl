@@ -23,5 +23,5 @@ d = 2
 n = 2000
 for solver in [Exact(), SBTM(mlp(d); logger=Logger(1)), Blob(0.16)]
     problem = diffusion_problem(d, n, solver; rng=StableRNG(123))
-    test_prob(problem; debug=true, time=true)
+    test_prob(problem)
 end
