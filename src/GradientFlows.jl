@@ -29,7 +29,6 @@ include("solvers/exact.jl")
 include("solvers/blob.jl")
 include("solvers/sbtm.jl")
 
-include("analysis/linalg.jl")
 include("analysis/moments.jl")
 include("analysis/kde.jl")
 include("analysis/Lp.jl")
