@@ -97,11 +97,11 @@ function score_matching_loss(s, u, ζ, α)
     return (sum(abs2,s(u)) + denoise_val)/size(u, 2)
 end
 
-function mlp(d::Int; depth=1, width=100, activation=softsign)
+function mlp(d::Int; depth=1, width=100, activation=softsign, rng = DEFAULT_RNG)
     return Chain(
-        Dense(d => width, activation),
-        repeat([Dense(width, width, activation)], depth - 1)...,
-        Dense(width => d)
+        Dense(d => width, activation, init=Flux.glorot_normal(rng)),
+        repeat([Dense(width => width, activation, init=Flux.glorot_normal(rng))], depth - 1)...,
+        Dense(width => d, init=Flux.glorot_normal(rng))
     )
 end
 

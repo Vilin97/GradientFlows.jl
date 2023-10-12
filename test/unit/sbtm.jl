@@ -13,7 +13,7 @@ rng = StableRNG(123)
 struct DummyIntegrator{T}
     u::Matrix{T}
 end
-
+@testset "SBTM tests" begin
 d, n = 2, 1000
 dist = MvNormal(1.0 * I(d))
 u = Float32.(rand(rng, dist, n))
@@ -40,7 +40,7 @@ old_loss = score_matching_loss(solver.s, u, ζ, solver.denoising_alpha)
 update!(solver, integrator)
 new_loss = score_matching_loss(solver.s, u, ζ, solver.denoising_alpha)
 @test new_loss < old_loss
-
+end
 
 
 

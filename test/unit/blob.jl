@@ -6,6 +6,7 @@ struct DummyIntegrator
     u::Matrix{Float64}
 end
 
+@testset "Blob tests" begin
 d, n = 2, 10
 dist = MvNormal(1.0 * I(d))
 u = rand(rng, dist, n)
@@ -27,3 +28,4 @@ old_u = copy(u)
 u .-= 0.01 * solver.score_values
 update!(solver, integrator)
 @test solver.score_values != score_values
+end

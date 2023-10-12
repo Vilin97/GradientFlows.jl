@@ -1,5 +1,5 @@
 "Make a diffusion problem with the given dimension, number of particles, and solver."
-function diffusion_problem(d, n, solver_; t0::F=1.0, t_end::F=5.0, rng=DEFAULT_RNG) where {F}
+function diffusion_problem(d, n, solver_; t0::F=1.0, t_end::F=2.0, rng=DEFAULT_RNG) where {F}
     if solver_ isa SBTM && F==Float64
         return diffusion_problem(d, n, solver_; t0=Float32(t0), t_end=Float32(t_end), rng=rng)
     end
