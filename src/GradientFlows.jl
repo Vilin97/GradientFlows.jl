@@ -6,7 +6,7 @@ using DiffEqCallbacks: PresetTimeCallback
 using HCubature: hcubature
 using Zygote: withgradient
 using Optimisers: Leaf, Optimisers
-using Flux
+using Flux, cuDNN
 using LinearAlgebra, Random, CUDA, LoopVectorization
 
 import Distributions: MvNormal, Distribution, MultivariateDistribution, mean, cov, gradlogpdf, pdf
