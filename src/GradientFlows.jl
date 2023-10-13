@@ -17,11 +17,11 @@ import Statistics.mean, Statistics.cov
 
 const DEFAULT_RNG = Random.default_rng()
 
-include("score.jl")
-include("solve.jl")
-
 include("problems/problem.jl")
 include("problems/diffusion.jl")
+
+include("score.jl")
+include("solve.jl")
 
 include("solvers/solver.jl")
 include("solvers/exact.jl")
