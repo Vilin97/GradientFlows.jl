@@ -6,12 +6,11 @@ using DiffEqCallbacks: PresetTimeCallback
 using HCubature: hcubature
 using Zygote: withgradient
 using Optimisers: Leaf, Optimisers
-using Flux, cuDNN
-using LinearAlgebra, Random, CUDA, LoopVectorization
+using Flux
+using LinearAlgebra, Random, LoopVectorization
 
 import Distributions: MvNormal, Distribution, MultivariateDistribution, mean, cov, gradlogpdf, pdf
 import OrdinaryDiffEq.solve
-import CUDA: cu
 
 import Statistics.mean, Statistics.cov
 
@@ -19,10 +18,10 @@ import Statistics.mean, Statistics.cov
 const DEFAULT_RNG = Random.default_rng()
 
 include("score.jl")
+include("solve.jl")
+
 include("problems/problem.jl")
 include("problems/diffusion.jl")
-include("solve.jl")
-include("cu.jl")
 
 include("solvers/solver.jl")
 include("solvers/exact.jl")
@@ -41,7 +40,6 @@ export Logger
 export set_solver
 export solve
 export diffusion_problem
-export cu
 
 export true_dist
 export emp_mean, emp_cov

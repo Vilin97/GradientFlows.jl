@@ -4,7 +4,6 @@ using GradientFlows, SafeTestsets
     @time @safetestset "Unit Tests" begin
         include("unit/Lp.jl")
         include("unit/blob.jl")
-        include("unit/cu.jl")
         include("unit/problem.jl")
     end
     @time @safetestset "Diffusion Tests" begin
