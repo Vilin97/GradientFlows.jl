@@ -9,16 +9,18 @@ using Optimisers: Leaf, Optimisers
 using Flux
 using LinearAlgebra, Random, LoopVectorization
 
-import Distributions: MvNormal, Distribution, MultivariateDistribution, mean, cov, gradlogpdf, pdf
+import Distributions: MvNormal, Distribution, MultivariateDistribution, mean, cov, gradlogpdf, pdf, rand, ContinuousMultivariateDistribution
 import OrdinaryDiffEq.solve
-
 import Statistics.mean, Statistics.cov
 
 
 const DEFAULT_RNG = Random.default_rng()
 
+include("linalg.jl")
+
 include("problems/problem.jl")
 include("problems/diffusion.jl")
+include("problems/landau.jl")
 
 include("score.jl")
 include("solve.jl")
@@ -39,7 +41,7 @@ export mlp
 export Logger
 export set_solver
 export solve
-export diffusion_problem
+export diffusion_problem, landau_problem
 
 export true_dist
 export emp_mean, emp_cov
