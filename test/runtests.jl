@@ -1,6 +1,5 @@
 using GradientFlows, SafeTestsets
 
-include("testutils.jl")
 @time begin
     @time @safetestset "Unit Tests" begin
         include("unit/Lp.jl")
@@ -8,5 +7,7 @@ include("testutils.jl")
         include("unit/problem.jl")
         include("unit/landau.jl")
     end
-    include("diffusion.jl")
+    @time @safetestset "Diffusion Tests" begin
+        include("diffusion.jl")
+    end
 end
