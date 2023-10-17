@@ -54,7 +54,7 @@ function train_s!(solver::SBTM, u, score_values)
             Flux.update!(optimiser_state, s, grads[1])
         end
         loss = l2_error_normalized(s, u, score_values)
-        verbose > 1 && epoch % 100 == 0 && println("Epoch $epoch, loss $loss")
+        verbose > 1 && epoch % 100 == 0 && println("Epoch lpad($epoch, 6), loss $loss")
         if loss < init_loss_tolerance
             break
         end
@@ -81,7 +81,7 @@ function update!(solver::SBTM, integrator)
         randn!(ζ)
         loss_value, grads = withgradient(s -> score_matching_loss(s, u, ζ, denoising_alpha), s)
         Flux.update!(optimiser_state, s, grads[1])
-        verbose > 1 && println("Epoch $epoch, loss = $loss_value.")
+        verbose > 1 && println("Epoch lpad($epoch, 2), loss = $loss_value.")
     end
     verbose > 0 && integrator.iter % 100 == 0 && println("Time $(integrator.t), loss = $(score_matching_loss(s, u, ζ, denoising_alpha)).")
     score_values .= s(u)

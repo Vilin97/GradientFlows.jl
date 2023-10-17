@@ -10,4 +10,7 @@ using GradientFlows, SafeTestsets
     @time @safetestset "Diffusion Tests" begin
         include("diffusion.jl")
     end
+    @time @safetestset "Landau Tests" begin
+        include("landau.jl")
+    end
 end

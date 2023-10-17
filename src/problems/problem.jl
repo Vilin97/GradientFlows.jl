@@ -24,9 +24,3 @@ function reset!(problem::GradFlowProblem)
     reset!(problem.solver, problem.u0, score(problem.ρ0, problem.u0))
     nothing
 end
-
-# Want to be able to do:
-# - use a pre-trained NN in SBTM. Can do with SBTM(s) where s is a pre-trained NN
-# - solve the same problem multiple times in a row. Can do with set_solver
-
-# Need a separate function to train the NN, train!(s, u0, score_values)

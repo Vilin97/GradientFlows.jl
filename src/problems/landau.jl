@@ -94,7 +94,7 @@ function landau_3d_f!(du, u, prob, t)
     s = prob.solver.score_values
     du .= 0
     n = size(u, 2)
-    @turbo for p = 1:n
+    @tturbo for p = 1:n
         Base.Cartesian.@nexprs 3 i -> dx_i = zero(eltype(du))
         for q = 1:n
             dotzv = zero(eltype(du))
@@ -113,14 +113,14 @@ function landau_3d_f!(du, u, prob, t)
             du[i, p] += dx_i
         end
     end
-    du ./= n * prob.params.B
+    du .*= prob.params.B/n
     nothing
 end
 function landau_5d_f!(du, u, prob, t)
     s = prob.solver.score_values
     du .= 0
     n = size(u, 2)
-    @turbo for p = 1:n
+    @tturbo for p = 1:n
         Base.Cartesian.@nexprs 5 i -> dx_i = zero(eltype(du))
         for q = 1:n
             dotzv = zero(eltype(du))
@@ -139,6 +139,6 @@ function landau_5d_f!(du, u, prob, t)
             du[i, p] += dx_i
         end
     end
-    du ./= n * prob.params.B
+    du .*= prob.params.B/n
     nothing
 end
