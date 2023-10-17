@@ -1,7 +1,7 @@
 using GradientFlows, Test
 using Statistics: mean, cov
 
-function test_prob(problem; p=2, mean_atol=0.05, cov_atol=1., Lp_atol=0.05)
+function test_prob(problem; p=2, mean_atol=0.05, cov_atol=1.0, Lp_atol=0.05)
     u = solve(problem; saveat=problem.tspan[2])[end]
     end_dist = true_dist(problem, problem.tspan[2])
 

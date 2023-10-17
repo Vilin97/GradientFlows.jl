@@ -46,7 +46,7 @@ function Random.rand(rng::Random.AbstractRNG, dist::LandauDistribution, n::Int)
     β = 1.5
     proposal = MvNormal(K * I(d) * β)
     xs = [[x, zeros(typeof(K), d - 1)...] for x in 0:0.01:5]
-    M = maximum(x -> pdf(dist, x) / pdf(proposal, x), xs)+1
+    M = maximum(x -> pdf(dist, x) / pdf(proposal, x), xs) + 1
     u = zeros(typeof(K), d, n)
     for i in 1:n
         u[:, i] = rejection_sample(dist, proposal, M, rng)
@@ -113,7 +113,7 @@ function landau_3d_f!(du, u, prob, t)
             du[i, p] += dx_i
         end
     end
-    du .*= prob.params.B/n
+    du .*= prob.params.B / n
     nothing
 end
 function landau_5d_f!(du, u, prob, t)
@@ -139,6 +139,6 @@ function landau_5d_f!(du, u, prob, t)
             du[i, p] += dx_i
         end
     end
-    du .*= prob.params.B/n
+    du .*= prob.params.B / n
     nothing
 end

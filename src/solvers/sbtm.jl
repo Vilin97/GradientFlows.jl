@@ -1,4 +1,4 @@
-struct SBTM{S, NN, OPT, T, A, L, OS} <: Solver
+struct SBTM{S,NN,OPT,T,A,L,OS} <: Solver
     score_values::S
     s::NN
     optimiser::OPT
@@ -22,7 +22,7 @@ struct Logger
 end
 Logger() = Logger(0)
 
-function SBTM(s::Chain; optimiser=Adam(1f-3), epochs=25, denoising_alpha=0.4f0, init_batch_size=2^8, init_loss_tolerance=1f-4, init_max_iterations=10^5, allocated_memory=nothing, logger=Logger(), optimiser_state=Flux.setup(optimiser, s)) 
+function SBTM(s::Chain; optimiser=Adam(1.0f-3), epochs=25, denoising_alpha=0.4f0, init_batch_size=2^8, init_loss_tolerance=1.0f-4, init_max_iterations=10^5, allocated_memory=nothing, logger=Logger(), optimiser_state=Flux.setup(optimiser, s))
     return SBTM(nothing, s, optimiser, epochs, denoising_alpha, init_batch_size, init_loss_tolerance, init_max_iterations, allocated_memory, logger, optimiser_state)
 end
 
@@ -39,7 +39,7 @@ function train_s!(solver::SBTM, u, score_values)
 
     verbose > 1 && println("Initializing NN for $(size(u, 2)) particles.")
     verbose > 2 && println("Batch size = $init_batch_size, loss tolerance = $init_loss_tolerance, max iterations = $init_max_iterations. \n$s")
-    data_loader = Flux.DataLoader((data=u, label=score_values), batchsize=min(size(u, 2), init_batch_size));
+    data_loader = Flux.DataLoader((data=u, label=score_values), batchsize=min(size(u, 2), init_batch_size))
 
     iteration = 1
     epoch = 1
@@ -89,15 +89,15 @@ function update!(solver::SBTM, integrator)
 end
 
 "Fisher divergence on CPU: ∑ᵢ (s(xᵢ) - yᵢ)² / |y|²"
-l2_error_normalized(s, x, y) = sum(abs2, s(x) .- y) / sum(abs2,y)
+l2_error_normalized(s, x, y) = sum(abs2, s(x) .- y) / sum(abs2, y)
 
 "≈ ( |s(u)|² + 2∇⋅s(u) ) / |u|²"
 function score_matching_loss(s, u, ζ, α)
-    denoise_val = ( s(u .+ α .* ζ) ⋅ ζ - s(u .- α .* ζ) ⋅ ζ ) / α
-    return (sum(abs2,s(u)) + denoise_val)/size(u, 2)
+    denoise_val = (s(u .+ α .* ζ) ⋅ ζ - s(u .- α .* ζ) ⋅ ζ) / α
+    return (sum(abs2, s(u)) + denoise_val) / size(u, 2)
 end
 
-function mlp(d::Int; depth=1, width=100, activation=softsign, rng = DEFAULT_RNG)
+function mlp(d::Int; depth=1, width=100, activation=softsign, rng=DEFAULT_RNG)
     return Chain(
         Dense(d => width, activation, init=Flux.glorot_normal(rng)),
         repeat([Dense(width => width, activation, init=Flux.glorot_normal(rng))], depth - 1)...,
