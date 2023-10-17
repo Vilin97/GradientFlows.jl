@@ -8,9 +8,10 @@ function landau_problem(d, n, solver_; t0::F=6.0, t_end::F=6.5, dt::F=0.01, rng=
     ρ(t, params) = LandauDistribution(d, params.K(t))
     params = LandauParams(d, F(1 / 24))
     ρ0 = ρ(t0, params)
-    u0 = F.(rand(rng, ρ0, n))
+    u0 = rand(rng, ρ0, n)
     solver = initialize(solver_, u0, score(ρ0, u0))
-    return GradFlowProblem(f!, ρ0, u0, ρ, tspan, dt, params, solver)
+    name = "landau"
+    return GradFlowProblem(f!, ρ0, u0, ρ, tspan, dt, params, solver, name)
 end
 
 struct LandauParams{T,F}

@@ -7,4 +7,4 @@ function Base.show(io::IO, solver::S) where {S<:Solver}
     Base.print(io, "$(typeof(solver))")
 end
 
-reset!(::Solver, u0, score_values) = nothing
+reset!(solver::Solver, u0, score_values) = (solver.score_values .= score_values; nothing)
