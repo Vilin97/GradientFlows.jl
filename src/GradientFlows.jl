@@ -8,6 +8,7 @@ using Zygote: withgradient
 using Optimisers: Leaf, Optimisers
 using Flux
 using LinearAlgebra, Random, LoopVectorization
+using TimerOutputs, JLD2
 
 import Distributions: MvNormal, Distribution, MultivariateDistribution, mean, cov, gradlogpdf, pdf, rand, ContinuousMultivariateDistribution
 import OrdinaryDiffEq.solve
@@ -34,12 +35,14 @@ include("analysis/moments.jl")
 include("analysis/kde.jl")
 include("analysis/Lp.jl")
 
+include("experiments/experiment.jl")
+include("experiments/io.jl")
 
 export GradFlowProblem, Solver
 export Exact, Blob, SBTM
 export mlp
 export Logger
-export set_solver
+export set_solver, resample!
 export solve
 export diffusion_problem, landau_problem
 
