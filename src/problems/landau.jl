@@ -1,13 +1,14 @@
 "Make a homogeneous landau problem with Maxwell kernel with the given dimension, number of particles, and solver."
-function landau_problem(d, n, solver_; t0::F=6.0, t_end::F=6.5, dt::F=0.01, rng=DEFAULT_RNG) where {F}
+function landau_problem(d, n, solver_; dt::F=0.01, rng=DEFAULT_RNG) where {F}
     if solver_ isa SBTM && F == Float64
-        return landau_problem(d, n, solver_; t0=Float32(t0), t_end=Float32(t_end), dt=Float32(dt), rng=rng)
+        return landau_problem(d, n, solver_; dt=Float32(dt), rng=rng)
     end
-    f! = choose_f!(d)
-    tspan = (t0, t_end)
-    ρ(t, params) = LandauDistribution(d, params.K(t))
     params = LandauParams(d, F(1 / 24))
-    ρ0 = ρ(t0, params)
+    t0_ = t0(params)
+    f! = choose_f!(d)
+    tspan = (t0_, t0_ + F(0.5))
+    ρ(t, params) = LandauDistribution(d, params.K(t))
+    ρ0 = ρ(t0_, params)
     u0 = rand(rng, ρ0, n)
     solver = initialize(solver_, u0, score(ρ0, u0))
     name = "landau"
@@ -20,7 +21,7 @@ struct LandauParams{T,F}
     C::T
     K::F   # variance of MvNormal
 end
-LandauParams(d, B::T, C=one(T)) where {T} = LandauParams(d, B, C, t -> 1 - exp(-(d - 1) * 2 * B * t))
+LandauParams(d, B::T, C=one(T)) where {T} = LandauParams(d, B, C, t -> 1 - C * exp(-(d - 1) * 2 * B * t))
 
 # Distribution (2π * K)^(-d / 2) * exp(-x² / (2K)) * (P + Q * x²)
 struct LandauDistribution{F} <: ContinuousMultivariateDistribution
@@ -36,6 +37,8 @@ function pdf(dist::LandauDistribution, x::AbstractVector)
     x² = sum(abs2, x)
     return (2π * K)^(-d / 2) * exp(-x² / (2K)) * (P + Q * x²)
 end
+
+t0(params::LandauParams) = round(log((params.d + 2) * params.C / 2) / (2params.B * (params.d - 1)), RoundUp, digits=1)
 
 function Random.rand(dist::LandauDistribution, n::Int)
     return rand(DEFAULT_RNG, dist, n)

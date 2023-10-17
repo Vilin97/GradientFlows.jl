@@ -1,12 +1,14 @@
 using GradientFlows, SafeTestsets, Test, StableRNGs
 using LinearAlgebra, Distributions, Zygote
-using GradientFlows: LandauParams, LandauDistribution
+using GradientFlows: LandauParams, LandauDistribution, t0
 
 rng = StableRNG(123)
 
 d = 3
 B = 1 / 24
 params = LandauParams(d, B)
+
+@test t0(params) == 5.5
 
 # test pdf
 for t in 5.5:0.1:6.5
@@ -30,9 +32,3 @@ u = rand(rng, dist, n)
 @test emp_mean(u) ≈ mean(dist) atol = 0.05
 @test emp_cov(u) ≈ cov(dist) atol = 0.05
 @test Lp_error(u, dist; p=2) ≈ 0 atol = 0.05
-
-# test that the distribution satisfies the PDE
-# divergence(f, u) = tr(jacobian(f, u)[1])
-# landau_pdf(t,x) = pdf(LandauDistribution(d, params.K(t)), x)
-
-# Zygote.gradient(landau_pdf, t, x)
