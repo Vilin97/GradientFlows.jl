@@ -16,7 +16,6 @@ struct SBTMAllocMem{M}
     ζ::M
 end
 
-# TODO: add other values to log
 struct Logger
     verbose::Int
 end
@@ -39,6 +38,7 @@ function train_s!(solver::SBTM, u, score_values)
 
     verbose > 1 && println("Initializing NN for $(size(u, 2)) particles.")
     verbose > 2 && println("Batch size = $init_batch_size, loss tolerance = $init_loss_tolerance, max iterations = $init_max_iterations. \n$s")
+    # TODO: parallel = true
     data_loader = Flux.DataLoader((data=u, label=score_values), batchsize=min(size(u, 2), init_batch_size))
 
     iteration = 1

@@ -41,6 +41,3 @@ end
     new_loss = score_matching_loss(solver.s, u, ζ, solver.denoising_alpha)
     @test new_loss < old_loss
 end
-
-
-
