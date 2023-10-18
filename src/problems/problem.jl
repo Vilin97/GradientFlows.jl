@@ -18,7 +18,7 @@ true_dist(prob::GradFlowProblem, t) = prob.ρ(t, prob.params)
 
 function set_solver(problem::GradFlowProblem, solver_)
     @unpack f!, ρ0, u0, ρ, tspan, dt, params, solver = problem
-    return GradFlowProblem(f!, ρ0, u0, ρ, tspan, dt, params, initialize(solver_, u0, score(ρ0, u0)))
+    return GradFlowProblem(f!, ρ0, u0, ρ, tspan, dt, params, initialize(solver_, u0, score(ρ0, u0)), problem.name)
 end
 
 "Reset the problem to its initial state so it can be solved again."
