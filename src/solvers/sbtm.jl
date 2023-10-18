@@ -38,14 +38,12 @@ function train_s!(solver::SBTM, u, score_values)
 
     verbose > 1 && println("Initializing NN for $(size(u, 2)) particles.")
     verbose > 2 && println("Batch size = $init_batch_size, loss tolerance = $init_loss_tolerance, max iterations = $init_max_iterations. \n$s")
-    # TODO: parallel = true
     data_loader = Flux.DataLoader((data=u, label=score_values), batchsize=min(size(u, 2), init_batch_size))
 
     iteration = 1
     epoch = 1
     while iteration < init_max_iterations
         for (x, y) in data_loader
-            # TODO: this is type-unstable for some reason. Investigate.
             batch_loss, grads = withgradient(s -> l2_error_normalized(s, x, y), s)
             if iteration >= init_max_iterations
                 break
