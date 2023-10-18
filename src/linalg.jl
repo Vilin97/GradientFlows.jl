@@ -1,2 +1,8 @@
-"|x-y|^2"
-normsq(x, y) = sum(ab -> abs2(ab[1] - ab[2]), zip(x, y))
+"|x-y|^2, assumes size(x)==size(y), does not autodiff"
+function normsq(x, y)
+    s = zero(eltype(x))
+    @turbo for i in 1:length(x)
+        s += abs2(x[i] - y[i])
+    end
+    s
+end

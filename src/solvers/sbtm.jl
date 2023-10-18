@@ -89,7 +89,7 @@ function update!(solver::SBTM, integrator)
 end
 
 "Fisher divergence on CPU: ∑ᵢ (s(xᵢ) - yᵢ)² / |y|²"
-l2_error_normalized(s, x, y) = normsq(s(x), y) / sum(abs2, y)
+l2_error_normalized(s, x, y) = sum(abs2, s(x) .- y) / sum(abs2, y)
 
 "≈ ( |s(u)|² + 2∇⋅s(u) ) / |u|²"
 function score_matching_loss(s, u, ζ, α)
