@@ -30,7 +30,7 @@ function solve!(experiment::GradFlowExperiment)
     @unpack problem, saveat, num_solutions, solutions = experiment
     d,n = size(problem.u0)
     for _ in 1:num_solutions
-        resample!(problem)
+        @timeit DEFAULT_TIMER "resample" resample!(problem)
         @timeit DEFAULT_TIMER "d=$d n=$(rpad(n,6)) $(rpad(problem.name, 10)) $(problem.solver)" sol = solve(problem, saveat=saveat)
         push!(solutions, sol.u)
     end

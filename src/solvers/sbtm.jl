@@ -37,7 +37,7 @@ function train_s!(solver::SBTM, u, score_values)
     @unpack verbose = logger
 
     verbose > 1 && println("Initializing NN for $(size(u, 2)) particles.")
-    verbose > 2 && println("Batch size = $init_batch_size, loss tolerance = $init_loss_tolerance, max iterations = $init_max_iterations. \n$s")
+    verbose > 1 && println("Batch size = $init_batch_size, loss tolerance = $init_loss_tolerance, max iterations = $init_max_iterations. \n$s")
     data_loader = Flux.DataLoader((data=u, label=score_values), batchsize=min(size(u, 2), init_batch_size))
 
     iteration = 1
@@ -52,7 +52,7 @@ function train_s!(solver::SBTM, u, score_values)
             Flux.update!(optimiser_state, s, grads[1])
         end
         loss = l2_error_normalized(s, u, score_values)
-        verbose > 1 && epoch % 100 == 0 && println("Epoch $(lpad(epoch, 6)), loss $loss")
+        verbose > 1 && epoch % 100 == 0 && println("Epoch $(lpad(epoch, 5)) iteration $(lpad(iteration, 5)) loss $loss")
         if loss < init_loss_tolerance
             break
         end
