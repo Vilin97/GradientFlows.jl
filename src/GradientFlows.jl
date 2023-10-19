@@ -48,10 +48,11 @@ export set_solver, resample!
 export solve
 export diffusion_problem, landau_problem
 
-export GradFlowExperimentSet
+export GradFlowExperiment, GradFlowExperimentSet
+export solve!, compute_errors!
 export run_experiment_set!
 export DEFAULT_TIMER
-export save, load
+export save, load, model_filename, experiment_filename
 
 export true_dist
 export emp_mean, emp_cov

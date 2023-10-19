@@ -1,5 +1,4 @@
 using GradientFlows, Flux, Test
-using GradientFlows: model_filename, experiment_filename, GradFlowExperiment, solve!, compute_errors!
 include("../testutils.jl")
 
 @testset "chain IO" begin

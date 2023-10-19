@@ -1,4 +1,5 @@
 using GradientFlows, Test
+
 @testset "Experiment" begin
     problem = diffusion_problem(2, 10, Blob())
     experiment = GradFlowExperiment(problem, 1)
