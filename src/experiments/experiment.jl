@@ -78,10 +78,7 @@ end
 function run_experiment_set!(experiment_set)
     reset_timer!(DEFAULT_TIMER)
     solve!.(experiment_set.experiments)
-    show(DEFAULT_TIMER)
-
     compute_errors!.(experiment_set.experiments)
-    show(DEFAULT_TIMER)
 end
 
 Base.show(io::IO, experiment_set::GradFlowExperimentSet) = Base.show(io, experiment_set.experiments)
