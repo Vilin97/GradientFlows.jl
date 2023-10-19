@@ -6,6 +6,8 @@ using GradientFlows, SafeTestsets
         include("unit/blob.jl")
         include("unit/problem.jl")
         include("unit/landau.jl")
+        include("unit/experiment.jl")
+        include("unit/io.jl")
     end
     @time @safetestset "Diffusion Tests" begin
         include("diffusion.jl")
@@ -14,6 +16,6 @@ using GradientFlows, SafeTestsets
         include("landau.jl")
     end
     @time @safetestset "Experiment Tests" begin
-        include("experiment.jl")
+        include("experiment_set.jl")
     end
 end

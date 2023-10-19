@@ -1,28 +1,12 @@
-experiment_filename(problem_name, solver_type, d, n, num_solutions) = "data/experiments/$(lowercase(problem_name))/$(lowercase(solver_type))/d_$(d)/n_$(n)_runs_$(num_solutions).jld2"
-
-"Save the experiment to a .jld2 file."
-function save(experiment::GradFlowExperiment)
-    problem = experiment.problem
-    solver = problem.solver
-    d, n = size(problem.u0)
-    num_solutions = length(experiment.solutions)
-    filename = experiment_filename(problem.name, typeof(solver), d, n, num_solutions)
-    JLD2.save(filename, "experiment", experiment)
+### GradFlowExperiment IO ###
+experiment_filename(problem_name, solver, d, n, num_solutions; path=joinpath("data", "experiments")) = joinpath(path, lowercase(problem_name), lowercase(solver), "d_$(d)", "n_$(n)", "runs_$(num_solutions).jld2")
+function experiment_filename(experiment::GradFlowExperiment; path="")
+    d, n = size(experiment.problem.u0)
+    return experiment_filename(experiment.problem.name, "$(experiment.problem.solver)", d, n, experiment.num_solutions; path=path)
 end
 
-function load_experiment(problem_name, solver_type, d, n, num_solutions)
-    filename = experiment_filename(problem_name, solver_type, d, n, num_solutions)
-    return JLD2.load(filename, "experiment")
-end
+### Model IO ###
+model_filename(problem_name, d, n; path=joinpath("data", "models")) = joinpath(path, lowercase(problem_name), "d_$(d)", "n_$(n).jld2")
 
-model_filename(problem_name, d, n) = "data/models/$(lowercase(problem_name))/d_$(d)/n_$(n).jld2"
-
-function save(s::Chain, problem_name, d, n)
-    filename = model_filename(problem_name, d, n)
-    JLD2.save(filename, "nn", s)
-end
-
-function load_model(problem_name, d, n)
-    filename = model_filename(problem_name, d, n)
-    return JLD2.load(filename, "nn")
-end
+save(path, obj) = (mkpath(dirname(path)); JLD2.save_object(path, obj))
+load(path) = JLD2.load_object(path)

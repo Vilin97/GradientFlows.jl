@@ -8,7 +8,8 @@ using Zygote: withgradient
 using Optimisers: Leaf, Optimisers
 using Flux
 using LinearAlgebra, Random, LoopVectorization
-using TimerOutputs, JLD2
+using TimerOutputs
+using JLD2
 
 import Distributions: MvNormal, Distribution, MultivariateDistribution, mean, cov, gradlogpdf, pdf, rand, ContinuousMultivariateDistribution
 import OrdinaryDiffEq.solve
@@ -50,6 +51,7 @@ export diffusion_problem, landau_problem
 export GradFlowExperimentSet
 export run_experiment_set!
 export DEFAULT_TIMER
+export save, load
 
 export true_dist
 export emp_mean, emp_cov

@@ -1,8 +1,6 @@
 using GradientFlows, StableRNGs, Test, Distributions
-using GradientFlows: BlobAllocMemCPU
-import Base.==
 
-==(a::T, b::T) where {T<:Union{Solver,GradFlowProblem,BlobAllocMemCPU}} = all(f -> getfield(a, f) == getfield(b, f), fieldnames(T))
+include("../testutils.jl")
 
 @testset "GradFlowProblem tests" begin
     problem = diffusion_problem(2, 10, Exact(); rng=StableRNG(123))

@@ -20,7 +20,7 @@ function Base.show(io::IO, experiment::GradFlowExperiment)
 end
 
 "Solve `problem` `num_solutions` times with different u0."
-function GradFlowExperiment(problem::GradFlowProblem, saveat, num_solutions :: Int)
+function GradFlowExperiment(problem::GradFlowProblem, num_solutions :: Int; saveat = problem.tspan[2])
     solutions = Vector{Vector{typeof(problem.u0)}}(undef, 0)
     F = eltype(problem.u0)
     return GradFlowExperiment(problem, saveat, num_solutions, solutions, zero(F), zero(F), zero(F), zero(F))
@@ -70,8 +70,8 @@ struct GradFlowExperimentSet{E}
     experiments::E # a collection of `GradFlowExperiment`s
 end
 
-function GradFlowExperimentSet(problems, num_solutions)
-    experiments = [GradFlowExperiment(problem, problem.tspan[2], num_solutions) for problem in problems]
+function GradFlowExperimentSet(problems, num_solutions; kwargs...)
+    experiments = [GradFlowExperiment(problem, num_solutions; kwargs...) for problem in problems]
     return GradFlowExperimentSet(experiments)
 end
 
