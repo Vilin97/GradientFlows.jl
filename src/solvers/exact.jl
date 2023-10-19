@@ -17,3 +17,7 @@ function update!(solver::Exact, integrator)
     solver.score_values .= score(true_dist, integrator.u)
     nothing
 end
+
+function Base.show(io::IO, ::Exact)
+    Base.print(io, "Exact")
+end

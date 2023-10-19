@@ -1,21 +1,50 @@
-struct GradFlowExperiment{P, V, S, T}
+mutable struct GradFlowExperiment{P, V, S, F}
 	problem :: P
     saveat :: V
-    # TODO: remove solutions from here and add them to GradFlowExperimentSolution
+    num_solutions :: Int
 	solutions :: Vector{S} # solutions[run][time_index][d, n] isa Float
-    timer :: T
+    L2_error :: F
+    mean_norm_error :: F
+    cov_norm_error :: F
+    cov_trace_error :: F
+end
+
+short_string(float, digits, width) = rpad(round(float, digits=digits), width)
+
+function Base.show(io::IO, experiment::GradFlowExperiment)
+    @unpack problem, saveat, num_solutions, solutions, L2_error, mean_norm_error, cov_norm_error, cov_trace_error = experiment
+    digits = 3
+    width = 5
+    d,n = size(problem.u0)
+    print(io, "\n$(problem.name)(d=$d,n=$(rpad(n,6))) $(rpad(problem.solver, 5)) $(num_solutions) runs: |ρ∗ϕ - ρ*|₂ = $(short_string(L2_error,digits,width)) |E(ρ)-E(ρ*)|₂ = $(short_string(mean_norm_error,digits,width)) |Σ-Σ'|₂ = $(short_string(cov_norm_error,digits,width)) |tr(Σ-Σ')| = $(short_string(cov_trace_error,digits,width))")
 end
 
 "Solve `problem` `num_solutions` times with different u0."
 function GradFlowExperiment(problem::GradFlowProblem, saveat, num_solutions :: Int)
-    solutions = Vector{Vector{typeof(problem.u0)}}(undef, num_solutions)
-    reset_timer!()
-    @timeit "$(problem.name) $(problem.solver)" for i in 1:num_solutions
-        resample!(problem; rng=StableRNG(i))
-        sol = solve(problem, saveat=saveat)
-        solutions[i] = sol.u
+    solutions = Vector{Vector{typeof(problem.u0)}}(undef, 0)
+    F = eltype(problem.u0)
+    return GradFlowExperiment(problem, saveat, num_solutions, solutions, zero(F), zero(F), zero(F), zero(F))
+end
+
+function solve!(experiment::GradFlowExperiment)
+    @unpack problem, saveat, num_solutions, solutions = experiment
+    d,n = size(problem.u0)
+    for _ in 1:num_solutions
+        resample!(problem)
+        @timeit DEFAULT_TIMER "d=$d n=$(rpad(n,6)) $(rpad(problem.name, 10)) $(problem.solver)" sol = solve(problem, saveat=saveat)
+        push!(solutions, sol.u)
     end
-    return GradFlowExperiment(problem, saveat, solutions, TimerOutputs.get_defaulttimer())
+    # TODO: if save_to_file, save(experiment) 
+    nothing
+end
+
+function compute_errors!(experiment::GradFlowExperiment)
+    d,n = size(experiment.problem.u0)
+    @timeit DEFAULT_TIMER "d=$d n=$(rpad(n,6)) Lp" experiment.L2_error = Lp_error(experiment;p=2)
+    experiment.mean_norm_error = mean_norm_error(experiment)
+    experiment.cov_norm_error = cov_norm_error(experiment)
+    experiment.cov_trace_error = cov_trace_error(experiment)
+    nothing
 end
 
 function Lp_error(experiment; kwargs...)
@@ -27,6 +56,9 @@ end
 function cov_norm_error(experiment; kwargs...)
     return avg_metric((u,dist) -> sqrt(normsq(emp_cov(u), cov(dist))), experiment; kwargs...)
 end
+function cov_trace_error(experiment; kwargs...)
+    return avg_metric((u,dist) -> abs(tr(emp_cov(u) .- cov(dist))), experiment; kwargs...)
+end
 
 function avg_metric(error, experiment::GradFlowExperiment; t_idx = length(experiment.saveat), kwargs...)
     @unpack problem, saveat, solutions = experiment
@@ -34,18 +66,22 @@ function avg_metric(error, experiment::GradFlowExperiment; t_idx = length(experi
     return mean([error(sol[t_idx], dist; kwargs...) for sol in solutions])
 end
     
-struct GradFlowExperimentSet{S,N,E,T}
-    solvers::S
-    num_particles::N
-    experiments::Matrix{E} # experiments[num_particles, solver]
-    Lp_errors::Matrix{T}
-    mean_norm_errors::Matrix{T}
-    cov_norm_errors::Matrix{T}
+struct GradFlowExperimentSet{E}
+    experiments::E # a collection of `GradFlowExperiment`s
 end
 
-# TODO: solve!(experiment_set::GradFlowExperimentSet; kwargs...) = solve!.(experiment_set.experiments; kwargs...)
-# TODO: analyze!(experiment_set::GradFlowExperimentSet; kwargs...) = # compute metrics
+function GradFlowExperimentSet(problems, num_solutions)
+    experiments = [GradFlowExperiment(problem, problem.tspan[2], num_solutions) for problem in problems]
+    return GradFlowExperimentSet(experiments)
+end
 
-Lp_error(experiment_set::GradFlowExperimentSet; kwargs...) = Lp_error.(experiment_set.experiments; kwargs...)
-mean_norm_error(experiment_set::GradFlowExperimentSet; kwargs...) = mean_norm_error.(experiment_set.experiments; kwargs...)
-cov_norm_error(experiment_set::GradFlowExperimentSet; kwargs...) = cov_norm_error.(experiment_set.experiments; kwargs...)
+function run_experiment_set!(experiment_set)
+    reset_timer!(DEFAULT_TIMER)
+    solve!.(experiment_set.experiments)
+    show(DEFAULT_TIMER)
+
+    compute_errors!.(experiment_set.experiments)
+    show(DEFAULT_TIMER)
+end
+
+Base.show(io::IO, experiment_set::GradFlowExperimentSet) = Base.show(io, experiment_set.experiments)

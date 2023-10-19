@@ -16,6 +16,7 @@ import Statistics.mean, Statistics.cov
 
 
 const DEFAULT_RNG = Random.default_rng()
+const DEFAULT_TIMER = TimerOutput()
 
 include("linalg.jl")
 
@@ -45,6 +46,10 @@ export Logger
 export set_solver, resample!
 export solve
 export diffusion_problem, landau_problem
+
+export GradFlowExperimentSet
+export run_experiment_set!
+export DEFAULT_TIMER
 
 export true_dist
 export emp_mean, emp_cov

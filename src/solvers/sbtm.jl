@@ -102,3 +102,7 @@ function mlp(d::Int; depth=2, width=100, activation=softsign, rng=DEFAULT_RNG)
         Dense(width => d, init=Flux.glorot_normal(rng))
     )
 end
+
+function Base.show(io::IO, ::SBTM)
+    Base.print(io, "SBTM")
+end

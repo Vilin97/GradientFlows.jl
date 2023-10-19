@@ -47,3 +47,7 @@ function update!(solver::Blob{S,F,A}, integrator) where {S,F,A<:BlobAllocMemCPU}
     end
     nothing
 end
+
+function Base.show(io::IO, ::Blob)
+    Base.print(io, "Blob")
+end

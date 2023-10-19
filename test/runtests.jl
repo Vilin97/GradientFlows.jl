@@ -13,4 +13,7 @@ using GradientFlows, SafeTestsets
     @time @safetestset "Landau Tests" begin
         include("landau.jl")
     end
+    @time @safetestset "Experiment Tests" begin
+        include("experiment.jl")
+    end
 end
