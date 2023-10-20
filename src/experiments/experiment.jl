@@ -29,6 +29,7 @@ function solve!(experiment::GradFlowExperiment)
     d,n = size(problem.u0)
     for _ in 1:num_solutions
         # TODO: want to reinit the NN here
+        # TODO: want different solvers to start with the same initial sample
         @timeit DEFAULT_TIMER "resample" resample!(problem)
         @timeit DEFAULT_TIMER "d=$d n=$(rpad(n,6)) $(rpad(problem.name, 10)) $(problem.solver)" sol = solve(problem, saveat=saveat)
         push!(solutions, sol.u)
