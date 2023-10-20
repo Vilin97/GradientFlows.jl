@@ -48,7 +48,7 @@ function update!(solver::Blob{S,F,A}, integrator) where {S,F,A<:BlobAllocMemCPU}
 end
 
 function Base.show(io::IO, solver::Blob)
-    Base.print(io, "Blob $(short_string(solver.ε, 6))")
+    Base.print(io, "Blob")
 end
 
 "The optimal ε for the blob solver."

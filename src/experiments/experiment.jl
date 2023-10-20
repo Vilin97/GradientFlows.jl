@@ -27,6 +27,7 @@ function solve!(experiment::GradFlowExperiment)
     @unpack problem, saveat, num_solutions, solutions = experiment
     d,n = size(problem.u0)
     for _ in 1:num_solutions
+        # TODO: want to reinit the NN here
         @timeit DEFAULT_TIMER "resample" resample!(problem)
         @timeit DEFAULT_TIMER "d=$d n=$(rpad(n,6)) $(rpad(problem.name, 10)) $(problem.solver)" sol = solve(problem, saveat=saveat)
         push!(solutions, sol.u)
@@ -74,23 +75,28 @@ end
 "Make an experiment set for a given problem and dimension d with three solvers: Blob, SBTM, Exact."
 function GradFlowExperimentSet(problem, d, ns, num_solutions; model)
     num_solvers = 3
-    problems = Array{GradFlowProblem, 2}(undef, length(ns), num_solvers)
-    for (i,n) in enumerate(ns)
+    problems = Array{GradFlowProblem, 2}(undef, num_solvers, length(ns))
+    for (j,n) in enumerate(ns)
         solvers = [Blob(blob_eps(d, n)), SBTM(deepcopy(model)), Exact()]
-        for (j,solver) in enumerate(solvers)
-            problems[i,j] = problem(d, n, solver)
+        for (i,solver) in enumerate(solvers)
+            @timeit DEFAULT_TIMER "d=$d n=$(rpad(n, 6)) setup $solver" problems[i,j] = problem(d, n, solver)
         end
     end
     return GradFlowExperimentSet(problems, num_solutions)
 end
 
-function run_experiment_set!(experiment_set; save_intermediates=false)
-    reset_timer!(DEFAULT_TIMER)
+function run_experiment_set!(experiment_set; save_intermediates=false, verbose=false)
     for experiment in experiment_set.experiments
         solve!(experiment)
         compute_errors!(experiment)
+        if verbose
+            print("$experiment")
+        end
         if save_intermediates
             save(experiment_filename(experiment), experiment)
+            # TODO make io for timer
+            problem_name = experiment.problem.name
+            save("data/experiments/$problem_name/timer.jld2", DEFAULT_TIMER)
         end
     end
 end
