@@ -9,14 +9,11 @@ mutable struct GradFlowExperiment{P, V, S, F}
     cov_trace_error :: F
 end
 
-short_string(float, digits, width) = rpad(round(float, digits=digits), width)
-
 function Base.show(io::IO, experiment::GradFlowExperiment)
     @unpack problem, saveat, num_solutions, solutions, L2_error, mean_norm_error, cov_norm_error, cov_trace_error = experiment
-    digits = 3
-    width = 5
+    width = 6
     d,n = size(problem.u0)
-    print(io, "\n$(problem.name)(d=$d,n=$(rpad(n,6))) $(rpad(problem.solver, 5)) $(num_solutions) runs: |ρ∗ϕ - ρ*|₂ = $(short_string(L2_error,digits,width)) |E(ρ)-E(ρ*)|₂ = $(short_string(mean_norm_error,digits,width)) |Σ-Σ'|₂ = $(short_string(cov_norm_error,digits,width)) |tr(Σ-Σ')| = $(short_string(cov_trace_error,digits,width))")
+    print(io, "\n$(problem.name)(d=$d,n=$(rpad(n,6))) $(rpad(problem.solver, 11)) $(num_solutions) runs: |ρ∗ϕ - ρ*|₂ = $(short_string(L2_error,width)) |E(ρ)-E(ρ*)|₂ = $(short_string(mean_norm_error,width)) |Σ-Σ'|₂ = $(short_string(cov_norm_error,width)) |tr(Σ-Σ')| = $(short_string(cov_trace_error,width))")
 end
 
 "Solve `problem` `num_solutions` times with different u0."
@@ -34,7 +31,6 @@ function solve!(experiment::GradFlowExperiment)
         @timeit DEFAULT_TIMER "d=$d n=$(rpad(n,6)) $(rpad(problem.name, 10)) $(problem.solver)" sol = solve(problem, saveat=saveat)
         push!(solutions, sol.u)
     end
-    # TODO: if save_to_file, save(experiment) 
     nothing
 end
 
@@ -75,10 +71,28 @@ function GradFlowExperimentSet(problems, num_solutions; kwargs...)
     return GradFlowExperimentSet(experiments)
 end
 
-function run_experiment_set!(experiment_set)
+"Make an experiment set for a given problem and dimension d with three solvers: Blob, SBTM, Exact."
+function GradFlowExperimentSet(problem, d, ns, num_solutions; model)
+    num_solvers = 3
+    problems = Array{GradFlowProblem, 2}(undef, length(ns), num_solvers)
+    for (i,n) in enumerate(ns)
+        solvers = [Blob(blob_eps(d, n)), SBTM(deepcopy(model)), Exact()]
+        for (j,solver) in enumerate(solvers)
+            problems[i,j] = problem(d, n, solver)
+        end
+    end
+    return GradFlowExperimentSet(problems, num_solutions)
+end
+
+function run_experiment_set!(experiment_set; save_intermediates=false)
     reset_timer!(DEFAULT_TIMER)
-    solve!.(experiment_set.experiments)
-    compute_errors!.(experiment_set.experiments)
+    for experiment in experiment_set.experiments
+        solve!(experiment)
+        compute_errors!(experiment)
+        if save_intermediates
+            save(experiment_filename(experiment), experiment)
+        end
+    end
 end
 
 Base.show(io::IO, experiment_set::GradFlowExperimentSet) = Base.show(io, experiment_set.experiments)

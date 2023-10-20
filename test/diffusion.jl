@@ -1,5 +1,4 @@
 using GradientFlows, StableRNGs
-include("testutils.jl")
 
 d = 2
 n = 2000

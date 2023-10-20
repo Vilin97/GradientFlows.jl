@@ -42,7 +42,7 @@ include("experiments/io.jl")
 
 export GradFlowProblem, Solver
 export Exact, Blob, SBTM
-export mlp
+export mlp, blob_eps
 export Logger
 export set_solver, resample!
 export solve
@@ -52,7 +52,7 @@ export GradFlowExperiment, GradFlowExperimentSet
 export solve!, compute_errors!
 export run_experiment_set!
 export DEFAULT_TIMER
-export save, load, model_filename, experiment_filename
+export save, load, model_filename, best_model, experiment_filename
 
 export true_dist
 export emp_mean, emp_cov

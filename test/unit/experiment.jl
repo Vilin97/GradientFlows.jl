@@ -1,7 +1,7 @@
 using GradientFlows, Test
 
 @testset "Experiment" begin
-    problem = diffusion_problem(2, 10, Blob())
+    problem = diffusion_problem(2, 10, Blob(blob_eps(2,10)))
     experiment = GradFlowExperiment(problem, 1)
     solve!(experiment)
     compute_errors!(experiment)

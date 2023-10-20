@@ -8,5 +8,5 @@ function Mol(ε, x, u::AbstractArray{T,2}) where {T}
     res / sqrt((π * ε)^d)
 end
 
-rec_epsilon(d, n) = n^(-2 / (d + 4))
-kde(x, u::AbstractMatrix; ε=rec_epsilon(size(u)...), kwargs...) = Mol(ε, x, u) / size(u, 2)
+kde_epsilon(d, n) = n^(-2 / (d + 4))
+kde(x, u::AbstractMatrix; ε=kde_epsilon(size(u)...), kwargs...) = Mol(ε, x, u) / size(u, 2)

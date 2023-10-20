@@ -3,8 +3,7 @@ struct Blob{S,F,A} <: Solver
     ε::F
     allocated_memory::A
 end
-# TODO: pick ε using rec_epsilon?
-Blob(ε=0.025) = Blob(nothing, ε, nothing)
+Blob(ε) = Blob(nothing, ε, nothing)
 
 struct BlobAllocMemCPU{T}
     diff_norm2s::Matrix{T}
@@ -48,6 +47,9 @@ function update!(solver::Blob{S,F,A}, integrator) where {S,F,A<:BlobAllocMemCPU}
     nothing
 end
 
-function Base.show(io::IO, ::Blob)
-    Base.print(io, "Blob")
+function Base.show(io::IO, solver::Blob)
+    Base.print(io, "Blob $(short_string(solver.ε, 6))")
 end
+
+"The optimal ε for the blob solver."
+blob_eps(d, n) = 2*n^(-2 / (d + 4))
