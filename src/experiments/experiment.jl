@@ -7,6 +7,7 @@ mutable struct GradFlowExperiment{P, V, S, F}
     mean_norm_error :: F
     cov_norm_error :: F
     cov_trace_error :: F
+    # TODO: add timer
 end
 
 function Base.show(io::IO, experiment::GradFlowExperiment)
