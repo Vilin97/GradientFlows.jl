@@ -26,8 +26,6 @@ function SBTM(s::Chain; optimiser=Adam(1.0f-3), epochs=25, denoising_alpha=0.4f0
 end
 
 function initialize(solver::SBTM, u0::AbstractMatrix{Float32}, score_values::AbstractMatrix{Float32})
-    # TODO: do not train in initialize
-    train_s!(solver, u0, score_values)
     ζ = similar(u0)
     allocated_memory = SBTMAllocMem(ζ)
     SBTM(score_values, solver.s, solver.optimiser, solver.epochs, solver.denoising_alpha, solver.init_batch_size, solver.init_loss_tolerance, solver.init_max_iterations, allocated_memory, solver.logger, solver.optimiser_state)
