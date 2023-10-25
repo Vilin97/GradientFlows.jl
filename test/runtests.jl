@@ -1,4 +1,4 @@
-using GradientFlows
+using GradientFlows, Test
 
 @time begin
     @testset "Unit Tests" begin
