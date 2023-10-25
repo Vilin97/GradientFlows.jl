@@ -103,8 +103,6 @@ function mlp(d::Int; depth=2, width=100, activation=softsign, rng=DEFAULT_RNG)
         Dense(width => d, init=Flux.glorot_normal(rng))
     )
 end
-# TODO: rpad("SBTM $num_parameters", DEFAULT_SOLVER_NAME_WIDTH)
 function Base.show(io::IO, solver::SBTM)
-    num_parameters = sum(length, Flux.params(solver.s))
     Base.print(io, "SBTM")
 end

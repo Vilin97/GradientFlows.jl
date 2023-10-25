@@ -19,6 +19,10 @@ import Statistics.mean, Statistics.cov
 const DEFAULT_RNG = Random.default_rng()
 const DEFAULT_TIMER = TimerOutput()
 
+const SOLVER_NAME_WIDTH = 5
+const PROBLEM_NAME_WIDTH = 9
+const n_WIDTH = 6
+
 include("linalg.jl")
 
 include("problems/problem.jl")
@@ -48,7 +52,7 @@ export set_solver, resample!
 export solve
 export diffusion_problem, landau_problem
 
-export GradFlowExperiment, GradFlowExperimentSet
+export GradFlowExperiment
 export solve!, compute_errors!
 export run_experiment_set!
 export DEFAULT_TIMER

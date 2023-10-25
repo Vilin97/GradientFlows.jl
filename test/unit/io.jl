@@ -1,4 +1,5 @@
 using GradientFlows, Flux, Test
+include("../testutils.jl")
 
 @testset "chain IO" begin
     d = 2
@@ -22,8 +23,8 @@ using GradientFlows, Flux, Test
 end
 @testset "experiment IO" begin
     problem = diffusion_problem(2, 10, Blob(blob_eps(2,10)))
-    experiment = GradFlowExperiment(problem, 1)
-    path = experiment_filename(experiment)
+    experiment = GradFlowExperiment(problem)
+    path = experiment_filename(experiment, 1)
     save(path, experiment)
     experiment_loaded = load(path)
     @test experiment_loaded.problem == experiment.problem
