@@ -13,7 +13,7 @@ function Base.show(io::IO, experiment::GradFlowExperiment)
     @unpack problem, saveat, solution, L2_error, mean_norm_error, cov_norm_error, cov_trace_error = experiment
     width = 6
     d,n = size(problem.u0)
-    print(io, "\n$(problem.name)(d=$d,n=$(rpad(n,n_WIDTH))) $(lpad(problem.solver, SOLVER_NAME_WIDTH)): |ρ∗ϕ - ρ*|₂ = $(short_string(L2_error,width)) |E(ρ)-E(ρ*)|₂ = $(short_string(mean_norm_error,width)) |Σ-Σ'|₂ = $(short_string(cov_norm_error,width)) |tr(Σ-Σ')| = $(short_string(cov_trace_error,width))")
+    print(io, "\n$(problem.name)(d=$d,n=$(rpad(n,n_WIDTH))) $(lpad(problem.solver, SOLVER_NAME_WIDTH)): |ρ∗ϕ - ρ*|₂ = $(short_string(L2_error,width)) |E(ρ)-E(ρ*)|₂ = $(short_string(mean_norm_error,width)) |Σ-Σ'|₂ = $(short_string(cov_norm_error,width)) |tr(Σ)-tr(Σ')| = $(short_string(cov_trace_error,width))")
 end
 
 function GradFlowExperiment(problem::GradFlowProblem; saveat = problem.tspan[2])
@@ -50,7 +50,7 @@ function cov_norm_error(experiment; kwargs...)
     return compute_metric((u,dist) -> sqrt(normsq(emp_cov(u), cov(dist))), experiment; kwargs...)
 end
 function cov_trace_error(experiment; kwargs...)
-    return compute_metric((u,dist) -> abs(tr(emp_cov(u) .- cov(dist))), experiment; kwargs...)
+    return compute_metric((u,dist) -> abs(tr(emp_cov(u)) - tr(cov(dist))), experiment; kwargs...)
 end
 
 function compute_metric(metric, experiment::GradFlowExperiment; t_idx = length(experiment.saveat), kwargs...)
