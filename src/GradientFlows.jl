@@ -54,9 +54,9 @@ export diffusion_problem, landau_problem
 
 export GradFlowExperiment
 export solve!, compute_errors!
-export run_experiment_set!
 export DEFAULT_TIMER
-export save, load, model_filename, best_model, experiment_filename
+export save, load, model_filename, experiment_filename, timer_filename, best_model
+export train_s!
 
 export true_dist
 export emp_mean, emp_cov
