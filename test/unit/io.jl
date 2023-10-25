@@ -1,4 +1,4 @@
-using GradientFlows, Flux, Test
+using GradientFlows, Flux, Test, TimerOutputs
 include("../testutils.jl")
 
 @testset "chain IO" begin

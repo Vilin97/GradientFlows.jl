@@ -1,5 +1,7 @@
 using GradientFlows, StableRNGs, Test, Distributions
 
+include("../testutils.jl")
+
 @testset "GradFlowProblem tests" begin
     problem = diffusion_problem(2, 10, Exact(); rng=StableRNG(123))
     ρ0 = problem.ρ0
