@@ -31,3 +31,12 @@ end
     path_prefix = splitpath(path)[1]
     rm(path_prefix, recursive=true)
 end
+
+@testset "timer IO" begin
+    timer = TimerOutput()
+    @timeit timer "test" sleep(0.5)
+    path = timer_filename("test_problem", 2, 10)
+    save(path, timer)
+    timer_loaded = load(path)
+    @test timer_loaded isa TimerOutput
+end
