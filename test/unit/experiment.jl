@@ -1,4 +1,4 @@
-using GradientFlows, Test
+using GradientFlows, Test, TimerOutputs
 
 @testset "Experiment" begin
     problem = diffusion_problem(2, 10, Blob(blob_eps(2,10)))
