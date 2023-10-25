@@ -35,7 +35,7 @@ end
 @testset "timer IO" begin
     timer = TimerOutput()
     @timeit timer "test" sleep(0.5)
-    path = timer_filename("test_problem", 2, 10)
+    path = timer_filename("test_problem")
     save(path, timer)
     timer_loaded = load(path)
     @test timer_loaded isa TimerOutput
