@@ -30,12 +30,19 @@ struct LandauDistribution{F} <: ContinuousMultivariateDistribution
 end
 
 function pdf(dist::LandauDistribution, x::AbstractVector)
-    K = dist.K
-    d = dist.d
+    @unpack K, d = dist
     P = ((d + 2) * K - d) / (2K)
     Q = (1 - K) / (2K^2)
     x² = sum(abs2, x)
     return (2π * K)^(-d / 2) * exp(-x² / (2K)) * (P + Q * x²)
+end
+
+function marginal_pdf(dist::LandauDistribution, x::Number)
+    K = dist.K
+    d = 1
+    P = ((d + 2) * K - d) / (2K)
+    Q = (1 - K) / (2K^2)
+    return (2π * K)^(-d / 2) * exp(-x^2 / (2K)) * (P + Q * x^2 + (1-K)/K)
 end
 
 t0(params::LandauParams) = round(log((params.d + 2) * params.C / 2) / (2params.B * (params.d - 1)), RoundUp, digits=1)

@@ -22,7 +22,7 @@ include("../testutils.jl")
     rm(path_prefix, recursive=true)
 end
 @testset "experiment IO" begin
-    problem = diffusion_problem(2, 10, Blob(blob_eps(2,10)))
+    problem = diffusion_problem(2, 10, Blob(blob_epsilon(2,10)))
     experiment = GradFlowExperiment(problem)
     path = experiment_filename(experiment, 1)
     save(path, experiment)
