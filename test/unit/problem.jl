@@ -10,7 +10,7 @@ include("../testutils.jl")
     @test true_dist(problem, problem.tspan[1]) == ρ0
 
     old_u0 = copy(problem.u0)
-    new_u0 = Float32.(rand(StableRNG(2), ρ0, problem.u0))
+    new_u0 = Float32.(rand(StableRNG(2), ρ0, 10))
     set_u0!(problem, new_u0)
     @test problem.u0 ≈ new_u0 # not exactly equal because of Float32
     @test problem.u0 != old_u0
