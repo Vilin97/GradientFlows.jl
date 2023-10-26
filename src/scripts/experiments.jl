@@ -33,6 +33,13 @@ function train_nn(problem, d, n, s; verbose=2, init_max_iterations=10^6)
     nothing
 end
 
-d = 5
-# train_nn(landau_problem, d, 1000, mlp(d, depth=2))
-run_experiment(landau_problem, d, [100], 1)
+# d = 2
+# train_nn(diffusion_problem, d, 20_000, mlp(d, depth=1))
+# run_experiment(diffusion_problem, d, 100 * 2 .^(0:7), 1)
+
+# d = 5
+# train_nn(diffusion_problem, d, 20_000, mlp(d, depth=1))
+# run_experiment(diffusion_problem, d, 100 * 2 .^(0:7), 1)
+
+# run_experiment(landau_problem, 3, 100 * 2 .^(0:7), 1)
+run_experiment(landau_problem, 5, 100 * 2 .^(0:7), 1)
