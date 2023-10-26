@@ -7,4 +7,5 @@ using GradientFlows, Test, TimerOutputs
     compute_errors!(experiment)
     @test experiment.timer isa TimerOutput
     @test experiment.L2_error == Lp_error(experiment.solution[end], true_dist(problem, problem.tspan[2]); p=2)
+    @test "$experiment" isa String # just to get coverage on the show method
 end
