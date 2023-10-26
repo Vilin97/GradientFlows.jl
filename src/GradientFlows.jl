@@ -48,7 +48,7 @@ export GradFlowProblem, Solver
 export Exact, Blob, SBTM
 export mlp, blob_eps
 export Logger
-export set_solver, resample!
+export set_u0!
 export solve
 export diffusion_problem, landau_problem
 

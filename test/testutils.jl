@@ -19,7 +19,8 @@ function debug_prob(problem)
     u = solution[end]
     end_dist = true_dist(problem, problem.tspan[2])
 
-    @show emp_mean(u)
-    @show emp_cov(u), cov(end_dist)
     @show Lp_error(u, end_dist; p=2)
+    @show emp_mean(u)
+    @show emp_cov(u)
+    @show cov(end_dist)
 end

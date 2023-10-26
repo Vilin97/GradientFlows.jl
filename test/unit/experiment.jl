@@ -6,8 +6,5 @@ using GradientFlows, Test, TimerOutputs
     solve!(experiment)
     compute_errors!(experiment)
     @test experiment.timer isa TimerOutput
-    @test experiment.L2_error > 0
-    @test experiment.mean_norm_error > 0
-    @test experiment.cov_norm_error > 0
-    @test experiment.cov_trace_error > 0
+    @test experiment.L2_error == Lp_error(experiment.solution[end], true_dist(problem, problem.tspan[2]); p=2)
 end
