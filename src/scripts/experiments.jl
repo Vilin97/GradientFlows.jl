@@ -20,7 +20,7 @@ function run_experiment(problem, d, ns, num_runs; verbose=true)
             end
         end
     end
-    save(timer_filename(problem(d, ns[1], Exact()).name), timer)
+    save(timer_filename(problem(d, ns[1], Exact()).name, d), timer)
     println(timer)
     nothing
 end

@@ -7,7 +7,7 @@ num_runs = 10
 function load_metric(problem_name, solver_names, d, ns, num_runs, metric)
     metric_matrix = zeros(length(ns), length(solver_names))
     for (i,n) in enumerate(ns), (j,solver_name) in enumerate(solver_names)
-        filename = experiment_filename(problem_name, solver_name, d, n, num_runs)
+        filename = experiment_filename(problem_name, d, n, solver_name, num_runs)
         experiment = load(filename)
         metric_matrix[i, j] = getfield(experiment, metric)
     end

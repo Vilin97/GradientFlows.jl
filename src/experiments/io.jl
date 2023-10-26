@@ -3,10 +3,10 @@ save(path, obj) = (mkpath(dirname(path)); JLD2.save_object(path, obj))
 load(path) = JLD2.load_object(path)
 
 ### experiment ###
-experiment_filename(problem_name, solver, d, n, id; path=joinpath("data", "experiments")) = joinpath(path, lowercase(problem_name), lowercase(solver), "d_$(d)", "n_$(n)", "$(id).jld2")
+experiment_filename(problem_name, d, n, solver, id; path=joinpath("data", "experiments")) = joinpath(path, lowercase(problem_name), "d_$d", "n_$n", lowercase(solver), "$(id).jld2")
 function experiment_filename(experiment::GradFlowExperiment, id; kwargs...)
     d, n = size(experiment.problem.u0)
-    return experiment_filename(experiment.problem.name, "$(experiment.problem.solver)", d, n, id; kwargs...)
+    return experiment_filename(experiment.problem.name, d, n, "$(experiment.problem.solver)", id; kwargs...)
 end
 
 ### model ###
@@ -23,7 +23,7 @@ function best_model(problem_name, d; kwargs...)
 end
 
 ### timer ###
-timer_filename(problem_name, path = joinpath("data", "experiments")) = joinpath(path, lowercase(problem_name), "timer.jld2")
+timer_filename(problem_name, d, path = joinpath("data", "experiments")) = joinpath(path, lowercase(problem_name), "d_$d","timer.jld2")
 
 ### Pretty printing ###
 short_string(float::Number, width, digits=width-2) = rpad(round(float, digits=digits), width)
