@@ -95,6 +95,8 @@ function choose_f!(d)
         return landau_3d_f!
     elseif d == 5
         return landau_5d_f!
+    elseif d == 10
+        return landau_10d_f!
     else
         error("Landau problem with dimension d = $d is not implemented.")
     end
@@ -146,6 +148,32 @@ function landau_5d_f!(du, u, prob, t)
             end
         end
         Base.Cartesian.@nexprs 5 i -> begin
+            du[i, p] += dx_i
+        end
+    end
+    du .*= prob.params.B / n
+    nothing
+end
+function landau_10d_f!(du, u, prob, t)
+    s = prob.solver.score_values
+    du .= 0
+    n = size(u, 2)
+    @tturbo for p = 1:n
+        Base.Cartesian.@nexprs 10 i -> dx_i = zero(eltype(du))
+        for q = 1:n
+            dotzv = zero(eltype(du))
+            normsqz = zero(eltype(du))
+            Base.Cartesian.@nexprs 10 i -> begin
+                z_i = u[i, p] - u[i, q]
+                v_i = s[i, q] - s[i, p]
+                dotzv += z_i * v_i
+                normsqz += z_i * z_i
+            end
+            Base.Cartesian.@nexprs 10 i -> begin
+                dx_i += v_i * normsqz - dotzv * z_i
+            end
+        end
+        Base.Cartesian.@nexprs 10 i -> begin
             du[i, p] += dx_i
         end
     end
