@@ -12,7 +12,7 @@ using JLD2
 
 import Distributions: MvNormal, Distribution, MultivariateDistribution, mean, cov, gradlogpdf, pdf, rand, ContinuousMultivariateDistribution
 import OrdinaryDiffEq.solve
-using Statistics: mean, cov
+import Statistics.mean, Statistics.cov
 
 
 const DEFAULT_RNG = Random.default_rng()
