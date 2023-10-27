@@ -1,4 +1,4 @@
-using GradientFlows, Plots, Polynomials
+using GradientFlows, Plots, Polynomials, TimerOutputs
 
 function solve_time(timer)
     # it's the key that does not contain "Lp"
@@ -43,33 +43,39 @@ function pdf_plot(problem_name, d, n, solver_names; t_idx, xrange=range(-5,5,len
     experiment = load(experiment_filename(problem_name, d, n, "exact", 1))
     saveat = experiment.saveat
     dist = true_dist(experiment.problem, saveat[t_idx])
-    p = Plots.plot(title = "$problem_name, d=$d, n=$n, ε=$(round(kde_epsilon(d,n),digits=4)), t=$(saveat[t_idx])", size=PLOT_WINDOW_SIZE)
+    p_marginal = Plots.plot(title = "marginal $problem_name, d=$d, n=$n, ε=$(round(kde_epsilon(1,n),digits=4)), t=$(saveat[t_idx])", size=PLOT_WINDOW_SIZE)
+    p_slice = Plots.plot(title = "slice $problem_name, d=$d, n=$n, ε=$(round(kde_epsilon(d,n),digits=4)), t=$(saveat[t_idx])", size=PLOT_WINDOW_SIZE)
+    slice(x::Number) = [x, zeros(typeof(x), d - 1)...] 
     for solver in solver_names
         experiment = load(experiment_filename(problem_name, d, n, solver, 1))
-        u = reshape(experiment.solution[t_idx][1,:], 1, :)
-        plot!(p, xrange, x -> kde(x, u), label=solver)
+        u = experiment.solution[t_idx]
+        u_marginal = reshape(u[1,:], 1, :)
+        plot!(p_marginal, xrange, x -> kde(x, u_marginal), label=solver)
+        plot!(p_slice, xrange, x -> kde(slice(x), u), label=solver)
     end
-    plot!(p, xrange, x -> marginal_pdf(dist, x), label="true")
-    return p
+    plot!(p_marginal, xrange, x -> marginal_pdf(dist, x), label="true")
+    plot!(p_slice, xrange, x -> pdf(dist, slice(x)), label="true")
+    return p_marginal, p_slice
 end
 
 function plot_all(problem_name, d, ns, solver_names; metrics = [(:L2_error, "|ρ∗ϕ - ρ*|₂"), (:mean_norm_error, "|E(ρ)-E(ρ*)|₂"), (:cov_norm_error, "|Σ(ρ)-Σ(ρ*)|₂"), (:cov_trace_error, "|tr(Σ(ρ))-tr(Σ(ρ*))|"), (:timer, "solve time, s")], save=true)
     plots = []
-    push!(plots, scatter_plot(problem_name, d, ns[end], solver_names))
-    push!(plots, pdf_plot(problem_name, d, ns[end], solver_names, t_idx=1))
-    push!(plots, pdf_plot(problem_name, d, ns[end], solver_names, t_idx=2))
+    p_marginal_start, p_slice_start = pdf_plot(problem_name, d, ns[end], solver_names, t_idx=1)
+    p_marginal_end, p_slice_end = pdf_plot(problem_name, d, ns[end], solver_names, t_idx=2)
+    push!(plots, p_marginal_start, p_marginal_end, p_slice_start, p_slice_end)
     for (metric, metric_name) in metrics
         metric_matrix = load_metric(problem_name, d, ns, solver_names, metric)
         p = plot_metric(problem_name, d, ns, solver_names, metric_name, metric_matrix)
         push!(plots, p)
     end
+    push!(plots, scatter_plot(problem_name, d, ns[end], solver_names))
     plt_all = Plots.plot(plots..., size=PLOT_WINDOW_SIZE, margin=(10, :mm))
     
     if save
         path = joinpath("data", "plots", problem_name, "d_$d")
         mkpath(path)
         metric_filenames = [string(metric) for (metric, _) in metrics]
-        filenames = ["scatter", "pdf_start", "pdf_end", metric_filenames...]
+        filenames = ["marginal_start", "marginal_end", "slice_start", "slice_end", metric_filenames..., "scatter"]
         for (plt, filename) in zip(plots, filenames)
             savefig(plt, joinpath(path, filename))
         end
@@ -82,5 +88,5 @@ ns = 100 * 2 .^ (0:7)
 solver_names = ["exact", "sbtm", "blob"]
 for (d,problem_name) in [(2,"diffusion"), (5,"diffusion"), (3,"landau"), (5,"landau")]
     @show d, problem_name
-    plot_all(problem_name, d, ns, solver_names)
+    @time plot_all(problem_name, d, ns, solver_names)
 end

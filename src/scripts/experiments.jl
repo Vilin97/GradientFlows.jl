@@ -33,15 +33,7 @@ function train_nn(problem, d, n, s; verbose=1, init_max_iterations=10^6)
     nothing
 end
 
-pow_two = 4
-d = 2
-train_nn(diffusion_problem, d, 5_000, mlp(d, depth=1))
-run_experiment(diffusion_problem, d, 100 * 2 .^(0:pow_two), 1)
+pow_two = 7
 
-d = 5
-train_nn(diffusion_problem, d, 5_000, mlp(d, depth=1))
-run_experiment(diffusion_problem, d, 100 * 2 .^(0:pow_two), 1)
-
-train_nn(landau_problem, 3, 5_000, mlp(3, depth=2))
-run_experiment(landau_problem, 3, 100 * 2 .^(0:pow_two), 1)
-# run_experiment(landau_problem, 5, 100 * 2 .^(0:pow_two), 1)
+train_nn(landau_problem, 10, 20_000, best_model("landau", 10))
+run_experiment(landau_problem, 10, 100 * 2 .^(0:pow_two), 5)
