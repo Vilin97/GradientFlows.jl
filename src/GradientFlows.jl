@@ -21,7 +21,7 @@ const DEFAULT_TIMER = TimerOutput()
 const SOLVER_NAME_WIDTH = 5
 const PROBLEM_NAME_WIDTH = 9
 const n_WIDTH = 6
-const PLOT_WINDOW_SIZE = (1800, 1200)
+const PLOT_WINDOW_SIZE = (2400, 1800)
 
 include("linalg.jl")
 include("marginal.jl")
