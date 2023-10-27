@@ -6,7 +6,7 @@ function run_experiment(problem, d, ns, num_runs; verbose=true)
     for n in ns
         for run in 1:num_runs
             prob_ = problem(d, n, Exact())
-            solvers = [Blob(blob_eps(d, n)), SBTM(best_model(prob_.name, d)), Exact()]
+            solvers = [Blob(blob_epsilon(d, n)), SBTM(best_model(prob_.name, d)), Exact()]
             @show run
             for solver in solvers
                 prob = problem(d, n, solver)
@@ -25,7 +25,7 @@ function run_experiment(problem, d, ns, num_runs; verbose=true)
     nothing
 end
 
-function train_nn(problem, d, n, s; verbose=2, init_max_iterations=10^6)
+function train_nn(problem, d, n, s; verbose=1, init_max_iterations=10^6)
     solver = SBTM(s, logger=Logger(verbose), init_max_iterations=init_max_iterations)
     prob = problem(d, n, solver)
     @time train_s!(solver, prob.u0, score(prob.ρ0, prob.u0))
@@ -33,13 +33,15 @@ function train_nn(problem, d, n, s; verbose=2, init_max_iterations=10^6)
     nothing
 end
 
-# d = 2
-# train_nn(diffusion_problem, d, 20_000, mlp(d, depth=1))
-# run_experiment(diffusion_problem, d, 100 * 2 .^(0:7), 1)
+pow_two = 4
+d = 2
+train_nn(diffusion_problem, d, 5_000, mlp(d, depth=1))
+run_experiment(diffusion_problem, d, 100 * 2 .^(0:pow_two), 1)
 
-# d = 5
-# train_nn(diffusion_problem, d, 20_000, mlp(d, depth=1))
-# run_experiment(diffusion_problem, d, 100 * 2 .^(0:7), 1)
+d = 5
+train_nn(diffusion_problem, d, 5_000, mlp(d, depth=1))
+run_experiment(diffusion_problem, d, 100 * 2 .^(0:pow_two), 1)
 
-# run_experiment(landau_problem, 3, 100 * 2 .^(0:7), 1)
-run_experiment(landau_problem, 5, 100 * 2 .^(0:7), 1)
+train_nn(landau_problem, 3, 5_000, mlp(3, depth=2))
+run_experiment(landau_problem, 3, 100 * 2 .^(0:pow_two), 1)
+# run_experiment(landau_problem, 5, 100 * 2 .^(0:pow_two), 1)
