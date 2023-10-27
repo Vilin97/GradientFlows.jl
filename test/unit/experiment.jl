@@ -13,5 +13,5 @@ using GradientFlows, Test, TimerOutputs, StableRNGs
     experiment2 = GradFlowExperiment(problem2)
     solve!(experiment2)
     compute_errors!(experiment2)
-    @test experiment.L2_error !≈ experiment2.L2_error
+    @test !(experiment.L2_error ≈ experiment2.L2_error)
 end
