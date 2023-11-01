@@ -1,13 +1,13 @@
 using GradientFlows, Plots, Polynomials, TimerOutputs
 
-function solve_time(timer)
+function update_score_time(timer)
     # it's the key that does not contain "Lp"
     key = first(filter(x -> !occursin("Lp",x), keys(timer.inner_timers)))
-    return TimerOutputs.time(timer[key])/10^9
+    return TimerOutputs.time(timer[key].inner_timers["update score"])/10^9
 end
 
 function load_metric(problem_name, d, ns, solver_names, metric::Symbol)
-    f(m) = metric == :timer ? solve_time(m) : m
+    f(m) = metric == :timer ? update_score_time(m) : m
     metric_matrix = zeros(length(ns), length(solver_names))
     for (i,n) in enumerate(ns), (j,solver_name) in enumerate(solver_names)
         dir = dirname(experiment_filename(problem_name, d, n, solver_name, 1))
@@ -58,7 +58,7 @@ function pdf_plot(problem_name, d, n, solver_names; t_idx, xrange=range(-5,5,len
     return p_marginal, p_slice
 end
 
-function plot_all(problem_name, d, ns, solver_names; metrics = [(:L2_error, "|ρ∗ϕ - ρ*|₂"), (:mean_norm_error, "|E(ρ)-E(ρ*)|₂"), (:cov_norm_error, "|Σ(ρ)-Σ(ρ*)|₂"), (:cov_trace_error, "|tr(Σ(ρ))-tr(Σ(ρ*))|"), (:timer, "solve time, s")], save=true)
+function plot_all(problem_name, d, ns, solver_names; metrics = [(:L2_error, "|ρ∗ϕ - ρ*|₂"), (:mean_norm_error, "|E(ρ)-E(ρ*)|₂"), (:cov_norm_error, "|Σ(ρ)-Σ(ρ*)|₂"), (:cov_trace_error, "|tr(Σ(ρ))-tr(Σ(ρ*))|"), (:timer, "update score time, s")], save=true)
     plots = []
     p_marginal_start, p_slice_start = pdf_plot(problem_name, d, ns[end], solver_names, t_idx=1)
     p_marginal_end, p_slice_end = pdf_plot(problem_name, d, ns[end], solver_names, t_idx=2)
@@ -86,7 +86,8 @@ end
 
 ns = 100 * 2 .^ (0:7)
 solver_names = ["exact", "sbtm", "blob"]
-for (d,problem_name) in [(2,"diffusion"), (5,"diffusion"), (3,"landau"), (5,"landau")]
+problems = [(2,"diffusion"), (5,"diffusion"), (3,"landau"), (5,"landau"), (10,"landau")]
+for (d,problem_name) in problems
     @show d, problem_name
     @time plot_all(problem_name, d, ns, solver_names)
 end
