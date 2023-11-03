@@ -18,6 +18,7 @@ function load_metric(problem_name, d, ns, solver_names, metric::Symbol)
     return metric_matrix
 end
 
+"metric_matrix[i,j] is the metric for the i-th value of n and the j-th solver"
 function plot_metric(problem_name, d, ns, solver_names, metric_name, metric_matrix; scale = :log10)
     log_slope(x, y) = Polynomials.fit(log.(x), log.(y), 1).coeffs[2]
     p = Plots.plot(title = "$problem_name, d=$d, $metric_name", xlabel = "number of patricles, n", ylabel = metric_name, size=PLOT_WINDOW_SIZE)
@@ -84,10 +85,10 @@ function plot_all(problem_name, d, ns, solver_names; metrics = [(:L2_error, "|ρ
     return plt_all
 end
 
-ns = 100 * 2 .^ (0:7)
-solver_names = ["exact", "sbtm", "blob"]
-problems = [(2,"diffusion"), (5,"diffusion"), (3,"landau"), (5,"landau"), (10,"landau")]
-for (d,problem_name) in problems
-    @show d, problem_name
-    @time plot_all(problem_name, d, ns, solver_names)
-end
+# ns = 100 * 2 .^ (0:7)
+# solver_names = ["exact", "sbtm", "blob"]
+# problems = [(2,"diffusion"), (5,"diffusion"), (3,"landau"), (5,"landau"), (10,"landau")]
+# for (d,problem_name) in problems
+#     @show d, problem_name
+#     @time plot_all(problem_name, d, ns, solver_names)
+# end

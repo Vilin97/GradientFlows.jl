@@ -44,7 +44,7 @@ function train_s!(solver::SBTM, u, score_values)
     while iteration < init_max_iterations
         loss = l2_error_normalized(s, u, score_values)
         (loss < init_loss_tolerance) && break
-        verbose > 1 && epoch % 100 == 0 && println("Epoch $(lpad(epoch, 5)) iteration $(lpad(iteration, 5)) loss $loss")
+        verbose > 1 && epoch % 100 == 0 && println("Epoch $(lpad(epoch, 5)) iteration $(lpad(iteration, 6)) loss $loss")
         epoch += 1
         for (x, y) in data_loader
             batch_loss, grads = withgradient(s -> l2_error_normalized(s, x, y), s)

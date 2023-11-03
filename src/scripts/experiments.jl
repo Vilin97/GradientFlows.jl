@@ -33,7 +33,12 @@ function train_nn(problem, d, n, s; verbose=1, init_max_iterations=10^6)
     nothing
 end
 
-pow_two = 7
-
-train_nn(landau_problem, 10, 20_000, best_model("landau", 10))
-run_experiment(landau_problem, 10, 100 * 2 .^(0:pow_two), 5)
+include("plot.jl")
+ns = [100 * 2 ^ 8]
+num_runs = 5
+solver_names = ["exact", "sbtm", "blob"]
+problems = [(2, diffusion_problem, "diffusion"), (5, diffusion_problem, "diffusion"), (3, landau_problem, "landau"), (5, landau_problem, "landau"), (10, landau_problem, "landau")]
+for (d, problem, problem_name) in problems
+    @show d, problem_name
+    @time run_experiment(problem, d, ns, num_runs)
+end
