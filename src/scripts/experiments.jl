@@ -20,7 +20,8 @@ function run_experiment(problem, d, ns, num_runs; verbose=true)
             end
         end
     end
-    save(timer_filename(problem(d, ns[1], Exact()).name, d), timer)
+    problem_name = problem(d, ns[1], Exact()).name
+    save(timer_filename(problem_name, d), timer)
     println(timer)
     nothing
 end
@@ -33,12 +34,18 @@ function train_nn(problem, d, n, s; verbose=1, init_max_iterations=10^6)
     nothing
 end
 
-include("plot.jl")
-ns = [100 * 2 ^ 8]
-num_runs = 5
-solver_names = ["exact", "sbtm", "blob"]
+# train NN
 problems = [(2, diffusion_problem, "diffusion"), (5, diffusion_problem, "diffusion"), (3, landau_problem, "landau"), (5, landau_problem, "landau"), (10, landau_problem, "landau")]
 for (d, problem, problem_name) in problems
     @show d, problem_name
-    @time run_experiment(problem, d, ns, num_runs)
+    train_nn(problem, d, 80_000, best_model(problem_name, d))
 end
+
+# run experiments
+# ns = [100 * 2 ^ 8]
+# num_runs = 5
+# problems = [(2, diffusion_problem, "diffusion"), (5, diffusion_problem, "diffusion"), (3, landau_problem, "landau"), (5, landau_problem, "landau"), (10, landau_problem, "landau")]
+# for (d, problem, problem_name) in problems
+#     @show d, problem_name
+#     @time run_experiment(problem, d, ns, num_runs)
+# end

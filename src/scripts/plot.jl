@@ -59,12 +59,12 @@ function pdf_plot(problem_name, d, n, solver_names; t_idx, xrange=range(-5,5,len
     return p_marginal, p_slice
 end
 
-function plot_all(problem_name, d, ns, solver_names; metrics = [(:L2_error, "|ρ∗ϕ - ρ*|₂"), (:mean_norm_error, "|E(ρ)-E(ρ*)|₂"), (:cov_norm_error, "|Σ(ρ)-Σ(ρ*)|₂"), (:cov_trace_error, "|tr(Σ(ρ))-tr(Σ(ρ*))|"), (:timer, "update score time, s")], save=true)
+function plot_all(problem_name, d, ns, solver_names; precomputed_metrics = [(:L2_error, "|ρ∗ϕ - ρ*|₂"), (:mean_norm_error, "|E(ρ)-E(ρ*)|₂"), (:cov_norm_error, "|Σ(ρ)-Σ(ρ*)|₂"), (:cov_trace_error, "|tr(Σ(ρ))-tr(Σ(ρ*))|"), (:timer, "update score time, s")], save=true)
     plots = []
     p_marginal_start, p_slice_start = pdf_plot(problem_name, d, ns[end], solver_names, t_idx=1)
     p_marginal_end, p_slice_end = pdf_plot(problem_name, d, ns[end], solver_names, t_idx=2)
     push!(plots, p_marginal_start, p_marginal_end, p_slice_start, p_slice_end)
-    for (metric, metric_name) in metrics
+    for (metric, metric_name) in precomputed_metrics
         metric_matrix = load_metric(problem_name, d, ns, solver_names, metric)
         p = plot_metric(problem_name, d, ns, solver_names, metric_name, metric_matrix)
         push!(plots, p)
@@ -75,7 +75,7 @@ function plot_all(problem_name, d, ns, solver_names; metrics = [(:L2_error, "|ρ
     if save
         path = joinpath("data", "plots", problem_name, "d_$d")
         mkpath(path)
-        metric_filenames = [string(metric) for (metric, _) in metrics]
+        metric_filenames = [string(metric) for (metric, _) in precomputed_metrics]
         filenames = ["marginal_start", "marginal_end", "slice_start", "slice_end", metric_filenames..., "scatter"]
         for (plt, filename) in zip(plots, filenames)
             savefig(plt, joinpath(path, filename))
@@ -87,7 +87,7 @@ end
 
 ns = 100 * 2 .^ (0:8)
 solver_names = ["exact", "sbtm", "blob"]
-problems = [(2,"diffusion"), (5,"diffusion"), (3,"landau"), (5,"landau")]#, (10,"landau")]
+problems = [(2,"diffusion"), (5,"diffusion"), (3,"landau"), (5,"landau"), (10,"landau")]
 for (d,problem_name) in problems
     @show d, problem_name
     @time plot_all(problem_name, d, ns, solver_names)
