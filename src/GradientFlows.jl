@@ -24,15 +24,15 @@ const n_WIDTH = 6
 const PLOT_WINDOW_SIZE = (2400, 1800)
 
 include("distributions/poly_normal.jl")
+include("distributions/score.jl")
+include("distributions/normal.jl")
 
 include("linalg.jl")
-include("marginal.jl")
 
 include("problems/problem.jl")
 include("problems/diffusion.jl")
 include("problems/landau.jl")
 
-include("score.jl")
 include("solve.jl")
 
 include("solvers/solver.jl")
