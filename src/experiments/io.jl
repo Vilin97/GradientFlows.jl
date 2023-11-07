@@ -23,7 +23,7 @@ function best_model(problem_name, d; kwargs...)
 end
 
 ### timer ###
-timer_filename(problem_name, d, path = joinpath("data", "experiments")) = joinpath(path, lowercase(problem_name), "d_$d","timer.jld2")
+timer_filename(problem_name, d, path=joinpath("data", "experiments")) = joinpath(path, lowercase(problem_name), "d_$d", "timer.jld2")
 
 ### Pretty printing ###
-short_string(float::Number, width, digits=width-2) = rpad(round(float, digits=digits), width)
+short_string(float::Number, width, digits=width - 2) = rpad(round(float, digits=digits), width)

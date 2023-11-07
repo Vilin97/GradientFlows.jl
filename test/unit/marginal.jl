@@ -5,9 +5,9 @@ using GradientFlows: LandauDistribution
 @testset "Marginal pdf" begin
     dist = MvNormal(I(2))
     result, error = hcubature(x -> marginal_pdf(dist, x[1]), [-10], [10])
-    @test result ≈ 1 atol=2*error
+    @test result ≈ 1 atol = 2 * error
 
-    dist = LandauDistribution(5, 1/5)
+    dist = LandauDistribution(5, 1 / 5)
     result, error = hcubature(x -> marginal_pdf(dist, x[1]), [-10], [10])
-    @test result ≈ 1 atol=2*error
+    @test result ≈ 1 atol = 2 * error
 end

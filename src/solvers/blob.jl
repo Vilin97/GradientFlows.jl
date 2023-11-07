@@ -52,4 +52,4 @@ function Base.show(io::IO, solver::Blob)
 end
 
 "The optimal ε for the blob solver."
-blob_epsilon(d, n) = 2*n^(-2 / (d + 4))
+blob_epsilon(d, n) = 2 * n^(-2 / (d + 4))
