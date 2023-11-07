@@ -19,8 +19,6 @@ function marginal_pdf(dist::PolyNormal, x::Number)
     return (2π * K)^(-1 / 2) * exp(-x^2 / (2K)) * (P + Q * x^2 + (d - 1) * Q * K)
 end
 
-t0(params::LandauParams) = round(log((params.d + 2) * params.C / 2) / (2params.B * (params.d - 1)), RoundUp, digits=1)
-
 function Random.rand(dist::PolyNormal, n::Int)
     return rand(DEFAULT_RNG, dist, n)
 end

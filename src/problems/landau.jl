@@ -23,6 +23,9 @@ struct LandauParams{T,F}
 end
 LandauParams(d, B::T, C=one(T)) where {T} = LandauParams(d, B, C, t -> 1 - C * exp(-(d - 1) * 2 * B * t))
 
+"Choose the starting time `t0` so that P ≈ 0 and P ≥ 0."
+t0(params::LandauParams) = round(log((params.d + 2) * params.C / 2) / (2params.B * (params.d - 1)), RoundUp, digits=1)
+
 # f! for different dimensions
 function choose_f!(d)
     if d == 3
