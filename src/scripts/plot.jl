@@ -85,10 +85,10 @@ function plot_all(problem_name, d, ns, solver_names; metrics = [(:L2_error, "|ρ
     return plt_all
 end
 
-# ns = 100 * 2 .^ (0:7)
-# solver_names = ["exact", "sbtm", "blob"]
-# problems = [(2,"diffusion"), (5,"diffusion"), (3,"landau"), (5,"landau"), (10,"landau")]
-# for (d,problem_name) in problems
-#     @show d, problem_name
-#     @time plot_all(problem_name, d, ns, solver_names)
-# end
+ns = 100 * 2 .^ (0:8)
+solver_names = ["exact", "sbtm", "blob"]
+problems = [(2,"diffusion"), (5,"diffusion"), (3,"landau"), (5,"landau")]#, (10,"landau")]
+for (d,problem_name) in problems
+    @show d, problem_name
+    @time plot_all(problem_name, d, ns, solver_names)
+end
