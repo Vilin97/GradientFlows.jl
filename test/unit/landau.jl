@@ -1,6 +1,6 @@
 using GradientFlows, SafeTestsets, Test, StableRNGs
 using LinearAlgebra, Distributions, Zygote
-using GradientFlows: LandauParams, LandauDistribution, t0
+using GradientFlows: LandauParams, PolyNormal, t0
 
 rng = StableRNG(123)
 
@@ -16,7 +16,7 @@ for t in 5.5:0.1:6.5
     @test K == 1 − params.C * exp(-2params.B * (d − 1) * t)
     P = ((d + 2)K − d) / (2K)
     Q = (1 − K) / (2K^2)
-    dist = LandauDistribution(d, K)
+    dist = PolyNormal(d, K)
     x = rand(rng, d)
     @test pdf(dist, x) ≈ pdf(MvNormal(K * I(d)), x) * (P + Q * sum(abs2, x))
     @test pdf(dist, x) ≈ (2π * K)^(-d / 2) * exp(-sum(abs2, x) / (2K)) * (P + Q * sum(abs2, x))
@@ -24,7 +24,7 @@ for t in 5.5:0.1:6.5
 end
 
 # test sampling
-dist = LandauDistribution(d, params.K(5.5))
+dist = PolyNormal(d, params.K(5.5))
 n = 10^4
 u = rand(rng, dist, n)
 @test mean(dist) == zeros(d)

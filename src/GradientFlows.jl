@@ -23,6 +23,8 @@ const PROBLEM_NAME_WIDTH = 9
 const n_WIDTH = 6
 const PLOT_WINDOW_SIZE = (2400, 1800)
 
+include("distributions/poly_normal.jl")
+
 include("linalg.jl")
 include("marginal.jl")
 

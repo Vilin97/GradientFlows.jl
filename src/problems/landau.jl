@@ -7,7 +7,7 @@ function landau_problem(d, n, solver_; dt::F=0.01, rng=DEFAULT_RNG) where {F}
     t0_ = t0(params)
     f! = choose_f!(d)
     tspan = (t0_, t0_ + F(0.5))
-    ρ(t, params) = LandauDistribution(d, params.K(t))
+    ρ(t, params) = PolyNormal(d, params.K(t))
     ρ0 = ρ(t0_, params)
     u0 = rand(rng, ρ0, n)
     solver = initialize(solver_, u0, score(ρ0, u0))
@@ -22,72 +22,6 @@ struct LandauParams{T,F}
     K::F   # variance of MvNormal
 end
 LandauParams(d, B::T, C=one(T)) where {T} = LandauParams(d, B, C, t -> 1 - C * exp(-(d - 1) * 2 * B * t))
-
-# Distribution (2π * K)^(-d / 2) * exp(-x² / (2K)) * (P + Q * x²)
-struct LandauDistribution{F} <: ContinuousMultivariateDistribution
-    d::Int
-    K::F
-end
-
-function pdf(dist::LandauDistribution, x::AbstractVector)
-    @unpack K, d = dist
-    P = ((d + 2) * K - d) / (2K)
-    Q = (1 - K) / (2K^2)
-    x² = sum(abs2, x)
-    return (2π * K)^(-d / 2) * exp(-x² / (2K)) * (P + Q * x²)
-end
-
-function marginal_pdf(dist::LandauDistribution, x::Number)
-    @unpack K, d = dist
-    P = ((d + 2) * K - d) / (2K)
-    Q = (1 - K) / (2K^2)
-    return (2π * K)^(-1 / 2) * exp(-x^2 / (2K)) * (P + Q * x^2 + (d - 1) * Q * K)
-end
-
-t0(params::LandauParams) = round(log((params.d + 2) * params.C / 2) / (2params.B * (params.d - 1)), RoundUp, digits=1)
-
-function Random.rand(dist::LandauDistribution, n::Int)
-    return rand(DEFAULT_RNG, dist, n)
-end
-
-function Random.rand(rng::Random.AbstractRNG, dist::LandauDistribution, n::Int)
-    d = dist.d
-    K = dist.K
-    β = 1.5
-    proposal = MvNormal(K * I(d) * β)
-    xs = [[x, zeros(typeof(K), d - 1)...] for x in 0:0.01:5]
-    M = maximum(x -> pdf(dist, x) / pdf(proposal, x), xs) + 1
-    u = zeros(typeof(K), d, n)
-    for i in 1:n
-        u[:, i] = rejection_sample(dist, proposal, M, rng)
-    end
-    return u
-end
-
-function rejection_sample(target_dist, proposal_dist, M, rng=DEFAULT_RNG)
-    f(x) = pdf(target_dist, x)
-    g(x) = pdf(proposal_dist, x)
-    while true
-        x = rand(rng, proposal_dist)
-        if M * g(x) < f(x)
-            error("M = $M is too low: $(M*g(x)) = Mg(x) < f(x) = $(f(x)) for x = $x.")
-        end
-        if rand(rng) * M * g(x) < f(x) # accept with probability f(x)/Mg(x)
-            return x
-        end
-    end
-end
-
-function gradlogpdf(dist::LandauDistribution, x)
-    K = dist.K
-    d = dist.d
-    P = ((d + 2) * K - d) / (2K)
-    Q = (1 - K) / (2K^2)
-    return x .* (-1 / K + 2Q / (P + Q * sum(abs2, x)))
-end
-
-mean(dist::LandauDistribution) = zeros(dist.d)
-cov(dist::LandauDistribution) = I(dist.d)
 
 # f! for different dimensions
 function choose_f!(d)
