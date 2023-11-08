@@ -55,7 +55,7 @@ export set_u0!
 export solve
 export diffusion_problem, landau_problem
 
-export GradFlowExperiment
+export GradFlowExperiment, GradFlowExperimentResult
 export solve!, compute_errors!
 export save, load, model_filename, experiment_filename, timer_filename, best_model
 export train_s!
