@@ -5,10 +5,9 @@ using GradientFlows, Test
         include("unit/Lp.jl")
         include("unit/blob.jl")
         include("unit/problem.jl")
-        include("unit/landau.jl")
+        include("unit/polynormal.jl")
         include("unit/experiment.jl")
         include("unit/io.jl")
-        include("unit/marginal.jl")
         include("unit/kde.jl")
     end
     @testset "Diffusion Tests" begin
