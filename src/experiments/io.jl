@@ -24,7 +24,7 @@ function load_metric(problem_name, d, ns, solver_names, metric::Symbol)
         dir = dirname(experiment_result_filename(problem_name, d, n, solver_name, 1))
         filenames = joinpath.(dir, readdir(dir))
         # use the mean of all the runs
-        metric_matrix[i, j] = mean(f, [getfield(load(f), metric) for f in filenames])
+        metric_matrix[i, j] = mean([getfield(load(f), metric) for f in filenames])
     end
     return metric_matrix
 end
