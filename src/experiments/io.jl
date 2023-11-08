@@ -16,6 +16,19 @@ function experiment_result_filename(experiment::GradFlowExperiment, id; kwargs..
     return experiment_result_filename(experiment.problem.name, d, n, "$(experiment.problem.solver)", id; kwargs...)
 end
 
+### metric ###
+"Load the avarage of the metric over all the runs for each n and solver."
+function load_metric(problem_name, d, ns, solver_names, metric::Symbol)
+    metric_matrix = zeros(length(ns), length(solver_names))
+    for (i, n) in enumerate(ns), (j, solver_name) in enumerate(solver_names)
+        dir = dirname(experiment_result_filename(problem_name, d, n, solver_name, 1))
+        filenames = joinpath.(dir, readdir(dir))
+        # use the mean of all the runs
+        metric_matrix[i, j] = mean(f, [getfield(load(f), metric) for f in filenames])
+    end
+    return metric_matrix
+end
+
 ### model ###
 model_filename(problem_name, d, n; path=joinpath("data", "models")) = joinpath(path, lowercase(problem_name), "d_$(d)", "n_$(n).jld2")
 function best_model(problem_name, d; kwargs...)
