@@ -47,7 +47,7 @@ include("analysis/Lp.jl")
 include("experiments/experiment.jl")
 include("experiments/io.jl")
 
-export GradFlowProblem, Solver
+export GradFlowProblem
 export Exact, Blob, SBTM
 export mlp, blob_epsilon
 export Logger

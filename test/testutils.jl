@@ -1,6 +1,6 @@
 using GradientFlows, Test
 using Statistics: mean, cov
-using GradientFlows: BlobAllocMemCPU
+using GradientFlows: BlobAllocMemCPU, Solver
 import Base.==
 
 ==(a::T, b::T) where {T<:Union{Solver,GradFlowProblem,BlobAllocMemCPU}} = all(f -> getfield(a, f) == getfield(b, f), fieldnames(T))
