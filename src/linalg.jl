@@ -6,3 +6,6 @@ function normsq(x, y)
     end
     s
 end
+
+"|x-y|, assumes size(x)==size(y), does not autodiff"
+norm(x, y) = sqrt(normsq(x, y))

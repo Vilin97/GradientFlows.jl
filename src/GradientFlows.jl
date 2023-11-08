@@ -40,7 +40,7 @@ include("solvers/exact.jl")
 include("solvers/blob.jl")
 include("solvers/sbtm.jl")
 
-include("analysis/moments.jl")
+include("analysis/empirical_moments.jl")
 include("analysis/kde.jl")
 include("analysis/Lp.jl")
 

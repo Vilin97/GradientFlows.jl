@@ -1,6 +1,6 @@
-using GradientFlows, SafeTestsets, Test, StableRNGs
+using GradientFlows, Test, StableRNGs
 using LinearAlgebra, Distributions, Zygote
-using GradientFlows: LandauParams, PolyNormal, t0
+using GradientFlows: LandauParams, PolyNormal, t0, abs_moment, emp_abs_moment
 
 rng = StableRNG(123)
 
@@ -23,7 +23,7 @@ for t in 5.5:0.1:6.5
     @test gradlogpdf(dist, x) ≈ Zygote.gradient(x -> log(pdf(dist, x)), x)[1]
 end
 
-# test sampling
+# test sampling and moments
 dist = PolyNormal(d, params.K(5.5))
 n = 10^4
 u = rand(rng, dist, n)
@@ -32,3 +32,5 @@ u = rand(rng, dist, n)
 @test emp_mean(u) ≈ mean(dist) atol = 0.05
 @test emp_cov(u) ≈ cov(dist) atol = 0.05
 @test Lp_error(u, dist; p=2) ≈ 0 atol = 0.05
+@test abs_moment(dist, 2) ≈ emp_abs_moment(u, 2) rtol = 0.05
+@test abs_moment(dist, 4) ≈ emp_abs_moment(u, 4) rtol = 0.05
