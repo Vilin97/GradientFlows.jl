@@ -45,6 +45,7 @@ include("analysis/kde.jl")
 include("analysis/Lp.jl")
 
 include("experiments/experiment.jl")
+include("experiments/experiment_result.jl")
 include("experiments/io.jl")
 
 export GradFlowProblem

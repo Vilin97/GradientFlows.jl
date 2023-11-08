@@ -9,6 +9,13 @@ function experiment_filename(experiment::GradFlowExperiment, id; kwargs...)
     return experiment_filename(experiment.problem.name, d, n, "$(experiment.problem.solver)", id; kwargs...)
 end
 
+### experiment result ###
+experiment_result_filename(problem_name, d, n, solver, id; path=joinpath("data", "experiment results")) = joinpath(path, lowercase(problem_name), "d_$d", "n_$n", lowercase(solver), "$(id).jld2")
+function experiment_result_filename(experiment::GradFlowExperiment, id; kwargs...)
+    d, n = size(experiment.problem.u0)
+    return experiment_result_filename(experiment.problem.name, d, n, "$(experiment.problem.solver)", id; kwargs...)
+end
+
 ### model ###
 model_filename(problem_name, d, n; path=joinpath("data", "models")) = joinpath(path, lowercase(problem_name), "d_$(d)", "n_$(n).jld2")
 function best_model(problem_name, d; kwargs...)

@@ -3,7 +3,7 @@ using Statistics: mean, cov
 using GradientFlows: BlobAllocMemCPU, Solver
 import Base.==
 
-==(a::T, b::T) where {T<:Union{Solver,GradFlowProblem,BlobAllocMemCPU}} = all(f -> getfield(a, f) == getfield(b, f), fieldnames(T))
+==(a::T, b::T) where {T<:Union{Solver,GradFlowProblem,BlobAllocMemCPU, GradFlowExperimentResult}} = all(f -> getfield(a, f) == getfield(b, f), fieldnames(T))
 
 function test_prob(problem; p=2, mean_atol=0.05, cov_atol=1.0, Lp_atol=0.05)
     u = solve(problem; saveat=problem.tspan[2])[end]

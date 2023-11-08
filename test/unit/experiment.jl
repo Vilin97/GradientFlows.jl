@@ -11,6 +11,6 @@ using GradientFlows, Test, TimerOutputs, StableRNGs
     problem2 = diffusion_problem(2, 100, Exact(); rng=StableRNG(1))
     experiment2 = GradFlowExperiment(problem2)
     solve!(experiment2)
-    result2 = GradFlowExperimentResult(experiment)
+    result2 = GradFlowExperimentResult(experiment2)
     @test !(result.L2_error ≈ result2.L2_error)
 end
