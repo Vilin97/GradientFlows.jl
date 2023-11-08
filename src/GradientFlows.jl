@@ -58,7 +58,7 @@ export diffusion_problem, landau_problem
 
 export GradFlowExperiment, GradFlowExperimentResult
 export solve!, compute_errors!
-export save, load, model_filename, experiment_filename, timer_filename, best_model
+export save, load, model_filename, experiment_filename, experiment_result_filename, timer_filename, best_model
 export train_s!
 export DEFAULT_TIMER, PLOT_WINDOW_SIZE
 

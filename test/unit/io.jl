@@ -2,7 +2,7 @@ using GradientFlows, Flux, Test, TimerOutputs
 include("../testutils.jl")
 
 @testset "IO" begin
-@testset "chain IO" begin
+@testset "chain" begin
     d = 2
     n = 10
     s = Chain(Dense(d => d))
@@ -22,7 +22,7 @@ include("../testutils.jl")
     path_prefix = splitpath(path)[1]
     rm(path_prefix, recursive=true)
 end
-@testset "experiment IO" begin
+@testset "experiment" begin
     problem = diffusion_problem(2, 10, Blob(blob_epsilon(2, 10)))
     experiment = GradFlowExperiment(problem)
     path = experiment_filename(experiment, 1)
@@ -33,7 +33,7 @@ end
     rm(path_prefix, recursive=true)
 end
 
-@testset "experiment result IO" begin
+@testset "experiment result" begin
     problem = diffusion_problem(2, 10, Blob(blob_epsilon(2, 10)))
     experiment = GradFlowExperiment(problem)
     solve!(experiment)
@@ -46,12 +46,14 @@ end
     rm(path_prefix, recursive=true)
 end
 
-@testset "timer IO" begin
+@testset "timer" begin
     timer = TimerOutput()
     @timeit timer "test" sleep(0.5)
     path = timer_filename("test_problem", 2)
     save(path, timer)
     timer_loaded = load(path)
     @test timer_loaded isa TimerOutput
+    path_prefix = splitpath(path)[1]
+    rm(path_prefix, recursive=true)
 end
 end

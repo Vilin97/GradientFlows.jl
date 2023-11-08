@@ -1,6 +1,7 @@
 using GradientFlows, Test, StableRNGs
 using LinearAlgebra, Distributions
 using GradientFlows: abs_moment, emp_abs_moment
+using HCubature: hcubature
 
 @testset "MvNormal distribution" begin
     @testset "moments" begin
