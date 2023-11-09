@@ -61,7 +61,7 @@ function plot_all(problem_name, d, ns, solver_names; save=true,
         push!(plots, p)
     end
     push!(plots, scatter_plot(problem_name, d, ns[end], solver_names))
-    plt_all = Plots.plot(plots[:end-1]..., size=PLOT_WINDOW_SIZE, margin=(10, :mm)) # don't include the scatter plot
+    plt_all = Plots.plot(plots[1:end-1]..., size=PLOT_WINDOW_SIZE, margin=(10, :mm)) # don't include the scatter plot
 
     if save
         path = joinpath("data", "plots", problem_name, "d_$d")
@@ -78,7 +78,7 @@ end
 
 ns = 100 * 2 .^ (0:8)
 solver_names = ["exact", "sbtm", "blob"]
-problems = [(2, "diffusion"), (5, "diffusion"), (3, "landau"), (5, "landau"), (10, "landau")]
+problems = [(2, "diffusion"), (5, "diffusion")]#, (3, "landau"), (5, "landau"), (10, "landau")]
 for (d, problem_name) in problems
     @show d, problem_name
     @time plot_all(problem_name, d, ns, solver_names)
