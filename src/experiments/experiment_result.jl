@@ -10,7 +10,7 @@ struct GradFlowExperimentResult{F}
 end
 
 function GradFlowExperimentResult(experiment :: GradFlowExperiment)
-    return GradFlowExperimentResult(
+    return GradFlowExperimentResult{Float64}(
         update_score_time(experiment.timer),
         Lp_error(experiment; p=2),
         true_mean_error(experiment),

@@ -1,25 +1,19 @@
-mutable struct GradFlowExperiment{P,V,S,F,T}
+mutable struct GradFlowExperiment{P,V,S,T}
     problem::P
     saveat::V
     solution::Vector{S} # solution[time_index][d, n] isa Float
-    L2_error::F
-    mean_norm_error::F
-    cov_norm_error::F
-    cov_trace_error::F
     timer::T
 end
 
 function Base.show(io::IO, experiment::GradFlowExperiment)
-    @unpack problem, saveat, solution, L2_error, mean_norm_error, cov_norm_error, cov_trace_error = experiment
-    width = 6
+    @unpack problem = experiment
     d, n = size(problem.u0)
-    print(io, "$(problem.name) d=$d n=$(rpad(n,n_WIDTH)) $(lpad(problem.solver, SOLVER_NAME_WIDTH)): |ρ∗ϕ - ρ*|₂ = $(short_string(L2_error,width)) |E(ρ)-E(ρ*)|₂ = $(short_string(mean_norm_error,width)) |Σ-Σ'|₂ = $(short_string(cov_norm_error,width)) |tr(Σ)-tr(Σ')| = $(short_string(cov_trace_error,width))")
+    print(io, "$(problem.name) d=$d n=$(rpad(n,n_WIDTH)) $(lpad(problem.solver, SOLVER_NAME_WIDTH))")
 end
 
 function GradFlowExperiment(problem::GradFlowProblem; saveat=problem.tspan)
     solution = Vector{typeof(problem.u0)}(undef, 0)
-    F = eltype(problem.u0)
-    return GradFlowExperiment(problem, saveat, solution, zero(F), zero(F), zero(F), zero(F), TimerOutput())
+    return GradFlowExperiment(problem, saveat, solution, TimerOutput())
 end
 
 function solve!(experiment::GradFlowExperiment)
