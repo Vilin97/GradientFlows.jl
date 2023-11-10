@@ -22,11 +22,7 @@ function GradFlowExperimentResult(experiment :: GradFlowExperiment)
     )
 end
 
-function update_score_time(timer)
-    # the key that does not contain "Lp"
-    key = first(filter(x -> !occursin("Lp", x), keys(timer.inner_timers)))
-    return TimerOutputs.time(timer[key].inner_timers["update score"]) / 10^9
-end
+update_score_time(timer) = TimerOutputs.time(timer["update score"]) / 10^9
 
 sample_mean_error(experiment; t_idx=length(experiment.saveat)) = norm(emp_mean(experiment.solution[t_idx]), emp_mean(experiment.solution[1]))
 sample_cov_trace_error(experiment; t_idx=length(experiment.saveat)) = abs(tr(emp_cov(experiment.solution[t_idx])) - tr(emp_cov(experiment.solution[1])))
