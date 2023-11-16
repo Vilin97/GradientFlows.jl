@@ -86,7 +86,7 @@ end
 "Fisher divergence on CPU: ∑ᵢ (s(xᵢ) - yᵢ)² / |y|²"
 l2_error_normalized(s, x, y) = sum(abs2, s(x) .- y) / sum(abs2, y)
 
-"≈ ( |s(u)|² + 2∇⋅s(u) ) / |u|²"
+"≈ ( |s(u)|² + 2∇⋅s(u) ) / n"
 function score_matching_loss(s, u, ζ, α)
     denoise_val = (s(u .+ α .* ζ) ⋅ ζ - s(u .- α .* ζ) ⋅ ζ) / α
     return (sum(abs2, s(u)) + denoise_val) / size(u, 2)
