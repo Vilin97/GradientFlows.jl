@@ -9,6 +9,7 @@ using GradientFlows, Test
         include("unit/experiment.jl")
         include("unit/io.jl")
         include("unit/kde.jl")
+        include("unit/linalg.jl")
     end
     @testset "Diffusion Tests" begin
         include("diffusion.jl")

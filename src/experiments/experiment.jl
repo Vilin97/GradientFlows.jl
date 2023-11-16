@@ -18,9 +18,8 @@ end
 
 function solve!(experiment::GradFlowExperiment)
     @unpack problem, saveat, solution = experiment
-    d, n = size(problem.u0)
     reset_timer!(DEFAULT_TIMER)
-    @timeit DEFAULT_TIMER "$(problem.name) d=$d n=$(rpad(n,n_WIDTH)) $(problem.solver)" experiment.solution = solve(problem, saveat=saveat).u
+    experiment.solution = solve(problem, saveat=saveat).u
     experiment.timer = deepcopy(DEFAULT_TIMER)
     nothing
 end
