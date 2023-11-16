@@ -5,3 +5,4 @@
 .vscode
 *.dll
 data/*
+plots/*
