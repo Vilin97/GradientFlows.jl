@@ -43,7 +43,7 @@ function best_model(problem_name, d; kwargs...)
 end
 
 ### timer ###
-timer_filename(dir = "data") = joinpath(dir, "timers", "timer.jld2")
+timer_filename(;dir = "data") = joinpath(dir, "timers", "timer.jld2")
 
 ### Pretty printing ###
 short_string(float::Number, width, digits=width - 2) = rpad(round(float, digits=digits), width)
