@@ -9,7 +9,7 @@ struct GradFlowExperimentResult{F}
 	sample_cov_trace_error::F
 end
 
-function GradFlowExperimentResult(experiment :: GradFlowExperiment)
+function GradFlowExperimentResult(experiment :: Experiment)
     return GradFlowExperimentResult{Float64}(
         update_score_time(experiment.timer),
         Lp_error(experiment; p=2),
@@ -35,6 +35,6 @@ true_fourth_moment_error(experiment; kwargs...) = true_metric((u, dist) -> abs(e
 
 function true_metric(metric, experiment; t_idx=length(experiment.saveat), kwargs...)
     @unpack problem, saveat, solution = experiment
-    dist = true_dist(problem, saveat[t_idx])
+    dist = experiment.true_dist[t_idx]
     return metric(solution[t_idx], dist; kwargs...)
 end

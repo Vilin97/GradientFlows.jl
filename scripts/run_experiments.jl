@@ -22,7 +22,7 @@ function run_experiments(problems, ns, num_runs; verbose=true, dt=0.01, dir="dat
                     verbose && println("n=$n $problem_name d=$d run=$run solver=$solver")
                     prob = problem(d, n, solver; dt=dt)
                     set_u0!(prob, prob_.u0)
-                    experiment = GradFlowExperiment(prob)
+                    experiment = Experiment(prob)
                     @time @timeit timer "$solver" solve!(experiment)
                     save(experiment_filename(experiment, run; dir=dir), experiment)
                 end
@@ -78,12 +78,9 @@ for (d, problem, problem_name) in problems
     train_nn(problem, d, 80_000, mlp(10;depth=1); init_max_iterations=10^6, verbose=2)
 end
 
-### plot ###
-# println("Plotting")
-# include("plot.jl")
-# solver_names = ["exact", "sbtm", "blob"]
-# problems = [(2, "diffusion"), (5, "diffusion"), (3, "landau"), (5, "landau"), (10, "landau")]
-# for (d, problem_name) in problems
-#     @show d, problem_name
-#     @time plot_all(problem_name, d, ns, solver_names)
-# end
+### generate data ###
+println("Generating data")
+problems = [(diffusion_problem, 10)]
+num_runs = 5
+ns = 100 * 2 .^ (0:8)
+run_experiments(problems, ns, num_runs)

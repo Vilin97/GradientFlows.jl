@@ -25,7 +25,7 @@ dir = "data_test"
 end
 @testset "experiment" begin
     problem = diffusion_problem(2, 10, Blob(blob_epsilon(2, 10)))
-    experiment = GradFlowExperiment(problem)
+    experiment = Experiment(problem)
     path = experiment_filename(experiment, 1; dir=dir)
     save(path, experiment)
     experiment_loaded = load(path)
@@ -36,7 +36,7 @@ end
 
 @testset "experiment result" begin
     problem = diffusion_problem(2, 10, Blob(blob_epsilon(2, 10)))
-    experiment = GradFlowExperiment(problem)
+    experiment = Experiment(problem)
     solve!(experiment)
     result = GradFlowExperimentResult(experiment)
     path = experiment_result_filename(experiment, 1; dir=dir)
