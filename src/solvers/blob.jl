@@ -50,6 +50,7 @@ end
 function Base.show(io::IO, solver::Blob)
     Base.print(io, "Blob")
 end
+name(solver::Blob) = "blob"
 
 "The optimal ε for the blob solver."
 blob_epsilon(d, n) = 2 * n^(-2 / (d + 4))

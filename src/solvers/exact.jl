@@ -21,3 +21,4 @@ end
 function Base.show(io::IO, ::Exact)
     Base.print(io, "Exact")
 end
+name(solver::Exact) = "exact"

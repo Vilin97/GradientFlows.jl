@@ -102,3 +102,4 @@ end
 function Base.show(io::IO, solver::SBTM)
     Base.print(io, "SBTM")
 end
+name(solver::SBTM) = "sbtm"
