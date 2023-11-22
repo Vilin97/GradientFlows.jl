@@ -7,6 +7,7 @@ on:
   pull_request:
     branches:
       - master
+      - doppio
   workflow_dispatch:
 concurrency:
   # Skip intermediate builds: always.
