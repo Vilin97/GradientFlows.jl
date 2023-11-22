@@ -1,5 +1,4 @@
 using GradientFlows, Flux, Test, TimerOutputs
-include("../testutils.jl")
 
 dir = "data_test"
 @testset "IO" begin
@@ -16,7 +15,7 @@ dir = "data_test"
     other_s = Chain(Dense(d => d))
     path2 = model_filename("test_problem", d, n + 1; dir=dir)
     save(path2, other_s)
-    s_loaded = best_model("test_problem", d)
+    s_loaded = best_model("test_problem", d; dir=dir)
     @test s(x) != s_loaded(x)
     @test other_s(x) == s_loaded(x)
 
@@ -29,7 +28,7 @@ end
     path = experiment_filename(experiment, 1; dir=dir)
     save(path, experiment)
     experiment_loaded = load(path)
-    @test experiment_loaded.problem == experiment.problem
+    @test experiment_loaded.solution == experiment.solution
     path_prefix = splitpath(path)[1]
     rm(path_prefix, recursive=true)
 end
@@ -43,7 +42,7 @@ end
     result_loaded = load(path)
     @test result_loaded == result
     for metric in fieldnames(GradFlowExperimentResult)
-        @test load_metric("diffusion", 2, [10], ["Blob"], metric)[1] == getfield(result, metric)
+        @test load_metric("diffusion", 2, [10], ["Blob"], metric; dir=dir)[1] == getfield(result, metric)
     end
     path_prefix = splitpath(path)[1]
     rm(path_prefix, recursive=true)
