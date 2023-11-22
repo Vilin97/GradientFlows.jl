@@ -40,3 +40,15 @@ function true_metric(metric, experiment; t_idx=length(experiment.saveat), kwargs
     dist = experiment.true_dist[t_idx]
     return metric(solution[t_idx], dist; kwargs...)
 end
+
+function Base.show(io::IO, result::GradFlowExperimentResult)
+    @unpack update_score_time, L2_error, true_mean_error, true_cov_trace_error, true_cov_norm_error, true_fourth_moment_error, sample_mean_error, sample_cov_trace_error = result
+    println(io, "$(rpad("L2 error:", 25)) $(round(L2_error,digits=4))")
+    println(io, "$(rpad("true mean error:", 25)) $(round(true_mean_error,digits=4))")
+    println(io, "$(rpad("true cov trace error:", 25)) $(round(true_cov_trace_error,digits=4))")
+    println(io, "$(rpad("true cov norm error:", 25)) $(round(true_cov_norm_error,digits=4))")
+    println(io, "$(rpad("true fourth moment error:", 25)) $(round(true_fourth_moment_error,digits=4))")
+    println(io, "$(rpad("sample mean error:", 25)) $(round(sample_mean_error,digits=4))")
+    println(io, "$(rpad("sample cov trace error:", 25)) $(round(sample_cov_trace_error,digits=4))")
+    println(io, "$(rpad("update score time:", 25)) $(round(update_score_time,digits=4))")
+end
