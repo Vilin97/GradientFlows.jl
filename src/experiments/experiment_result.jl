@@ -10,9 +10,11 @@ struct GradFlowExperimentResult{F}
 end
 
 function GradFlowExperimentResult(experiment :: Experiment)
+    d = size(experiment.solution[1], 1)
+    lp_error = d <= 5 ? Lp_error(experiment; p=2) : eltype(experiment.solution[1])(NaN)
     return GradFlowExperimentResult{Float64}(
         update_score_time(experiment.timer),
-        Lp_error(experiment; p=2),
+        lp_error,
         true_mean_error(experiment),
         true_cov_trace_error(experiment),
         true_cov_norm_error(experiment),
