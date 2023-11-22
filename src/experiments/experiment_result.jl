@@ -34,7 +34,7 @@ true_cov_trace_error(experiment; kwargs...) = true_metric((u, dist) -> abs(tr(em
 true_fourth_moment_error(experiment; kwargs...) = true_metric((u, dist) -> abs(emp_abs_moment(u, 4) - abs_moment(dist, 4)), experiment; kwargs...)
 
 function true_metric(metric, experiment; t_idx=length(experiment.saveat), kwargs...)
-    @unpack problem, saveat, solution = experiment
+    @unpack solution = experiment
     dist = experiment.true_dist[t_idx]
     return metric(solution[t_idx], dist; kwargs...)
 end

@@ -22,26 +22,17 @@ function run_experiments(problems, ns, num_runs; verbose=true, dt=0.01, dir="dat
                     verbose && println("n=$n $problem_name d=$d run=$run solver=$solver")
                     prob = problem(d, n, solver; dt=dt)
                     set_u0!(prob, prob_.u0)
-                    experiment = Experiment(prob)
-                    @time @timeit timer "$solver" solve!(experiment)
+                    @time @timeit timer "$solver" experiment = Experiment(prob)
                     save(experiment_filename(experiment, run; dir=dir), experiment)
+
+                    @timeit timer "analyze" result = GradFlowExperimentResult(experiment)
+                    save(experiment_result_filename(problem_name, d, n, "$solver", run; dir=dir), result)
+                    merge!(timer["n $n"]["d $d"][problem_name]["$solver"], experiment.timer)
                 end
             end
         end
     end
 
-    # analyze data and merge timers
-    for n in ns, (problem, d) in problems
-        prob_ = problem(d, n, Exact())
-        problem_name = prob_.name
-        solvers = [Blob(blob_epsilon(d, n)), SBTM(best_model(problem_name, d)), Exact()]
-        for run in 1:num_runs, solver in solvers
-            experiment = load(experiment_filename(problem_name, d, n, "$solver", run; dir=dir))
-            @timeit timer "analyze" result = GradFlowExperimentResult(experiment)
-            save(experiment_result_filename(problem_name, d, n, "$solver", run; dir=dir), result)
-            merge!(timer["n $n"]["d $d"][problem_name]["$solver"], experiment.timer)
-        end
-    end
     try
         old_timer = GradientFlows.load(timer_filename(; dir=dir))
         merge!(timer, old_timer)
@@ -62,21 +53,21 @@ function train_nn(problem, d, n, s; verbose=1, init_max_iterations=10^5)
 end
 
 ### generate data ###
-println("Generating data")
-problems = [(diffusion_problem, 2), (diffusion_problem, 5), (landau_problem, 3), (landau_problem, 5), (landau_problem, 10)]
-num_runs = 5
-ns = 100 * 2 .^ (0:8)
-dt = 0.0025
-dir = joinpath("data", "dt_0025")
-run_experiments(problems, ns, num_runs; dt = dt, dir = dir)
+# println("Generating data")
+# problems = [(diffusion_problem, 2), (diffusion_problem, 5), (landau_problem, 3), (landau_problem, 5), (landau_problem, 10)]
+# num_runs = 5
+# ns = 100 * 2 .^ (0:8)
+# dt = 0.0025
+# dir = joinpath("data", "dt_0025")
+# run_experiments(problems, ns, num_runs; dt = dt, dir = dir)
 
-### train NN ###
-println("Training NNs")
-problems = [(10, diffusion_problem, "diffusion")]
-for (d, problem, problem_name) in problems
-    @show d, problem_name
-    train_nn(problem, d, 80_000, mlp(10;depth=1); init_max_iterations=10^6, verbose=2)
-end
+# ### train NN ###
+# println("Training NNs")
+# problems = [(10, diffusion_problem, "diffusion")]
+# for (d, problem, problem_name) in problems
+#     @show d, problem_name
+#     train_nn(problem, d, 40_000, mlp(10;depth=1); init_max_iterations=10^5, verbose=2)
+# end
 
 ### generate data ###
 println("Generating data")

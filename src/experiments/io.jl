@@ -18,10 +18,10 @@ end
 
 ### metric ###
 "Load the avarage of the metric over all the runs for each n and solver."
-function load_metric(problem_name, d, ns, solver_names, metric::Symbol)
+function load_metric(problem_name, d, ns, solver_names, metric::Symbol; kwargs...)
     metric_matrix = zeros(length(ns), length(solver_names))
     for (i, n) in enumerate(ns), (j, solver_name) in enumerate(solver_names)
-        dir = dirname(experiment_result_filename(problem_name, d, n, solver_name, 1))
+        dir = dirname(experiment_result_filename(problem_name, d, n, solver_name, 1; kwargs...))
         filenames = joinpath.(dir, readdir(dir))
         # use the mean of all the runs
         metric_matrix[i, j] = mean([getfield(load(f), metric) for f in filenames])
@@ -29,8 +29,14 @@ function load_metric(problem_name, d, ns, solver_names, metric::Symbol)
     return metric_matrix
 end
 
+### all runs of experiment ###
+function load_all_experiment_runs(problem_name, d, n, solver_name; kwargs...)
+    dir = dirname(experiment_filename(problem_name, d, n, solver_name, 1; kwargs...))
+    return load.(joinpath.(dir, readdir(dir)))
+end
+
 ### model ###
-model_filename(problem_name, d, n; dir) = joinpath(dir, "models", lowercase(problem_name), "d_$(d)", "n_$(n).jld2")
+model_filename(problem_name, d, n; dir="data") = joinpath(dir, "models", lowercase(problem_name), "d_$(d)", "n_$(n).jld2")
 function best_model(problem_name, d; kwargs...)
     dir = dirname(model_filename(problem_name, d, 1; kwargs...))
     filenames = readdir(dir)
