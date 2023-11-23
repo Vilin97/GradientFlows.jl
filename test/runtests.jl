@@ -14,6 +14,9 @@ using GradientFlows, Test
     @testset "Diffusion Tests" begin
         include("diffusion.jl")
     end
+    @testset "Fokker-Planck Tests" begin
+        include("fpe.jl")
+    end
     @testset "Landau Tests" begin
         include("landau.jl")
     end

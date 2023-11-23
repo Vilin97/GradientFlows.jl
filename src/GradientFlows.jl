@@ -32,6 +32,7 @@ include("linalg.jl")
 include("problems/problem.jl")
 include("problems/diffusion.jl")
 include("problems/landau.jl")
+include("problems/fpe.jl")
 
 include("solve.jl")
 
@@ -54,7 +55,7 @@ export mlp, blob_epsilon
 export Logger
 export set_u0!
 export solve
-export diffusion_problem, landau_problem
+export diffusion_problem, landau_problem, fpe_problem
 
 export Experiment, GradFlowExperimentResult
 export save, load, model_filename, experiment_filename, experiment_result_filename, load_metric, load_all_experiment_runs, timer_filename, best_model
