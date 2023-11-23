@@ -102,6 +102,7 @@ end
 function Base.show(io::IO, solver::SBTM)
     Base.print(io, "SBTM")
 end
+name(solver::SBTM) = "sbtm"
 
 function score_matching_loss_D(s, u, ζ, α, D = 1)
     denoise_val = (s(u .+ α .* ζ) .- s(u .- α .* ζ)) ⋅ (D*ζ) / α

@@ -1,4 +1,5 @@
 using GradientFlows, Plots, Polynomials, TimerOutputs
+default(display_type=:inline)
 
 "metric_matrix[i,j] is the metric for the i-th value of n and the j-th solver"
 function plot_metric(problem_name, d, ns, solver_names, metric_name, metric_matrix; scale=:log10)
@@ -11,10 +12,10 @@ function plot_metric(problem_name, d, ns, solver_names, metric_name, metric_matr
     return p
 end
 
-function scatter_plot(problem_name, d, n, solver_names; num_samples=min(2000, n))
+function scatter_plot(problem_name, d, n, solver_names; num_samples=min(2000, n), dir="data")
     p = Plots.plot(title="$problem_name, d=$d, $num_samples/$n samples"; size=(PLOT_WINDOW_SIZE[2], PLOT_WINDOW_SIZE[2]))
     for solver in solver_names
-        experiment = load(experiment_filename(problem_name, d, n, solver, 1))
+        experiment = load(experiment_filename(problem_name, d, n, solver, 1; dir=dir))
         u = experiment.solution[end][:, 1:num_samples]
         scatter!(p, u[1, :], u[2, :], label=solver, markersize=4, markerstrokewidth=0.4)
     end
@@ -22,16 +23,16 @@ function scatter_plot(problem_name, d, n, solver_names; num_samples=min(2000, n)
 end
 
 "experiment.saveat[t_idx] is the time at which to plot the pdf"
-function pdf_plot(problem_name, d, n, solver_names; t_idx, xrange=range(-5, 5, length=200))
-    experiment = load(experiment_filename(problem_name, d, n, "exact", 1))
+function pdf_plot(problem_name, d, n, solver_names; t_idx, xrange=range(-5, 5, length=200), dir="data")
+    experiment = load(experiment_filename(problem_name, d, n, "exact", 1; dir=dir))
     saveat = experiment.saveat
-    dist = true_dist(experiment.problem, saveat[t_idx])
+    dist = experiment.true_dist[t_idx]
     p_marginal = Plots.plot(title="marginal $problem_name, d=$d, n=$n, ε=$(round(kde_epsilon(1,n),digits=4)), t=$(saveat[t_idx])", size=PLOT_WINDOW_SIZE)
     p_slice = Plots.plot(title="slice $problem_name, d=$d, n=$n, ε=$(round(kde_epsilon(d,n),digits=4)), t=$(saveat[t_idx])", size=PLOT_WINDOW_SIZE)
     slice(x::Number) = [x, zeros(typeof(x), d - 1)...]
     for solver in solver_names
-        experiment = load(experiment_filename(problem_name, d, n, solver, 1))
-        u = experiment.solution[t_idx]
+        experiments = load_all_experiment_runs(problem_name, d, n, solver; dir=dir)
+        u = hcat([exp.solution[t_idx] for exp in experiments]...)
         u_marginal = reshape(u[1, :], 1, :)
         plot!(p_marginal, xrange, x -> kde(x, u_marginal), label=solver)
         plot!(p_slice, xrange, x -> kde(slice(x), u), label=solver)
@@ -41,7 +42,7 @@ function pdf_plot(problem_name, d, n, solver_names; t_idx, xrange=range(-5, 5, l
     return p_marginal, p_slice
 end
 
-function plot_all(problem_name, d, ns, solver_names; save=true,
+function plot_all(problem_name, d, ns, solver_names; save=true, dir = "data",
     metrics=[
         (:update_score_time, "update score time, s"),
         (:L2_error, "|ρₜ∗ϕ - ρₜ*|₂"),
@@ -56,23 +57,38 @@ function plot_all(problem_name, d, ns, solver_names; save=true,
     p_marginal_end, p_slice_end = pdf_plot(problem_name, d, ns[end], solver_names, t_idx=2)
     push!(plots, p_marginal_start, p_marginal_end, p_slice_start, p_slice_end)
     for (metric, metric_name) in metrics
-        metric_matrix = load_metric(problem_name, d, ns, solver_names, metric)
+        metric_matrix = load_metric(problem_name, d, ns, solver_names, metric; dir=dir)
         p = plot_metric(problem_name, d, ns, solver_names, metric_name, metric_matrix)
         push!(plots, p)
     end
     push!(plots, scatter_plot(problem_name, d, ns[end], solver_names))
-    plt_all = Plots.plot(plots[1:end-1]..., size=PLOT_WINDOW_SIZE, margin=(10, :mm)) # don't include the scatter plot
+    plt_all = Plots.plot(plots[1:end-1]..., size=PLOT_WINDOW_SIZE, margin=(10, :mm), title="dt = 0.0025") # don't include the scatter plot
 
     if save
-        path = joinpath("data", "plots", problem_name, "d_$d")
+        path = joinpath(dir, "plots", problem_name, "d_$d")
         mkpath(path)
         metric_filenames = [string(metric) for (metric, _) in metrics]
         filenames = ["marginal_start", "marginal_end", "slice_start", "slice_end", metric_filenames..., "scatter"]
         for (plt, filename) in zip(plots, filenames)
             savefig(plt, joinpath(path, filename))
         end
-        savefig(plt_all, joinpath(path, "all"))
+        savefig(plt_all, joinpath(dir, "plots", "all", "$(problem_name)_d_$d"))
     end
     return plt_all
 end
 
+ns = 100 * 2 .^ (0:8)
+
+solver_names = ["exact", "sbtm", "blob"]
+problems = [(10, "diffusion")]
+for (d, problem_name) in problems
+    @show d, problem_name
+    @time plot_all(problem_name, d, ns, solver_names; dir="data");
+end
+
+solver_names = ["exact", "sbtm"]
+problems = [(2, "diffusion"), (5, "diffusion"), (3, "landau"), (5, "landau"), (10, "landau")]
+for (d, problem_name) in problems
+    @show d, problem_name
+    @time plot_all(problem_name, d, ns, solver_names; dir=joinpath("data", "dt_0025"));
+end

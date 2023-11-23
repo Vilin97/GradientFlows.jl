@@ -39,7 +39,7 @@ function update!(solver::Blob{S,F,A}, integrator) where {S,F,A<:BlobAllocMemCPU}
         mol_sum[p] += mols[p, q]
     end
     @tturbo for p in 1:n, q in 1:n, k in 1:d
-        fac = -2.0 / ε * mols[p, q]
+        fac = -2 / ε * mols[p, q]
         diff_k = u[k, p] - u[k, q]
         score_values[k, p] += fac * diff_k / mol_sum[p]
         score_values[k, p] += fac * diff_k / mol_sum[q]
@@ -50,6 +50,7 @@ end
 function Base.show(io::IO, solver::Blob)
     Base.print(io, "Blob")
 end
+name(solver::Blob) = "blob"
 
 "The optimal ε for the blob solver."
 blob_epsilon(d, n) = 2 * n^(-2 / (d + 4))
