@@ -6,3 +6,4 @@
 *.dll
 data/*
 plots/*
+*.png
