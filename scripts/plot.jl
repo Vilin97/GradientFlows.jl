@@ -80,7 +80,7 @@ end
 
 ns = 100 * 2 .^ (0:8)
 
-solver_names = ["exact", "sbtm", "blob"]
+solver_names = ALL_SOLVER_NAMES
 problems = [(10, "diffusion")]
 for (d, problem_name) in problems
     @show d, problem_name

@@ -56,7 +56,7 @@ end
 
 ### generate data ###
 println("Generating data")
-problems = [(diffusion_problem, 2), (diffusion_problem, 5), (diffusion_problem, 10), (landau_problem, 3), (landau_problem, 5), (landau_problem, 10)]
+problems = ALL_PROBLEMS
 num_runs = 5
 ns = 100 * 2 .^ (0:8)
 dt = 0.0025
@@ -76,4 +76,5 @@ println("Generating data")
 problems = [(diffusion_problem, 10)]
 num_runs = 5
 ns = 100 * 2 .^ (0:8)
-run_experiments(problems, ns, num_runs)
+dir = joinpath("data")
+run_experiments(problems, ns, num_runs; dir=dir)

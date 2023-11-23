@@ -14,7 +14,6 @@ import Distributions: MvNormal, Distribution, MultivariateDistribution, mean, co
 import OrdinaryDiffEq.solve
 import Statistics.mean, Statistics.cov
 
-
 const DEFAULT_RNG = Random.default_rng()
 const DEFAULT_TIMER = TimerOutput()
 
@@ -67,5 +66,9 @@ export emp_mean, emp_cov, mean, cov
 export kde, kde_epsilon
 export Lp_distance, Lp_error
 export score
+
+const ALL_PROBLEMS = [(diffusion_problem, 2), (diffusion_problem, 5), (diffusion_problem, 10), (fpe_problem, 2), (fpe_problem, 5), (fpe_problem, 10), (landau_problem, 3), (landau_problem, 5), (landau_problem, 10)]
+const ALL_PROBLEM_NAMES = [("diffusion", 2), ("diffusion", 5), ("diffusion", 10), ("fpe", 2), ("fpe", 5), ("fpe", 10), ("landau", 3), ("landau", 5), ("landau", 10)]
+const ALL_SOLVER_NAMES = ["exact", "sbtm", "blob"]
 
 end
