@@ -1,4 +1,5 @@
 using GradientFlows, Plots, Polynomials, TimerOutputs
+default(display_type=:inline)
 
 "metric_matrix[i,j] is the metric for the i-th value of n and the j-th solver"
 function plot_metric(problem_name, d, ns, solver_names, metric_name, metric_matrix; scale=:log10)
@@ -76,9 +77,16 @@ function plot_all(problem_name, d, ns, solver_names; save=true, dir = "data",
     return plt_all
 end
 
-default(display_type=:inline)
 ns = 100 * 2 .^ (0:8)
+
 solver_names = ["exact", "sbtm", "blob"]
+problems = [(10, "diffusion")]
+for (d, problem_name) in problems
+    @show d, problem_name
+    @time plot_all(problem_name, d, ns, solver_names; dir="data");
+end
+
+solver_names = ["exact", "sbtm"]
 problems = [(2, "diffusion"), (5, "diffusion"), (3, "landau"), (5, "landau"), (10, "landau")]
 for (d, problem_name) in problems
     @show d, problem_name
