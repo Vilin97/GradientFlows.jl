@@ -39,8 +39,11 @@ function plot_all(results, problem_name, d, n, dts, solver_names, metrics=[
     return plt_all
 end
 
+ENV["GKSwstype"] = "nul" # no GUI
+default(display_type=:inline)
 d = 2
 n = 2000
 dts = 2. .^ (-10:-1)
 results = get_results("diffusion", d, n, dts)
 plot_all(rsults, "diffusion", d, n, dts, ALL_SOLVER_NAMES)
+savefig(joinpath("data", "plots", "dt_experiment"))
