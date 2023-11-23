@@ -1,4 +1,5 @@
 using GradientFlows, Plots, Polynomials, TimerOutputs
+ENV["GKSwstype"] = "nul" # no GUI
 default(display_type=:inline)
 
 "metric_matrix[i,j] is the metric for the i-th value of n and the j-th solver"
