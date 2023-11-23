@@ -28,8 +28,8 @@ function pdf_plot(problem_name, d, n, solver_names; t_idx, xrange=range(-5, 5, l
     experiment = load(experiment_filename(problem_name, d, n, "exact", 1; dir=dir))
     saveat = experiment.saveat
     dist = experiment.true_dist[t_idx]
-    p_marginal = Plots.plot(title="marginal $problem_name, d=$d, n=$n, ε=$(round(kde_epsilon(1,n),digits=4)), t=$(saveat[t_idx])", size=PLOT_WINDOW_SIZE)
-    p_slice = Plots.plot(title="slice $problem_name, d=$d, n=$n, ε=$(round(kde_epsilon(d,n),digits=4)), t=$(saveat[t_idx])", size=PLOT_WINDOW_SIZE)
+    p_marginal = Plots.plot(title="marginal $problem_name, d=$d, n=$n, ε=$(round(kde_epsilon(1,n),digits=4)), t=$(saveat[t_idx]), dt=$(experiment.dt)", size=PLOT_WINDOW_SIZE)
+    p_slice = Plots.plot(title="slice $problem_name, d=$d, n=$n, ε=$(round(kde_epsilon(d,n),digits=4)), t=$(saveat[t_idx]), dt=$(experiment.dt)", size=PLOT_WINDOW_SIZE)
     slice(x::Number) = [x, zeros(typeof(x), d - 1)...]
     for solver in solver_names
         experiments = load_all_experiment_runs(problem_name, d, n, solver; dir=dir)
@@ -63,7 +63,7 @@ function plot_all(problem_name, d, ns, solver_names; save=true, dir = "data",
         push!(plots, p)
     end
     push!(plots, scatter_plot(problem_name, d, ns[end], solver_names))
-    plt_all = Plots.plot(plots[1:end-1]..., size=PLOT_WINDOW_SIZE, margin=(10, :mm), title="dt = 0.0025") # don't include the scatter plot
+    plt_all = Plots.plot(plots[1:end-1]..., size=PLOT_WINDOW_SIZE, margin=(10, :mm)) # don't include the scatter plot
 
     if save
         path = joinpath(dir, "plots", problem_name, "d_$d")
