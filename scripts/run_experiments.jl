@@ -1,4 +1,4 @@
-using GradientFlows, TimerOutputs
+using GradientFlows, TimerOutputs, StableRNGs
 
 """
 run_experiments(problems, ns, num_runs; verbose=true)
@@ -11,11 +11,10 @@ Run experiments for all the problems and save the results.
 function run_experiments(problems, ns, num_runs; verbose=true, dt=0.01, dir="data")
     timer = TimerOutput()
 
-    # generate data
     for n in ns
         @timeit timer "n $n" for (problem, d) in problems
             @timeit timer "d $d" for run in 1:num_runs
-                prob_ = problem(d, n, Exact())
+                prob_ = problem(d, n, Exact(); rng=StableRNG(100*n + 10*d + run))
                 problem_name = prob_.name
                 solvers = [Blob(blob_epsilon(d, n)), SBTM(best_model(problem_name, d)), Exact()]
                 @timeit timer "$problem_name" for solver in solvers
