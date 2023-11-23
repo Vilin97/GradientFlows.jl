@@ -4,7 +4,7 @@ using HCubature: hcubature
 @testset "kde" begin
     rng = StableRNG(123)
     d = 2
-    n = 100
+    n = 1000
     u = randn(rng, d, n)
     result, error = hcubature(x -> kde(x, u), fill(-10, d), fill(10, d))
     @test result ≈ 1 atol = 4 * error
