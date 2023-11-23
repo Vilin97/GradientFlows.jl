@@ -18,7 +18,7 @@ function plot_metric(problem_name, d, n, dts, solver_names, metric_name, metric_
     log_slope(x, y) = Polynomials.fit(log.(x), log.(y), 1).coeffs[2]
     p = Plots.plot(title="$problem_name, d=$d, n = $n, $metric_name", xlabel="time step, dt", ylabel=metric_name, size=PLOT_WINDOW_SIZE)
     for (j, solver_name) in enumerate(solver_names)
-        slope = round(log_slope(ns, metric_matrix[:, j]), digits=2)
+        slope = round(log_slope(dts, metric_matrix[:, j]), digits=2)
         Plots.plot!(p, dts, metric_matrix[:, j], label="$solver_name, log-slope=$slope", marker=:circle, yscale=scale, xscale=scale, markerstrokewidth=0.4)
     end
     return p
@@ -30,6 +30,7 @@ function plot_all(results, problem_name, d, n, dts, solver_names, metrics=[
     (:true_cov_trace_error, "|E |Xₜ|² - E |Xₜ*|²|"),
     (:true_cov_norm_error, "|Cov(Xₜ)-Cov(Xₜ*)|₂"),
     (:true_fourth_moment_error, "|E |Xₜ|⁴ - E |Xₜ*|⁴|")])
+    plots = []
     for (metric, metric_name) in metrics
         metric_matrix = getfield.(results, metric)
         p = plot_metric(problem_name, d, n, dts, solver_names, metric_name, metric_matrix)
@@ -45,5 +46,5 @@ d = 2
 n = 2000
 dts = 2. .^ (-10:-1)
 results = get_results("diffusion", d, n, dts)
-plot_all(rsults, "diffusion", d, n, dts, ALL_SOLVER_NAMES)
-savefig(joinpath("data", "plots", "dt_experiment"))
+plt=plot_all(results, "diffusion", d, n, dts, ALL_SOLVER_NAMES)
+savefig(plt, joinpath("data", "plots", "dt_experiment"))
