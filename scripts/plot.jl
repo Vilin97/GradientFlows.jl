@@ -53,6 +53,7 @@ function plot_all(problem_name, d, ns, solver_names; save=true, dir = "data",
         (:true_fourth_moment_error, "|E |Xₜ|⁴ - E |Xₜ*|⁴|"),
         (:sample_mean_error, "|E(X₀)-E(Xₜ)|₂|"),
         (:sample_cov_trace_error, "|E |X₀|² - E |Xₜ|²|")])
+    prinln("Plotting $problem_name, d=$d")
     plots = []
     p_marginal_start, p_slice_start = pdf_plot(problem_name, d, ns[end], solver_names, t_idx=1)
     p_marginal_end, p_slice_end = pdf_plot(problem_name, d, ns[end], solver_names, t_idx=2)
@@ -78,18 +79,18 @@ function plot_all(problem_name, d, ns, solver_names; save=true, dir = "data",
     return plt_all
 end
 
-ns = 100 * 2 .^ (0:8)
+# ns = 100 * 2 .^ (0:8)
 
-solver_names = ALL_SOLVER_NAMES
-problems = [(10, "diffusion")]
-for (d, problem_name) in problems
-    @show d, problem_name
-    @time plot_all(problem_name, d, ns, solver_names; dir="data");
-end
+# solver_names = ALL_SOLVER_NAMES
+# problems = [(10, "diffusion")]
+# for (d, problem_name) in problems
+#     @show d, problem_name
+#     @time plot_all(problem_name, d, ns, solver_names; dir="data");
+# end
 
-solver_names = ["exact", "sbtm"]
-problems = [(2, "diffusion"), (5, "diffusion"), (3, "landau"), (5, "landau"), (10, "landau")]
-for (d, problem_name) in problems
-    @show d, problem_name
-    @time plot_all(problem_name, d, ns, solver_names; dir=joinpath("data", "dt_0025"));
-end
+# solver_names = ["exact", "sbtm"]
+# problems = [(2, "diffusion"), (5, "diffusion"), (3, "landau"), (5, "landau"), (10, "landau")]
+# for (d, problem_name) in problems
+#     @show d, problem_name
+#     @time plot_all(problem_name, d, ns, solver_names; dir=joinpath("data", "dt_0025"));
+# end

@@ -9,6 +9,8 @@ Run experiments for all the problems and save the results.
     num_runs = number of runs for each experiment
 """
 function run_experiments(problems, ns, num_runs; verbose=true, dt=0.01, dir="data")
+
+    println("Generating data")
     timer = TimerOutput()
 
     for n in ns
@@ -19,7 +21,6 @@ function run_experiments(problems, ns, num_runs; verbose=true, dt=0.01, dir="dat
                 solvers = [Blob(blob_epsilon(d, n)), SBTM(best_model(problem_name, d)), Exact()]
                 @timeit timer "$problem_name" for solver in solvers
                     verbose && println("n=$n $problem_name d=$d run=$run solver=$solver")
-                    # TODO: need to load a new model here
                     prob = problem(d, n, solver; dt=dt)
                     set_u0!(prob, prob_.u0)
                     @time @timeit timer "$solver" experiment = Experiment(prob)
@@ -50,24 +51,32 @@ end
 function train_nn(problem, d, n, s; verbose=1, init_max_iterations=10^5)
     solver = SBTM(s, logger=Logger(verbose), init_max_iterations=init_max_iterations)
     prob = problem(d, n, solver)
+    println("Training NN for $(prob.name), d = $d, n = $n.")
     @time train_s!(solver, prob.u0, score(prob.ρ0, prob.u0))
     save(model_filename(prob.name, d, n), solver.s)
     nothing
 end
 
-### generate data ###
-# println("Generating data")
-# problems = ALL_PROBLEMS
-# num_runs = 5
-# ns = 100 * 2 .^ (0:8)
-# dt = 0.0025
-# dir = joinpath("data", "dt_0025")
-# run_experiments(problems, ns, num_runs; dt = dt, dir = dir)
-
 # ### train NN ###
-println("Training NNs")
-problems = [(2, diffusion_problem, "diffusion")]
-for (d, problem, problem_name) in problems
-    @show d, problem_name
-    train_nn(problem, d, 40_000, mlp(2;depth=1); init_max_iterations=10^5, verbose=2)
+# problems = [(2, fpe_problem), (5, fpe_problem), (10, fpe_problem), (2, diffusion_problem), (5, diffusion_problem), (10, diffusion_problem)]
+# for (d, problem) in problems
+#     train_nn(problem, d, 40_000, mlp(d;depth=1); init_max_iterations=10^5, verbose=2)
+# end
+
+### generate data ###
+problems = ALL_PROBLEMS
+num_runs = 5
+ns = 100 * 2 .^ (0:8)
+
+run_experiments(problems, ns, num_runs; dt = 0.01, dir = "data")
+run_experiments(problems, ns, num_runs; dt = 0.0025, dir = joinpath("data", "dt_0025"))
+
+include("plot.jl")
+problems = ALL_PROBLEMS
+solver_names = ALL_SOLVER_NAMES
+for (d, problem_name) in problems
+    @time plot_all(problem_name, d, ns, solver_names; dir="data");
+end
+for (d, problem_name) in problems
+    @time plot_all(problem_name, d, ns, solver_names; dir=joinpath("data", "dt_0025"));
 end
