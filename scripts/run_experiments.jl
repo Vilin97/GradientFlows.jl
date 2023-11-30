@@ -1,7 +1,7 @@
 using GradientFlows, TimerOutputs, StableRNGs
 
 """
-run_experiments(problems, ns, num_runs; verbose=true)
+run_experiments(problems, ns, num_runs; verbose=true, dt=0.01, dir="data")
 
 Run experiments for all the problems and save the results.
     problems = [(problem, d), ...]
@@ -20,7 +20,7 @@ function run_experiments(problems, ns, num_runs; verbose=true, dt=0.01, dir="dat
                 problem_name = prob_.name
                 solvers = [Blob(blob_epsilon(d, n)), SBTM(best_model(problem_name, d)), Exact()]
                 @timeit timer "$problem_name" for solver in solvers
-                    verbose && println("n=$n $problem_name d=$d run=$run solver=$solver")
+                    verbose && println("n=$n $problem_name d=$d run=$run solver=$solver dt=$dt dir=$dir")
                     prob = problem(d, n, solver; dt=dt)
                     set_u0!(prob, prob_.u0)
                     @time @timeit timer "$solver" experiment = Experiment(prob)
@@ -68,15 +68,15 @@ problems = ALL_PROBLEMS
 num_runs = 5
 ns = 100 * 2 .^ (0:8)
 
-run_experiments(problems, ns, num_runs; dt = 0.01, dir = "data")
+# run_experiments(problems, ns, num_runs; dt = 0.01, dir = "data")
 run_experiments(problems, ns, num_runs; dt = 0.0025, dir = joinpath("data", "dt_0025"))
 
-include("plot.jl")
-problems = ALL_PROBLEMS
-solver_names = ALL_SOLVER_NAMES
-for (d, problem_name) in problems
-    @time plot_all(problem_name, d, ns, solver_names; dir="data");
-end
-for (d, problem_name) in problems
-    @time plot_all(problem_name, d, ns, solver_names; dir=joinpath("data", "dt_0025"));
-end
+# include("plot.jl")
+# problems = ALL_PROBLEMS
+# solver_names = ALL_SOLVER_NAMES
+# for (d, problem_name) in problems
+#     @time plot_all(problem_name, d, ns, solver_names; dir="data");
+# end
+# for (d, problem_name) in problems
+#     @time plot_all(problem_name, d, ns, solver_names; dir=joinpath("data", "dt_0025"));
+# end
