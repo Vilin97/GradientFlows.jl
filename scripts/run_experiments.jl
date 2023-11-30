@@ -69,14 +69,14 @@ num_runs = 5
 ns = 100 * 2 .^ (0:8)
 
 # run_experiments(problems, ns, num_runs; dt = 0.01, dir = "data")
-run_experiments(problems, ns, num_runs; dt = 0.0025, dir = joinpath("data", "dt_0025"))
+# run_experiments(problems, ns, num_runs; dt = 0.0025, dir = joinpath("data", "dt_0025"))
 
-# include("plot.jl")
-# problems = ALL_PROBLEMS
-# solver_names = ALL_SOLVER_NAMES
-# for (d, problem_name) in problems
-#     @time plot_all(problem_name, d, ns, solver_names; dir="data");
-# end
-# for (d, problem_name) in problems
-#     @time plot_all(problem_name, d, ns, solver_names; dir=joinpath("data", "dt_0025"));
-# end
+include("plot.jl")
+problems = ALL_PROBLEM_NAMES
+solver_names = ALL_SOLVER_NAMES
+for (problem_name, d) in problems
+    @time plot_all(problem_name, d, ns, solver_names; dir="data");
+end
+for (problem_name, d) in problems
+    @time plot_all(problem_name, d, ns, solver_names; dir=joinpath("data", "dt_0025"));
+end
