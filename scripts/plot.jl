@@ -25,21 +25,21 @@ end
 
 "experiment.saveat[t_idx] is the time at which to plot the pdf"
 function pdf_plot(problem_name, d, n, solver_names; t_idx, xrange=range(-5, 5, length=200), dir="data")
+    slice(x::Number) = [x, zeros(typeof(x), d - 1)...]
     experiment = load(experiment_filename(problem_name, d, n, "exact", 1; dir=dir))
     saveat = experiment.saveat
     dist = experiment.true_dist[t_idx]
-    p_marginal = Plots.plot(title="marginal $problem_name, d=$d, n=$n, ε=$(round(kde_epsilon(1,n),digits=4)), t=$(saveat[t_idx]), dt=$(experiment.dt)", size=PLOT_WINDOW_SIZE)
-    p_slice = Plots.plot(title="slice $problem_name, d=$d, n=$n, ε=$(round(kde_epsilon(d,n),digits=4)), t=$(saveat[t_idx]), dt=$(experiment.dt)", size=PLOT_WINDOW_SIZE)
-    slice(x::Number) = [x, zeros(typeof(x), d - 1)...]
+    p_marginal = Plots.plot(size=PLOT_WINDOW_SIZE)
+    p_slice = Plots.plot(size=PLOT_WINDOW_SIZE)
+    plot!(p_marginal, xrange, x -> marginal_pdf(dist, x), label="true")
+    plot!(p_slice, xrange, x -> pdf(dist, slice(x)), label="true")
     for solver in solver_names
         experiments = load_all_experiment_runs(problem_name, d, n, solver; dir=dir)
         u = hcat([exp.solution[t_idx] for exp in experiments]...)
         u_marginal = reshape(u[1, :], 1, :)
-        plot!(p_marginal, xrange, x -> kde(x, u_marginal), label=solver)
-        plot!(p_slice, xrange, x -> kde(slice(x), u), label=solver)
+        plot!(p_marginal, xrange, x -> kde([x], u_marginal), label=solver, title="marginal $problem_name, d=$d, n=$n, h=$(round.(kde_bandwidth(u_marginal)[1],digits=3)), t=$(saveat[t_idx]), dt=$(experiment.dt)")
+        plot!(p_slice, xrange, x -> kde(slice(x), u), label=solver, title="slice $problem_name, d=$d, n=$n, h=$(round.(diag(kde_bandwidth(u)), digits=3)), t=$(saveat[t_idx]), dt=$(experiment.dt)")
     end
-    plot!(p_marginal, xrange, x -> marginal_pdf(dist, x), label="true")
-    plot!(p_slice, xrange, x -> pdf(dist, slice(x)), label="true")
     return p_marginal, p_slice
 end
 
