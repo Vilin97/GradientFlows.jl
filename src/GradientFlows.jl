@@ -50,6 +50,7 @@ include("experiments/io.jl")
 
 const ALL_PROBLEMS = [(diffusion_problem, 2), (diffusion_problem, 5), (diffusion_problem, 10), (fpe_problem, 2), (fpe_problem, 5), (fpe_problem, 10), (landau_problem, 3), (landau_problem, 5), (landau_problem, 10)]
 const ALL_PROBLEM_NAMES = [("diffusion", 2), ("diffusion", 5), ("diffusion", 10), ("fpe", 2), ("fpe", 5), ("fpe", 10), ("landau", 3), ("landau", 5), ("landau", 10)]
+const ALL_SOLVERS = [Exact(), SBTM(), Blob()]
 const ALL_SOLVER_NAMES = ["exact", "sbtm", "blob"]
 
 export GradFlowProblem
@@ -64,7 +65,7 @@ export Experiment, GradFlowExperimentResult
 export save, load, model_filename, experiment_filename, experiment_result_filename, load_metric, load_all_experiment_runs, timer_filename, best_model
 export train_s!
 export DEFAULT_TIMER, PLOT_WINDOW_SIZE
-export ALL_PROBLEMS, ALL_PROBLEM_NAMES, ALL_SOLVER_NAMES
+export ALL_PROBLEMS, ALL_PROBLEM_NAMES, ALL_SOLVERS, ALL_SOLVER_NAMES
 
 export true_dist, pdf, marginal_pdf
 export emp_mean, emp_cov, mean, cov
