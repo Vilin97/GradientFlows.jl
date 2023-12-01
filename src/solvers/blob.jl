@@ -3,6 +3,7 @@ struct Blob{S,F,A} <: Solver
     ε::F
     allocated_memory::A
 end
+Blob() = Blob(nothing, nothing, nothing)
 Blob(ε) = Blob(nothing, ε, nothing)
 
 struct BlobAllocMemCPU{T}
@@ -12,13 +13,14 @@ struct BlobAllocMemCPU{T}
 end
 
 "Initialize solver."
-function initialize(solver::Blob, u0, score_values::Matrix{T}) where {T}
+function initialize(::Blob, u0, score_values::Matrix{T}) where {T}
     n = size(score_values, 2)
     diff_norm2s = zeros(T, n, n)
     mol_sum = zeros(T, n)
     mols = zeros(T, n, n)
     allocated_memory = BlobAllocMemCPU(diff_norm2s, mol_sum, mols)
-    Blob(copy(score_values), T(solver.ε), allocated_memory)
+    ε = blob_bandwidth(u0)
+    Blob(copy(score_values), T(ε), allocated_memory)
 end
 
 "Fill in solver.score_values."
@@ -52,5 +54,9 @@ function Base.show(io::IO, solver::Blob)
 end
 name(solver::Blob) = "blob"
 
-"The optimal ε for the blob solver."
-blob_epsilon(d, n) = 2 * n^(-2 / (d + 4))
+"ε = C * n^(-2 / (d + 6)) is optimal for gradient matching."
+function blob_bandwidth(u) 
+    d, n = size(u)
+    Σ = diag(cov(u'))
+    4 * prod(Σ)^(1/d) * n^(-2 / (d + 6))
+end
