@@ -9,7 +9,7 @@ function fpe_problem(d, n, solver_; t0::F=1.0, t_end::F=2.0, dt::F=0.01, rng=DEF
     params = nothing
     ρ0 = ρ(t0, params)
     u0 = rand(rng, ρ0, n)
-    solver = initialize(solver_, u0, score(ρ0, u0))
     name = "fpe"
+    solver = initialize(solver_, u0, score(ρ0, u0), name)
     return GradFlowProblem(f!, ρ0, u0, ρ, tspan, dt, params, solver, name)
 end

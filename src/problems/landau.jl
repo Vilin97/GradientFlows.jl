@@ -10,8 +10,8 @@ function landau_problem(d, n, solver_; dt::F=0.01, rng=DEFAULT_RNG) where {F}
     ρ(t, params) = PolyNormal(d, params.K(t))
     ρ0 = ρ(t0_, params)
     u0 = rand(rng, ρ0, n)
-    solver = initialize(solver_, u0, score(ρ0, u0))
     name = "landau"
+    solver = initialize(solver_, u0, score(ρ0, u0), name)
     return GradFlowProblem(f!, ρ0, u0, ρ, tspan, dt, params, solver, name)
 end
 

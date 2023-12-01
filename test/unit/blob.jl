@@ -13,7 +13,7 @@ end
     score_values = score(dist, u)
 
     # test initialize
-    solver = initialize(Blob(), u, score_values)
+    solver = initialize(Blob(), u, score_values, "dummy_problem_name")
     @test solver.score_values == score_values
 
     # test that update! is idempotent

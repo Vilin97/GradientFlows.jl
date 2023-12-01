@@ -18,7 +18,7 @@ function run_experiments(problems, ns, num_runs; verbose=true, dt=0.01, dir="dat
             @timeit timer "d $d" for run in 1:num_runs
                 prob_ = problem(d, n, Exact(); rng=StableRNG(100*n + 10*d + run))
                 problem_name = prob_.name
-                solvers = [Blob(blob_epsilon(d, n)), SBTM(best_model(problem_name, d)), Exact()]
+                solvers = [Blob(), SBTM(best_model(problem_name, d)), Exact()]
                 @timeit timer "$problem_name" for solver in solvers
                     verbose && println("n=$n $problem_name d=$d run=$run solver=$solver dt=$dt dir=$dir")
                     prob = problem(d, n, solver; dt=dt)
@@ -57,12 +57,6 @@ function train_nn(problem, d, n, s; verbose=1, init_max_iterations=10^5)
     nothing
 end
 
-# ### train NN ###
-# problems = [(2, fpe_problem), (5, fpe_problem), (10, fpe_problem), (2, diffusion_problem), (5, diffusion_problem), (10, diffusion_problem)]
-# for (d, problem) in problems
-#     train_nn(problem, d, 40_000, mlp(d;depth=1); init_max_iterations=10^5, verbose=2)
-# end
-
 ### generate data ###
 problems = ALL_PROBLEMS
 num_runs = 5
@@ -74,9 +68,9 @@ ns = 100 * 2 .^ (0:8)
 include("plot.jl")
 problems = ALL_PROBLEM_NAMES
 solver_names = ALL_SOLVER_NAMES
-for (problem_name, d) in problems
-    @time plot_all(problem_name, d, ns, solver_names; dir="data");
-end
-for (problem_name, d) in problems
-    @time plot_all(problem_name, d, ns, solver_names; dir=joinpath("data", "dt_0025"));
-end
+# for (problem_name, d) in problems
+#     @time plot_all(problem_name, d, ns, solver_names; dir="data");
+# end
+# for (problem_name, d) in problems
+#     @time plot_all(problem_name, d, ns, solver_names; dir=joinpath("data", "dt_0025"));
+# end

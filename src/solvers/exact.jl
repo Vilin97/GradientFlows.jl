@@ -5,7 +5,7 @@ end
 Exact() = Exact(nothing)
 
 "Initialize solver."
-function initialize(::Exact, u0, score_values)
+function initialize(::Exact, u0, score_values, problem_name)
     Exact(copy(score_values))
 end
 
