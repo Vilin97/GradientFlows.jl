@@ -23,7 +23,7 @@ dir = "data_test"
     rm(path_prefix, recursive=true)
 end
 @testset "experiment" begin
-    problem = diffusion_problem(2, 10, Blob(blob_epsilon(2, 10)))
+    problem = diffusion_problem(2, 10, Blob())
     experiment = Experiment(problem)
     path = experiment_filename(experiment, 1; dir=dir)
     save(path, experiment)
@@ -34,7 +34,7 @@ end
 end
 
 @testset "experiment result" begin
-    problem = diffusion_problem(2, 10, Blob(blob_epsilon(2, 10)))
+    problem = diffusion_problem(2, 10, Blob())
     experiment = Experiment(problem)
     result = GradFlowExperimentResult(experiment)
     path = experiment_result_filename(experiment, 1; dir=dir)

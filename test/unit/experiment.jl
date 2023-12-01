@@ -1,7 +1,7 @@
 using GradientFlows, Test, TimerOutputs, StableRNGs
 
 @testset "Experiment" begin
-    problem = diffusion_problem(2, 100, Blob(blob_epsilon(2, 10)); rng=StableRNG(1))
+    problem = diffusion_problem(2, 100, Blob(); rng=StableRNG(1))
     experiment = Experiment(problem)
     result = GradFlowExperimentResult(experiment)
     @test result.L2_error == Lp_error(experiment.solution[end], true_dist(problem, problem.tspan[2]); p=2)

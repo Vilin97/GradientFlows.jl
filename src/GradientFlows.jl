@@ -54,7 +54,7 @@ const ALL_SOLVER_NAMES = ["exact", "sbtm", "blob"]
 
 export GradFlowProblem
 export Exact, Blob, SBTM
-export mlp, blob_epsilon
+export mlp
 export Logger
 export set_u0!
 export solve
