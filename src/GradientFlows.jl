@@ -20,7 +20,7 @@ const DEFAULT_TIMER = TimerOutput()
 const SOLVER_NAME_WIDTH = 5
 const PROBLEM_NAME_WIDTH = 9
 const n_WIDTH = 6
-const PLOT_WINDOW_SIZE = (2400, 1800)
+const PLOT_WINDOW_SIZE = (3000, 1800)
 
 include("distributions/poly_normal.jl")
 include("distributions/score.jl")
@@ -68,7 +68,7 @@ export ALL_PROBLEMS, ALL_PROBLEM_NAMES, ALL_SOLVER_NAMES
 
 export true_dist, pdf, marginal_pdf
 export emp_mean, emp_cov, mean, cov
-export kde, kde_epsilon
+export kde, kde_bandwidth
 export Lp_distance, Lp_error
 export score
 

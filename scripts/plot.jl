@@ -1,4 +1,4 @@
-using GradientFlows, Plots, Polynomials, TimerOutputs
+using GradientFlows, Plots, Polynomials, TimerOutputs, LinearAlgebra
 ENV["GKSwstype"] = "nul" # no GUI
 default(display_type=:inline)
 
@@ -31,15 +31,15 @@ function pdf_plot(problem_name, d, n, solver_names; t_idx, xrange=range(-5, 5, l
     dist = experiment.true_dist[t_idx]
     p_marginal = Plots.plot(size=PLOT_WINDOW_SIZE)
     p_slice = Plots.plot(size=PLOT_WINDOW_SIZE)
-    plot!(p_marginal, xrange, x -> marginal_pdf(dist, x), label="true")
-    plot!(p_slice, xrange, x -> pdf(dist, slice(x)), label="true")
     for solver in solver_names
         experiments = load_all_experiment_runs(problem_name, d, n, solver; dir=dir)
         u = hcat([exp.solution[t_idx] for exp in experiments]...)
         u_marginal = reshape(u[1, :], 1, :)
         plot!(p_marginal, xrange, x -> kde([x], u_marginal), label=solver, title="marginal $problem_name, d=$d, n=$n, h=$(round.(kde_bandwidth(u_marginal)[1],digits=3)), t=$(saveat[t_idx]), dt=$(experiment.dt)")
-        plot!(p_slice, xrange, x -> kde(slice(x), u), label=solver, title="slice $problem_name, d=$d, n=$n, h=$(round.(diag(kde_bandwidth(u)), digits=3)), t=$(saveat[t_idx]), dt=$(experiment.dt)")
+        plot!(p_slice, xrange, x -> kde(slice(x), u), label=solver, title="slice $problem_name, d=$d, n=$n, h=$(round.((det(kde_bandwidth(u))^(1/d)), digits=3)), t=$(saveat[t_idx]), dt=$(experiment.dt)")
     end
+    plot!(p_marginal, xrange, x -> marginal_pdf(dist, x), label="true")
+    plot!(p_slice, xrange, x -> pdf(dist, slice(x)), label="true")
     return p_marginal, p_slice
 end
 
