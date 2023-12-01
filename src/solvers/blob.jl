@@ -4,7 +4,6 @@ struct Blob{S,F,A} <: Solver
     allocated_memory::A
 end
 Blob() = Blob(nothing, nothing, nothing)
-Blob(ε) = Blob(nothing, ε, nothing)
 
 struct BlobAllocMemCPU{T}
     diff_norm2s::Matrix{T}
