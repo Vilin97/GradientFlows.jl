@@ -25,7 +25,7 @@ rng = StableRNG(123)
     @test approx_loss ≈ true_loss rtol = 0.1
 
     # test initialize
-    solver = initialize(SBTM(s), u, copy(score_values))
+    solver = initialize(SBTM(s), u, copy(score_values), "dummy_problem_name")
     @test solver.score_values == score_values
     @test l2_error_normalized(solver.s, u, score_values) ≈ 0 atol = solver.init_loss_tolerance
 
