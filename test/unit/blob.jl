@@ -2,9 +2,6 @@ using GradientFlows, Distributions, LinearAlgebra, StableRNGs, Test
 using GradientFlows: score, initialize, update!
 
 rng = StableRNG(123)
-struct DummyIntegrator
-    u::Matrix{Float64}
-end
 
 @testset "Blob tests" begin
     d, n = 2, 10
@@ -17,7 +14,7 @@ end
     @test solver.score_values == score_values
 
     # test that update! is idempotent
-    integrator = DummyIntegrator(u)
+    integrator = (u=u,)
     update!(solver, integrator)
     score_values = copy(solver.score_values)
     update!(solver, integrator)

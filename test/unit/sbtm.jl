@@ -10,9 +10,6 @@ true_score_matching_loss(s, u) = (sum(abs2, s(u)) + 2 * divergence(s, u)) / size
 
 rng = StableRNG(123)
 
-struct DummyIntegrator{T}
-    u::Matrix{T}
-end
 @testset "SBTM tests" begin
     d, n = 2, 1000
     dist = MvNormal(1.0 * I(d))
@@ -33,7 +30,7 @@ end
     @test l2_error_normalized(solver.s, u, score_values) ≈ 0 atol = solver.init_loss_tolerance
 
     # test update!
-    integrator = DummyIntegrator(u)
+    integrator = (u=u,)
     u .-= 0.01f0 * solver.score_values
     ζ = randn(rng, Float32, d, n)
     old_loss = score_matching_loss(solver.s, u, ζ, solver.denoising_alpha)
