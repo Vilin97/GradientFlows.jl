@@ -5,7 +5,7 @@ default(display_type=:inline)
 "metric_matrix[i,j] is the metric for the i-th value of n and the j-th solver"
 function plot_metric(problem_name, d, ns, solver_names, metric_name, metric_matrix; scale=:log10)
     log_slope(x, y) = Polynomials.fit(log.(x), log.(y), 1).coeffs[2]
-    p = Plots.plot(title="$problem_name, d=$d, $metric_name", xlabel="number of patricles, n", ylabel=metric_name, size=PLOT_WINDOW_SIZE)
+    p = Plots.plot(title=metric_name, xlabel="number of patricles, n", ylabel=metric_name, size=PLOT_WINDOW_SIZE)
     for (j, solver_name) in enumerate(solver_names)
         slope = round(log_slope(ns, metric_matrix[:, j]), digits=2)
         Plots.plot!(p, ns, metric_matrix[:, j], label="$solver_name, log-slope=$slope", marker=:circle, yscale=scale, xscale=scale, markerstrokewidth=0.4)
@@ -29,14 +29,14 @@ function pdf_plot(problem_name, d, n, solver_names; t_idx, xrange=range(-5, 5, l
     experiment = load(experiment_filename(problem_name, d, n, "exact", 1; dir=dir))
     saveat = experiment.saveat
     dist = experiment.true_dist[t_idx]
-    p_marginal = Plots.plot(size=PLOT_WINDOW_SIZE)
-    p_slice = Plots.plot(size=PLOT_WINDOW_SIZE)
+    p_marginal = Plots.plot(size=PLOT_WINDOW_SIZE, xlabel="x", ylabel="Σᵢϕ(x - Xᵢ[1])/n", title="marginal density t=$(saveat[t_idx])")
+    p_slice = Plots.plot(size=PLOT_WINDOW_SIZE, xlabel="x", ylabel="Σᵢϕ([x,0...] - Xᵢ)/n", title="slice density t=$(saveat[t_idx])")
     for solver in solver_names
         experiments = load_all_experiment_runs(problem_name, d, n, solver; dir=dir)
         u = hcat([exp.solution[t_idx] for exp in experiments]...)
         u_marginal = reshape(u[1, :], 1, :)
-        plot!(p_marginal, xrange, x -> kde([x], u_marginal), label=solver, title="marginal $problem_name, d=$d, n=$n, h=$(round.(kde_bandwidth(u_marginal)[1],digits=3)), t=$(saveat[t_idx]), dt=$(experiment.dt)")
-        plot!(p_slice, xrange, x -> kde(slice(x), u), label=solver, title="slice $problem_name, d=$d, n=$n, h=$(round.((det(kde_bandwidth(u))^(1/d)), digits=3)), t=$(saveat[t_idx]), dt=$(experiment.dt)")
+        plot!(p_marginal, xrange, x -> kde([x], u_marginal), label="$solver h=$(round.(kde_bandwidth(u_marginal)[1],digits=3))")
+        plot!(p_slice, xrange, x -> kde(slice(x), u), label="$solver h=$(round.((det(kde_bandwidth(u))^(1/d)), digits=3))")
     end
     plot!(p_marginal, xrange, x -> marginal_pdf(dist, x), label="true")
     plot!(p_slice, xrange, x -> pdf(dist, slice(x)), label="true")
@@ -54,6 +54,7 @@ function plot_all(problem_name, d, ns, solver_names; save=true, dir = "data",
         (:sample_mean_error, "|E(X₀)-E(Xₜ)|₂|"),
         (:sample_cov_trace_error, "|E |X₀|² - E |Xₜ|²|")])
     println("Plotting $problem_name, d=$d")
+    dt = load(experiment_filename(problem_name, d, ns[1], "exact", 1; dir=dir)).dt
     plots = []
     p_marginal_start, p_slice_start = pdf_plot(problem_name, d, ns[end], solver_names, t_idx=1)
     p_marginal_end, p_slice_end = pdf_plot(problem_name, d, ns[end], solver_names, t_idx=2)
@@ -64,7 +65,7 @@ function plot_all(problem_name, d, ns, solver_names; save=true, dir = "data",
         push!(plots, p)
     end
     push!(plots, scatter_plot(problem_name, d, ns[end], solver_names))
-    plt_all = Plots.plot(plots[1:end-1]..., size=PLOT_WINDOW_SIZE, margin=(10, :mm)) # don't include the scatter plot
+    plt_all = Plots.plot(plots[1:end-1]..., size=PLOT_WINDOW_SIZE, margin=(13, :mm), plot_title="$problem_name, d=$d, $(ns[1])≤n≤$(ns[end]), dt=$dt")
 
     if save
         path = joinpath(dir, "plots", problem_name, "d_$d")
