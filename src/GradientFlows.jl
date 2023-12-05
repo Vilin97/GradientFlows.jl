@@ -64,7 +64,7 @@ export Experiment, GradFlowExperimentResult
 export run_experiments
 export save, load, model_filename, experiment_filename, experiment_result_filename, load_metric, load_all_experiment_runs, timer_filename, best_model
 export DEFAULT_TIMER, PLOT_WINDOW_SIZE
-export ALL_PROBLEMS, ALL_PROBLEM_NAMES
+export ALL_PROBLEMS, ALL_SOLVERS
 
 export true_dist, pdf, marginal_pdf
 export emp_mean, emp_cov, mean, cov
