@@ -21,7 +21,7 @@ struct Logger
 end
 Logger() = Logger(0)
 
-function SBTM(s::Union{Chain, Nothing}; optimiser=Adam(1.0f-3), epochs=25, denoising_alpha=0.4f0, init_batch_size=2^8, init_loss_tolerance=1.0f-4, init_max_iterations=10^5, allocated_memory=nothing, logger=Logger(), optimiser_state=Flux.setup(optimiser, s))
+function SBTM(s::Union{Chain, Nothing}; optimiser=Adam(1.0f-3), epochs=25, denoising_alpha=0.4f0, init_batch_size=2^8, init_loss_tolerance=1.0f-4, init_max_iterations=10^5, allocated_memory=nothing, logger=Logger(), optimiser_state=nothing)
     return SBTM(nothing, s, optimiser, epochs, denoising_alpha, init_batch_size, init_loss_tolerance, init_max_iterations, allocated_memory, logger, optimiser_state)
 end
 SBTM(; kwargs...) = SBTM(nothing; kwargs...)
@@ -34,7 +34,8 @@ function initialize(solver::SBTM, u0::AbstractMatrix{Float32}, score_values::Abs
     else
         s = solver.s
     end
-    SBTM(score_values, s, solver.optimiser, solver.epochs, solver.denoising_alpha, solver.init_batch_size, solver.init_loss_tolerance, solver.init_max_iterations, allocated_memory, solver.logger, solver.optimiser_state)
+    optimiser_state = Flux.setup(solver.optimiser, s)
+    SBTM(score_values, s, solver.optimiser, solver.epochs, solver.denoising_alpha, solver.init_batch_size, solver.init_loss_tolerance, solver.init_max_iterations, allocated_memory, solver.logger, optimiser_state)
 end
 
 function train_s!(solver::SBTM, u, score_values)
