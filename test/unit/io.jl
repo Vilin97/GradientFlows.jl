@@ -20,7 +20,7 @@ dir = "data_test"
     @test other_s(x) == s_loaded(x)
 
     # test SBTM no-arg constructor
-    solver = initialize(SBTM(), zeros(Float32, d, n), zeros(Float32, d, n), "dummy_problem_name"; dir=dir)
+    solver = initialize(SBTM(), zeros(Float32, d, n), zeros(Float32, d, n), "test_problem"; dir=dir)
     @test solver.s isa Chain
     train_s!(solver, zeros(Float32, d, n), zeros(Float32, d, n))
     @test solver.s(x) != s(x)
