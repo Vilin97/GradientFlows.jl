@@ -26,11 +26,11 @@ function SBTM(s::Union{Chain, Nothing}; optimiser=Adam(1.0f-3), epochs=25, denoi
 end
 SBTM(; kwargs...) = SBTM(nothing; kwargs...)
 
-function initialize(solver::SBTM, u0::AbstractMatrix{Float32}, score_values::AbstractMatrix{Float32}, problem_name)
+function initialize(solver::SBTM, u0::AbstractMatrix{Float32}, score_values::AbstractMatrix{Float32}, problem_name; kwargs...)
     ζ = similar(u0)
     allocated_memory = SBTMAllocMem(ζ)
     if solver.s === nothing
-        s = best_model(problem_name, size(u0, 1))
+        s = best_model(problem_name, size(u0, 1); kwargs...)
     else
         s = solver.s
     end

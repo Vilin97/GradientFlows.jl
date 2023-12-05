@@ -19,6 +19,12 @@ dir = "data_test"
     @test s(x) != s_loaded(x)
     @test other_s(x) == s_loaded(x)
 
+    # test SBTM no-arg constructor
+    solver = initialize(SBTM(; dir=dir), zeros(Float32, d, n), zeros(Float32, d, n), "dummy_problem_name")
+    @test solver.s isa Chain
+    train_s!(solver, zeros(Float32, d, n), zeros(Float32, d, n))
+    @test solver.s(x) != s(x)
+
     path_prefix = splitpath(path)[1]
     rm(path_prefix, recursive=true)
 end
