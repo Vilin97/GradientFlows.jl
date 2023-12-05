@@ -6,6 +6,7 @@ using GradientFlows, Test
         include("unit/blob.jl")
         include("unit/problem.jl")
         include("unit/polynormal.jl")
+        include("unit/normal.jl")
         include("unit/experiment.jl")
         include("unit/io.jl")
         include("unit/kde.jl")

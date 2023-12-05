@@ -22,7 +22,7 @@ function run_experiments(problems, ns, num_runs, solvers; dt=0.01, dir="data")
                     prob = problem(d, n, solver; dt=dt)
                     set_u0!(prob, prob_.u0)
                     if run==num_runs
-                        @time "n=$n $problem_name d=$d run=$run solver=$solver" @timeit timer "$solver" experiment = Experiment(prob)
+                        @time "n=$n $problem_name d=$(rpad(d,2)) run=$run solver=$solver" @timeit timer "$solver" experiment = Experiment(prob)
                     else
                         @timeit timer "$solver" experiment = Experiment(prob)
                     end

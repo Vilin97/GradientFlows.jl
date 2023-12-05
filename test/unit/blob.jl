@@ -28,4 +28,7 @@ end
     u .-= 0.01 * solver.score_values
     update!(solver, integrator)
     @test solver.score_values != score_values
+
+    # for coverage
+    @test "$(Blob())" == "Blob"
 end

@@ -11,4 +11,7 @@ using GradientFlows, Test, TimerOutputs, StableRNGs
     experiment2 = Experiment(problem2)
     result2 = GradFlowExperimentResult(experiment2)
     @test !(result.L2_error ≈ result2.L2_error)
+    
+    # for coverage
+    @test "$experiment" isa String
 end

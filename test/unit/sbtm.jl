@@ -40,4 +40,7 @@ end
     update!(solver, integrator)
     new_loss = score_matching_loss(solver.s, u, ζ, solver.denoising_alpha)
     @test new_loss < old_loss
+
+    # for coverage
+    @test "$(SBTM())" == "SBTM"
 end
