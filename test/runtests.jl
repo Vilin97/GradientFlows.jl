@@ -16,4 +16,7 @@ using GradientFlows, Test
     @testset "Landau Tests" begin
         include("landau.jl")
     end
+    @testset "Run Experiments" begin
+        include("run_experiments.jl")
+    end
 end

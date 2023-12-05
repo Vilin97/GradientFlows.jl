@@ -9,6 +9,7 @@ using Flux
 using LinearAlgebra, Random, LoopVectorization
 using TimerOutputs
 using JLD2
+using StableRNGs: StableRNG
 
 import Distributions: MvNormal, Distribution, MultivariateDistribution, mean, cov, gradlogpdf, pdf, rand, ContinuousMultivariateDistribution
 import OrdinaryDiffEq.solve
@@ -62,6 +63,7 @@ export name
 export solve
 
 export Experiment, GradFlowExperimentResult
+export run_experiments
 export save, load, model_filename, experiment_filename, experiment_result_filename, load_metric, load_all_experiment_runs, timer_filename, best_model
 export DEFAULT_TIMER, PLOT_WINDOW_SIZE
 export ALL_PROBLEMS, ALL_PROBLEM_NAMES, ALL_SOLVERS, ALL_SOLVER_NAMES
