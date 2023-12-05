@@ -1,5 +1,5 @@
 "Make a homogeneous landau problem with Maxwell kernel with the given dimension, number of particles, and solver."
-function landau_problem(d, n, solver_; dt::F=0.01, rng=DEFAULT_RNG) where {F}
+function landau_problem(d, n, solver_; dt::F=0.01, rng=DEFAULT_RNG; kwargs...) where {F}
     if solver_ isa SBTM && F == Float64
         return landau_problem(d, n, solver_; dt=Float32(dt), rng=rng)
     end
@@ -11,7 +11,7 @@ function landau_problem(d, n, solver_; dt::F=0.01, rng=DEFAULT_RNG) where {F}
     ρ0 = ρ(t0_, params)
     u0 = rand(rng, ρ0, n)
     name = "landau"
-    solver = initialize(solver_, u0, score(ρ0, u0), name)
+    solver = initialize(solver_, u0, score(ρ0, u0), name; kwargs...)
     return GradFlowProblem(f!, ρ0, u0, ρ, tspan, dt, params, solver, name)
 end
 

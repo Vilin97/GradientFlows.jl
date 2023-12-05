@@ -42,7 +42,7 @@ function run_experiments(problems, ns, num_runs, solvers; rng=StableRNG, verbose
                 prob_ = problem(d, n, Exact(); rng=rng(100*n + 10*d + run))
                 problem_name = prob_.name
                 @timeit timer "$problem_name" for solver in solvers
-                    prob = problem(d, n, solver; dt=dt)
+                    prob = problem(d, n, solver; dt=dt, dir=dir)
                     set_u0!(prob, prob_.u0)
                     if verbose && run==num_runs
                         @time "n=$n $problem_name d=$(rpad(d,2)) run=$run solver=$solver" @timeit timer "$solver" experiment = Experiment(prob)
@@ -72,7 +72,7 @@ end
 function train_nn(problem, d, n, s; verbose=1, init_max_iterations=10^5, dir="data")
     solver_ = SBTM(s, verbose=verbose, init_max_iterations=init_max_iterations)
     prob = problem(d, n, solver_)
-    println("Training NN for $(prob.name), d = $d, n = $n.")
+    verbose > 0 && println("Training NN for $(prob.name), d = $d, n = $n.")
     @time train_s!(prob.solver, prob.u0, score(prob.ρ0, prob.u0))
     save(model_filename(prob.name, d, n; dir=dir), prob.solver.s)
     nothing

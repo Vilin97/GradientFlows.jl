@@ -34,7 +34,7 @@ function initialize(solver::SBTM, u0::AbstractMatrix{Float32}, score_values::Abs
         s = solver.s
     end
     optimiser_state = Flux.setup(solver.optimiser, s)
-    SBTM(score_values, s, solver.optimiser, solver.epochs, solver.denoising_alpha, solver.init_batch_size, solver.init_loss_tolerance, solver.init_max_iterations, allocated_memory, solver.logger, optimiser_state)
+    SBTM(copy(score_values), s, solver.optimiser, solver.epochs, solver.denoising_alpha, solver.init_batch_size, solver.init_loss_tolerance, solver.init_max_iterations, allocated_memory, solver.logger, optimiser_state)
 end
 
 function train_s!(solver::SBTM, u, score_values)

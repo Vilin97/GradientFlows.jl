@@ -9,11 +9,11 @@ dir = "data_test"
 
 # train models
 for ((problem, d), model) in zip(problems, models)
-    train_nn(problem, d, ns[end], model; init_max_iterations=10^4, dir=dir, verbose=false)
+    train_nn(problem, d, ns[end], model; init_max_iterations=10^4, dir=dir, verbose=1)
 end
 
 # generate data
-run_experiments(problems, ns, num_runs, solvers; verbose=false, dir=dir)
+run_experiments(problems, ns, num_runs, solvers; verbose=1, dir=dir)
 
 # plot
 include("../scripts/plot.jl")
