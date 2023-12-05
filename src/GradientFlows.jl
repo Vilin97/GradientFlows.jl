@@ -56,7 +56,7 @@ export GradFlowProblem
 export set_u0!
 export diffusion_problem, landau_problem, fpe_problem
 export Exact, Blob, SBTM
-export mlp, Logger, train_s!
+export mlp, train_s!
 export name
 export solve
 
