@@ -78,3 +78,13 @@ function plot_all(problem_name, d, ns, solver_names; save=true, dir = "data",
     end
     return plt_all
 end
+
+function plot_all(problems, ns, solvers; kwargs...)
+    solver_names = name.(solvers)
+    for (problem, d) in problems
+        prob_name = problem(d, ns[1], Exact()).name
+        println("Plotting $prob_name, d=$d")
+        plot_all(prob_name, d, ns, solver_names; kwargs...)
+    end
+    nothing
+end
