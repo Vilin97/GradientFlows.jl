@@ -2,15 +2,10 @@ using GradientFlows, Test
 
 @time begin
     @testset "Unit Tests" begin
-        include("unit/Lp.jl")
-        include("unit/blob.jl")
-        include("unit/problem.jl")
-        include("unit/polynormal.jl")
-        include("unit/normal.jl")
-        include("unit/experiment.jl")
-        include("unit/io.jl")
-        include("unit/kde.jl")
-        include("unit/linalg.jl")
+        files = readdir("unit")
+        for file in files
+            include("unit/$file")
+        end
     end
     @testset "Diffusion Tests" begin
         include("diffusion.jl")
