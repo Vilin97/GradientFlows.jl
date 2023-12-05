@@ -17,7 +17,9 @@ function experiment_result_filename(experiment::Experiment, id; kwargs...)
 end
 
 ### metric ###
-"Load the avarage of the metric over all the runs for each n and solver."
+"Load the average of the metric over all the runs for each n and solver.
+
+    metric_matrix[i, j] = metric(n = ns[i], solver = solver_names[j])"
 function load_metric(problem_name, d, ns, solver_names, metric::Symbol; kwargs...)
     metric_matrix = zeros(length(ns), length(solver_names))
     for (i, n) in enumerate(ns), (j, solver_name) in enumerate(solver_names)
