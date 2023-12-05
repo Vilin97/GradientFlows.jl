@@ -61,7 +61,7 @@ num_runs = 5
 ns = 100 * 2 .^ (0:8)
 solvers = ALL_SOLVERS
 
-run_experiments(problems, ns, num_runs, solvers)
+# run_experiments(problems, ns, num_runs, solvers)
 
 include("plot.jl")
 @time plot_all(problems, ns, ALL_SOLVERS);

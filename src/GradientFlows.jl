@@ -54,16 +54,15 @@ const ALL_SOLVERS = [Exact(), SBTM(), Blob()]
 const ALL_SOLVER_NAMES = ["exact", "sbtm", "blob"]
 
 export GradFlowProblem
-export Exact, Blob, SBTM
-export mlp
-export Logger
 export set_u0!
-export solve
 export diffusion_problem, landau_problem, fpe_problem
+export Exact, Blob, SBTM
+export mlp, Logger, train_s!
+export name
+export solve
 
 export Experiment, GradFlowExperimentResult
 export save, load, model_filename, experiment_filename, experiment_result_filename, load_metric, load_all_experiment_runs, timer_filename, best_model
-export train_s!
 export DEFAULT_TIMER, PLOT_WINDOW_SIZE
 export ALL_PROBLEMS, ALL_PROBLEM_NAMES, ALL_SOLVERS, ALL_SOLVER_NAMES
 
