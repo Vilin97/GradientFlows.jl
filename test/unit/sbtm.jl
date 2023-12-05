@@ -27,6 +27,12 @@ rng = StableRNG(123)
     # test initialize
     solver = initialize(SBTM(s), u, Float32.(copy(score_values)), "dummy_problem_name")
     @test solver.score_values == score_values
+    x = rand(rng, Float32, d, n)
+    @test solver.s(x) == s(x)
+    @test solver.optimiser_state == Flux.setup(solver.optimiser, s)
+
+    # test train_s!
+    train_s!(solver, u, score_values)
     @test l2_error_normalized(solver.s, u, score_values) ≈ 0 atol = solver.init_loss_tolerance
 
     # test update!
