@@ -15,10 +15,6 @@ end
 # generate data
 run_experiments(problems, ns, num_runs, solvers; verbose=1, dir=dir)
 
-# plot
-include("../scripts/plot.jl")
-plot_all(problems, ns, solvers; dir=dir)
-
 # test that errors are small
 metrics = [:L2_error, :true_mean_error, :true_cov_trace_error, :true_cov_norm_error]
 
