@@ -1,7 +1,7 @@
 "Make a homogeneous landau problem with Maxwell kernel with the given dimension, number of particles, and solver."
 function landau_problem(d, n, solver_; dt::F=0.01, rng=DEFAULT_RNG, kwargs...) where {F}
     if solver_ isa SBTM && F == Float64
-        return landau_problem(d, n, solver_; dt=Float32(dt), rng=rng)
+        return landau_problem(d, n, solver_; dt=Float32(dt), rng=rng, kwargs...)
     end
     params = LandauParams(d, F(1 / 24))
     t0_ = t0(params)
