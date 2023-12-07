@@ -84,7 +84,11 @@ function update!(solver::SBTM, integrator)
         Flux.update!(optimiser_state, s, grads[1])
         verbose > 1 && println("Epoch $(lpad(epoch, 2)), loss = $loss_value.")
     end
-    verbose > 0 && integrator.iter % 10 == 0 && println("Time $(integrator.t), loss = $(score_matching_loss(s, u, ζ, denoising_alpha)).")
+    if verbose > 0 && integrator.iter % 10 == 0
+        train_loss = pretty(score_matching_loss(s, u, ζ, denoising_alpha), 7)
+        test_loss = pretty(l2_error_normalized(s, u, score(integrator.p.ρ(integrator.t, integrator.p.params), integrator.u)), 7)
+        println("Time $(integrator.t) train loss = $train_loss test loss = $test_loss")
+    end
     score_values .= s(u)
     nothing
 end

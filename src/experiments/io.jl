@@ -54,4 +54,4 @@ end
 timer_filename(;dir) = joinpath(dir, "timers", "timer.jld2")
 
 ### Pretty printing ###
-short_string(float::Number, width, digits=width - 2) = rpad(round(float, digits=digits), width)
+pretty(x::Number, width) = rpad(string(x)[1:width], width)
