@@ -21,7 +21,7 @@ Logger() = Logger(0, nothing)
 
 function log!(logger::Logger, solver::Solver)
     if logger.log_level > 0
-        push!(logger.score_values, solver.score_values)
+        push!(logger.score_values, copy(solver.score_values))
     end
     nothing
 end
