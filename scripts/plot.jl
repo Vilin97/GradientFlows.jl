@@ -26,7 +26,7 @@ end
 "experiment.saveat[t_idx] is the time at which to plot the pdf"
 function pdf_plot(problem_name, d, n, solver_names; t_idx, xrange=range(-5, 5, length=200), dir="data")
     slice(x::Number) = [x, zeros(typeof(x), d - 1)...]
-    experiment = load(experiment_filename(problem_name, d, n, "exact", 1; dir=dir))
+    experiment = load(experiment_filename(problem_name, d, n, solver_names[1], 1; dir=dir))
     saveat = experiment.saveat
     dist = experiment.true_dist[t_idx]
     p_marginal = Plots.plot(size=PLOT_WINDOW_SIZE, xlabel="x", ylabel="Σᵢϕ(x - Xᵢ[1])/n", title="marginal density n=$n t=$(saveat[t_idx])")
@@ -54,7 +54,7 @@ function plot_all(problem_name, d, ns, solver_names; save=true, dir = "data",
         (:sample_mean_error, "|E(X₀)-E(Xₜ)|₂|"),
         (:sample_cov_trace_error, "|E |X₀|² - E |Xₜ|²|")])
     println("Plotting $problem_name, d=$d")
-    dt = load(experiment_filename(problem_name, d, ns[1], "exact", 1; dir=dir)).dt
+    dt = load(experiment_filename(problem_name, d, ns[1], solver_names[1], 1; dir=dir)).dt
     plots = []
     p_marginal_start, p_slice_start = pdf_plot(problem_name, d, ns[end], solver_names, t_idx=1)
     p_marginal_end, p_slice_end = pdf_plot(problem_name, d, ns[end], solver_names, t_idx=2)
@@ -75,7 +75,9 @@ function plot_all(problem_name, d, ns, solver_names; save=true, dir = "data",
         for (plt, filename) in zip(plots, filenames)
             savefig(plt, joinpath(path, filename))
         end
-        savefig(plt_all, joinpath(dir, "plots", "all", "$(problem_name)_d_$d"))
+        path = joinpath(dir, "plots", "all")
+        mkpath(path)
+        savefig(plt_all, joinpath(path, "$(problem_name)_d_$d"))
     end
     return plt_all
 end
@@ -83,7 +85,7 @@ end
 function plot_all(problems, ns, solvers; kwargs...)
     solver_names = name.(solvers)
     for (problem, d) in problems
-        prob_name = problem(d, ns[1], Exact()).name
+        prob_name = problem(d, ns[1], solvers[1]).name
         plot_all(prob_name, d, ns, solver_names; kwargs...)
     end
     nothing
