@@ -56,6 +56,7 @@ export GradFlowProblem
 export set_u0!
 export diffusion_problem, landau_problem, fpe_problem
 export Exact, Blob, SBTM
+export Logger
 export mlp, train_s!
 export name
 export solve
@@ -66,7 +67,7 @@ export save, load, model_filename, experiment_filename, experiment_result_filena
 export DEFAULT_TIMER, PLOT_WINDOW_SIZE
 export ALL_PROBLEMS, ALL_SOLVERS
 
-export true_dist, pdf, marginal_pdf
+export true_dist, true_score, pdf, marginal_pdf
 export emp_mean, emp_cov, mean, cov
 export kde, kde_bandwidth
 export Lp_distance, Lp_error

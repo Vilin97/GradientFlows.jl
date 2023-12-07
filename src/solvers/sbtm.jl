@@ -8,6 +8,7 @@ struct SBTM{S,NN,OPT,T,A,L,OS} <: Solver
     init_loss_tolerance::T
     init_max_iterations::Int
     allocated_memory::A
+    verbose::Int
     logger::L
     optimiser_state::OS
 end
@@ -16,12 +17,8 @@ struct SBTMAllocMem{M}
     ζ::M
 end
 
-struct Logger
-    verbose::Int
-end
-
-function SBTM(s::Union{Chain, Nothing}; optimiser=Adam(1.0f-3), epochs=25, denoising_alpha=0.4f0, init_batch_size=2^8, init_loss_tolerance=1.0f-4, init_max_iterations=10^5, allocated_memory=nothing, verbose=0, optimiser_state=nothing)
-    return SBTM(nothing, s, optimiser, epochs, denoising_alpha, init_batch_size, init_loss_tolerance, init_max_iterations, allocated_memory, Logger(verbose), optimiser_state)
+function SBTM(s::Union{Chain, Nothing}; optimiser=Adam(1.0f-3), epochs=25, denoising_alpha=0.4f0, init_batch_size=2^8, init_loss_tolerance=1.0f-4, init_max_iterations=10^5, allocated_memory=nothing, verbose=0, logger=Logger(), optimiser_state=nothing)
+    return SBTM(nothing, s, optimiser, epochs, denoising_alpha, init_batch_size, init_loss_tolerance, init_max_iterations, allocated_memory, verbose, logger, optimiser_state)
 end
 SBTM(; kwargs...) = SBTM(nothing; kwargs...)
 
@@ -33,13 +30,13 @@ function initialize(solver::SBTM, u0::AbstractMatrix{Float32}, score_values::Abs
     else
         s = solver.s
     end
+    logger = Logger(solver.logger.log_level, score_values)
     optimiser_state = Flux.setup(solver.optimiser, s)
-    SBTM(copy(score_values), s, solver.optimiser, solver.epochs, solver.denoising_alpha, solver.init_batch_size, solver.init_loss_tolerance, solver.init_max_iterations, allocated_memory, solver.logger, optimiser_state)
+    SBTM(copy(score_values), s, solver.optimiser, solver.epochs, solver.denoising_alpha, solver.init_batch_size, solver.init_loss_tolerance, solver.init_max_iterations, allocated_memory, solver.verbose, logger, optimiser_state)
 end
 
 function train_s!(solver::SBTM, u, score_values)
-    @unpack s, init_batch_size, init_loss_tolerance, init_max_iterations, logger, optimiser_state = solver
-    @unpack verbose = logger
+    @unpack s, init_batch_size, init_loss_tolerance, init_max_iterations, verbose, optimiser_state = solver
 
     verbose > 1 && println("Training NN for $(size(u, 2)) particles.")
     verbose > 1 && println("Batch size = $init_batch_size, loss tolerance = $init_loss_tolerance, max iterations = $init_max_iterations. \n$s")
@@ -73,9 +70,8 @@ function reset!(solver::SBTM, u0, score_values)
 end
 
 function update!(solver::SBTM, integrator)
-    @unpack score_values, s, optimiser, epochs, denoising_alpha, allocated_memory, logger, optimiser_state = solver
+    @unpack score_values, s, optimiser, epochs, denoising_alpha, allocated_memory, verbose, logger, optimiser_state = solver
     @unpack ζ = allocated_memory
-    @unpack verbose = logger
 
     u = integrator.u
     for epoch in 1:epochs
@@ -90,6 +86,7 @@ function update!(solver::SBTM, integrator)
         test_loss = pretty(l2_error_normalized(score_values, true_score(integrator.p, integrator.t, integrator.u)), 7)
         println("Time $(integrator.t) test loss = $test_loss train loss = $train_loss")
     end
+    log!(logger, solver)
     nothing
 end
 
