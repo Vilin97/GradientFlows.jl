@@ -72,7 +72,8 @@ end
 function update!(solver::SBTM, integrator)
     @unpack score_values, s, optimiser, epochs, denoising_alpha, allocated_memory, verbose, logger, optimiser_state = solver
     @unpack ζ = allocated_memory
-
+    log!(logger, solver)
+    
     u = integrator.u
     for epoch in 1:epochs
         randn!(ζ)
@@ -86,7 +87,6 @@ function update!(solver::SBTM, integrator)
         test_loss = pretty(l2_error_normalized(score_values, true_score(integrator.p, integrator.t, integrator.u)), 7)
         println("Time $(integrator.t) test loss = $test_loss train loss = $train_loss")
     end
-    log!(logger, solver)
     nothing
 end
 
