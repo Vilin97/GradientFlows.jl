@@ -20,7 +20,7 @@ function initialize(solver::Blob, u0, score_values::Matrix{T}, problem_name; kwa
     mol_sum = zeros(T, n)
     mols = zeros(T, n, n)
     allocated_memory = BlobAllocMemCPU(diff_norm2s, mol_sum, mols)
-    ε = blob_bandwidth(u0)
+    ε = blob_bandwidth(u0) / 10
     Blob(copy(score_values), T(ε), allocated_memory, solver.verbose)
 end
 
