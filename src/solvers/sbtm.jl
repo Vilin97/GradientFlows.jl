@@ -48,12 +48,12 @@ function train_s!(solver::SBTM, u, score_values)
     iteration = 0
     epoch = 0
     while iteration < init_max_iterations
-        loss = l2_error_normalized(s, u, score_values)
+        loss = l2_error_normalized(s(u), score_values)
         (loss < init_loss_tolerance) && break
         verbose > 1 && epoch % 100 == 0 && println("Epoch $(lpad(epoch, 5)) iteration $(lpad(iteration, 6)) loss $loss")
         epoch += 1
         for (x, y) in data_loader
-            batch_loss, grads = withgradient(s -> l2_error_normalized(s, x, y), s)
+            batch_loss, grads = withgradient(s -> l2_error_normalized(s(x), y), s)
             if iteration >= init_max_iterations
                 break
             end
@@ -61,7 +61,7 @@ function train_s!(solver::SBTM, u, score_values)
             Flux.update!(optimiser_state, s, grads[1])
         end
     end
-    final_loss = l2_error_normalized(s, u, score_values)
+    final_loss = l2_error_normalized(s(u), score_values)
     verbose > 0 && println("Trained NN in $iteration iterations. Loss = $final_loss.")
     nothing
 end
@@ -84,17 +84,17 @@ function update!(solver::SBTM, integrator)
         Flux.update!(optimiser_state, s, grads[1])
         verbose > 1 && println("Epoch $(lpad(epoch, 2)), loss = $loss_value.")
     end
+    score_values .= s(u)
     if verbose > 0 && integrator.iter % 10 == 0
         train_loss = pretty(score_matching_loss(s, u, ζ, denoising_alpha), 7)
-        test_loss = pretty(l2_error_normalized(s, u, score(integrator.p.ρ(integrator.t, integrator.p.params), integrator.u)), 7)
-        println("Time $(integrator.t) train loss = $train_loss test loss = $test_loss")
+        test_loss = pretty(l2_error_normalized(score_values, true_score(integrator.p, integrator.t, integrator.u)), 7)
+        println("Time $(integrator.t) test loss = $test_loss train loss = $train_loss")
     end
-    score_values .= s(u)
     nothing
 end
 
 "Fisher divergence on CPU: ∑ᵢ (s(xᵢ) - yᵢ)² / |y|²"
-l2_error_normalized(s, x, y) = sum(abs2, s(x) .- y) / sum(abs2, y)
+l2_error_normalized(y_hat, y) = sum(abs2, y_hat .- y) / sum(abs2, y)
 
 "≈ ( |s(u)|² + 2∇⋅s(u) ) / n"
 function score_matching_loss(s, u, ζ, α)

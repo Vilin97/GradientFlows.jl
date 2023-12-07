@@ -2,8 +2,10 @@ struct Blob{S,F,A} <: Solver
     score_values::S
     ε::F
     allocated_memory::A
+    verbose::Int
 end
-Blob() = Blob(nothing, nothing, nothing)
+
+Blob(;verbose=0) = Blob(nothing, nothing, nothing, verbose)
 
 struct BlobAllocMemCPU{T}
     diff_norm2s::Matrix{T}
@@ -12,19 +14,19 @@ struct BlobAllocMemCPU{T}
 end
 
 "Initialize solver."
-function initialize(::Blob, u0, score_values::Matrix{T}, problem_name; kwargs...) where {T}
+function initialize(solver::Blob, u0, score_values::Matrix{T}, problem_name; kwargs...) where {T}
     n = size(score_values, 2)
     diff_norm2s = zeros(T, n, n)
     mol_sum = zeros(T, n)
     mols = zeros(T, n, n)
     allocated_memory = BlobAllocMemCPU(diff_norm2s, mol_sum, mols)
     ε = blob_bandwidth(u0)
-    Blob(copy(score_values), T(ε), allocated_memory)
+    Blob(copy(score_values), T(ε), allocated_memory, solver.verbose)
 end
 
 "Fill in solver.score_values."
 function update!(solver::Blob{S,F,A}, integrator) where {S,F,A<:BlobAllocMemCPU}
-    @unpack score_values, ε, allocated_memory = solver
+    @unpack score_values, ε, allocated_memory, verbose = solver
     @unpack diff_norm2s, mol_sum, mols = allocated_memory
     u = integrator.u
     d, n = size(u)
@@ -44,6 +46,10 @@ function update!(solver::Blob{S,F,A}, integrator) where {S,F,A<:BlobAllocMemCPU}
         diff_k = u[k, p] - u[k, q]
         score_values[k, p] += fac * diff_k / mol_sum[p]
         score_values[k, p] += fac * diff_k / mol_sum[q]
+    end
+    if verbose > 0 && integrator.iter % 10 == 0
+        test_loss = pretty(l2_error_normalized(score_values, true_score(integrator.p, integrator.t, integrator.u)), 7)
+        println("Time $(integrator.t) test loss = $test_loss")
     end
     nothing
 end

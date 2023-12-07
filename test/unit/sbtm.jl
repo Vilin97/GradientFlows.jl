@@ -33,7 +33,7 @@ rng = StableRNG(123)
 
     # test train_s!
     train_s!(solver, u, score_values)
-    @test l2_error_normalized(solver.s, u, score_values) ≈ 0 atol = solver.init_loss_tolerance
+    @test l2_error_normalized(solver.s(u), score_values) ≈ 0 atol = solver.init_loss_tolerance
 
     # test update!
     integrator = (u=u,)

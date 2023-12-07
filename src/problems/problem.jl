@@ -15,6 +15,7 @@ function Base.show(io::IO, prob::GradFlowProblem)
 end
 
 true_dist(prob::GradFlowProblem, t) = prob.ρ(t, prob.params)
+true_score(prob::GradFlowProblem, t, u) = score(true_dist(prob, t), u)
 
 "Reset the problem to its initial state so it can be solved again."
 function reset!(problem::GradFlowProblem)

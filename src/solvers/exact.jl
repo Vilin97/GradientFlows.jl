@@ -12,9 +12,7 @@ end
 "Fill in solver.score_values."
 function update!(solver::Exact, integrator)
     prob = integrator.p
-    t = integrator.t
-    true_dist = prob.ρ(t, prob.params)
-    solver.score_values .= score(true_dist, integrator.u)
+    solver.score_values .= true_score(prob, integrator.t, integrator.u)
     nothing
 end
 
