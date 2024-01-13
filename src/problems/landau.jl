@@ -6,14 +6,13 @@ function landau_problem(d, n, solver_; dt::F=0.01, rng=DEFAULT_RNG, isotropic=tr
     if isotropic
         params = LandauParams(d, F(1 / 24))
         t0_ = t0(params)
-        ρ(t, params) = PolyNormal(d, params.K(t))
-        ρ0 = ρ(t0_, params)
+        ρ0 = PolyNormal(d, params.K(t0_))
     else
-        params = nothing
+        params = (B=F(1 / 24),) # constant in the collision kernel
         t0_ = F(0)
-        ρ(t, params) = nothing
-        ρ0 = MvNormal(diagm([F(1.8), F(0.2), ones(d-2)...]))
+        ρ0 = MvNormal(diagm([F(1.8), F(0.2), ones(F, d-2)...]))
     end
+    ρ(t, params) = isotropic ? PolyNormal(d, params.K(t)) : nothing
 
     f! = choose_f!(d)
     tspan = (t0_, t0_ + 1)

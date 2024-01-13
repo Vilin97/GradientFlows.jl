@@ -17,7 +17,7 @@ end
 n = 2000
 d = 3
 for solver in [SBTM(mlp(d, rng=StableRNG(321), depth=2)), Blob()]
-    problem = landau_problem(d, n, solver; rng=StableRNG(123))
+    problem = landau_problem(d, n, solver; rng=StableRNG(123), isotropic=false)
     experiment = Experiment(problem)
 
     @test have_true_dist(experiment) == false
