@@ -8,7 +8,7 @@ function landau_problem(d, n, solver_; dt::F=0.01, rng=DEFAULT_RNG, isotropic=tr
         t0_ = t0(params)
         ρ0 = PolyNormal(d, params.K(t0_))
     else
-        params = (B=F(1 / 24),) # constant in the collision kernel
+        params = (B=F(1 / 24),) # B = constant in the collision kernel
         t0_ = F(0)
         ρ0 = MvNormal(diagm([F(1.8), F(0.2), ones(F, d-2)...]))
     end

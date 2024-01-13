@@ -23,7 +23,7 @@ function Base.show(io::IO, experiment::Experiment)
     print(io, "$problem_name d=$d n=$(rpad(n,n_WIDTH)) $(lpad(solver_name, SOLVER_NAME_WIDTH))")
 end
 
-have_true_dist(experiment) = isnothing(experiment.true_dist[end]) ? false : true 
+have_true_dist(experiment::Experiment) = isnothing(experiment.true_dist[end]) ? false : true
 
 """
 run_experiments(problems, ns, num_runs; verbose=true, dt=0.01, dir="data")
