@@ -1,14 +1,22 @@
 "Make a homogeneous landau problem with Maxwell kernel with the given dimension, number of particles, and solver."
-function landau_problem(d, n, solver_; dt::F=0.01, rng=DEFAULT_RNG, kwargs...) where {F}
+function landau_problem(d, n, solver_; dt::F=0.01, rng=DEFAULT_RNG, isotropic=true, kwargs...) where {F}
     if solver_ isa SBTM && F == Float64
-        return landau_problem(d, n, solver_; dt=Float32(dt), rng=rng, kwargs...)
+        return landau_problem(d, n, solver_; dt=Float32(dt), rng=rng, isotropic=isotropic, kwargs...)
     end
-    params = LandauParams(d, F(1 / 24))
-    t0_ = t0(params)
+    if isotropic
+        params = LandauParams(d, F(1 / 24))
+        t0_ = t0(params)
+        ρ(t, params) = PolyNormal(d, params.K(t))
+        ρ0 = ρ(t0_, params)
+    else
+        params = nothing
+        t0_ = F(0)
+        ρ(t, params) = nothing
+        ρ0 = MvNormal(diagm([F(1.8), F(0.2), ones(d-2)...]))
+    end
+
     f! = choose_f!(d)
     tspan = (t0_, t0_ + 1)
-    ρ(t, params) = PolyNormal(d, params.K(t))
-    ρ0 = ρ(t0_, params)
     u0 = rand(rng, ρ0, n)
     name = "landau"
     solver = initialize(solver_, u0, score(ρ0, u0), name; kwargs...)
