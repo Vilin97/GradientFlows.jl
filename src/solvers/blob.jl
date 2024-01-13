@@ -6,7 +6,7 @@ struct Blob{S,F,A,L} <: Solver
     logger::L
 end
 
-Blob(;verbose=0, logger=Logger()) = Blob(nothing, nothing, nothing, verbose, logger)
+Blob(; verbose=0, logger=Logger()) = Blob(nothing, nothing, nothing, verbose, logger)
 
 struct BlobAllocMemCPU{T}
     diff_norm2s::Matrix{T}
@@ -63,8 +63,8 @@ end
 name(solver::Blob) = "blob"
 
 "ε = C * n^(-2 / (d + 6)) is optimal for gradient matching."
-function blob_bandwidth(u) 
+function blob_bandwidth(u)
     d, n = size(u)
     Σ = diag(cov(u'))
-    4 * prod(Σ)^(1/d) * n^(-2 / (d + 6))
+    4 * prod(Σ)^(1 / d) * n^(-2 / (d + 6))
 end

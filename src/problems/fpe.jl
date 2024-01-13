@@ -5,7 +5,7 @@ function fpe_problem(d, n, solver_; t0::F=0.1, t_end::F=1.1, dt::F=0.01, rng=DEF
     end
     f!(du, u, prob, t) = (du .= -u .- prob.solver.score_values)
     tspan = (t0, t_end)
-    ρ(t, params) = MvNormal((1 - exp(-2t))*I(d))
+    ρ(t, params) = MvNormal((1 - exp(-2t)) * I(d))
     params = nothing
     ρ0 = ρ(t0, params)
     u0 = rand(rng, ρ0, n)

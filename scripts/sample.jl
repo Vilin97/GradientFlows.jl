@@ -10,7 +10,8 @@ LogDensityProblems.logdensity(p::LogTargetDensity, θ) = -sum(abs2, θ) / 2  # s
 LogDensityProblems.dimension(p::LogTargetDensity) = p.dim
 LogDensityProblems.capabilities(::Type{LogTargetDensity}) = LogDensityProblems.LogDensityOrder{0}()
 
-D = 3; initial_θ = rand(D)
+D = 3;
+initial_θ = rand(D);
 ℓπ = LogTargetDensity(D)
 
 model = AdvancedHMC.LogDensityModel(LogDensityProblemsAD.ADgradient(Val(:ForwardDiff), ℓπ))
@@ -20,19 +21,19 @@ sampler = NUTS(δ)
 
 # Now sample
 samples = AbstractMCMC.sample(
-      model,
-      sampler,
-      n_adapts + n_samples;
-      nadapts = n_adapts,
-      initial_params = initial_θ,
-  )
+    model,
+    sampler,
+    n_adapts + n_samples;
+    nadapts=n_adapts,
+    initial_params=initial_θ,
+)
 
 # Extract the samples
 x_samples = [sample.z.θ for sample in samples]
 
 using Plots
 histogram([x[1] for x in x_samples]; normalize=true);
-plot!(x -> (2π)^(-1/2) * exp(-x^2/2))
+plot!(x -> (2π)^(-1 / 2) * exp(-x^2 / 2))
 
 
 
@@ -64,7 +65,8 @@ LogDensityProblems.logdensity(p::PolyNormal, x) = log(pdf(p, x))
 LogDensityProblems.dimension(p::PolyNormal) = p.d
 LogDensityProblems.capabilities(::Type{PolyNormal}) = LogDensityProblems.LogDensityOrder{0}()
 
-D = 3; initial_θ = rand(D)
+D = 3;
+initial_θ = rand(D);
 K = 0.6
 ρ = PolyNormal(D, K)
 
@@ -75,12 +77,12 @@ sampler = NUTS(δ)
 
 # Now sample
 samples = AbstractMCMC.sample(
-      model,
-      sampler,
-      n_adapts + n_samples;
-      nadapts = n_adapts,
-      initial_params = initial_θ,
-  )
+    model,
+    sampler,
+    n_adapts + n_samples;
+    nadapts=n_adapts,
+    initial_params=initial_θ,
+)
 
 # Extract the samples
 x_samples = [sample.z.θ for sample in samples]
@@ -104,6 +106,6 @@ function LogDensityModel(logpdf, D)
     LogDensityProblems.logdensity(p::LogTargetDensity, θ) = logpdf(θ)
     LogDensityProblems.dimension(p::LogTargetDensity) = p.dim
     LogDensityProblems.capabilities(::Type{LogTargetDensity}) = LogDensityProblems.LogDensityOrder{0}()
-    
-    model = AdvancedHMC.LogDensityModel(LogDensityProblemsAD.ADgradient(Val(:ForwardDiff), LogTargetDensity(D))) 
+
+    model = AdvancedHMC.LogDensityModel(LogDensityProblemsAD.ADgradient(Val(:ForwardDiff), LogTargetDensity(D)))
 end

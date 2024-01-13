@@ -2,7 +2,7 @@
 function Lp_distance(f1::F1, f2::F2; p, d, xlim, verbose=false, rtol=0.05, maxevals=10^5, kwargs...) where {F1<:Function,F2<:Function}
     result, integration_error = hcubature(x -> abs.(f1(x) - f2(x))^p, fill(-xlim, d), fill(xlim, d); rtol=rtol, maxevals=maxevals, kwargs...)
     result = max(zero(result), result)^(1 / p)
-    rel_error = integration_error/abs(result)
+    rel_error = integration_error / abs(result)
     (verbose > 0 || rel_error > 0.05) && (println("relative integration error ~ $rel_error"))
     return result
 end

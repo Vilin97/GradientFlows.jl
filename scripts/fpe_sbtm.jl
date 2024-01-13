@@ -35,13 +35,13 @@ for d in [3, 5, 10]
         prob1 = problem(d, n, Exact())
         println("        $(prob1.name)")
         ts = collect(prob1.tspan[1]:prob1.dt:prob1.tspan[2])
-        
+
         # sbtm
         println("    SBTM")
-        prob2 = problem(d, n, SBTM(;verbose=verbose, logger=Logger(1)))
+        prob2 = problem(d, n, SBTM(; verbose=verbose, logger=Logger(1)))
         set_u0!(prob2, prob1.u0)
         sol2 = solve(prob2)
-        
+
         logged_score_values2 = prob2.solver.logger.score_values
         true_score_values = [true_score(prob2, t, u) for (t, u) in zip(ts, sol2.u)]
         score_val_diff = [sum(abs2, logged_score_values2[i] .- true_score_values[i]) / sum(abs2, true_score_values[i]) for i in 1:length(true_score_values)]
@@ -50,17 +50,17 @@ for d in [3, 5, 10]
 
         # blob
         println("    Blob")
-        prob3 = problem(d, n, Blob(;verbose=verbose, logger=Logger(1)))
+        prob3 = problem(d, n, Blob(; verbose=verbose, logger=Logger(1)))
         set_u0!(prob3, prob1.u0)
         sol3 = solve(prob3)
-        
+
         logged_score_values3 = prob3.solver.logger.score_values
         true_score_values = [true_score(prob3, t, u) for (t, u) in zip(ts, sol3.u)]
         score_val_diff = [sum(abs2, logged_score_values3[i] .- true_score_values[i]) / sum(abs2, true_score_values[i]) for i in 1:length(true_score_values)]
         push!(plot_data, score_val_diff)
         push!(labels, "$(prob3.name) $(name(prob3.solver))")
     end
-    plt = plot(plot_data, label=reshape(labels, 1, :), xlabel = "time step", title = "d=$d, n=$n", ylabel="Σᵢ|s(xᵢ) - ∇log(xᵢ)|² / Σᵢ|∇log(xᵢ)|²")
+    plt = plot(plot_data, label=reshape(labels, 1, :), xlabel="time step", title="d=$d, n=$n", ylabel="Σᵢ|s(xᵢ) - ∇log(xᵢ)|² / Σᵢ|∇log(xᵢ)|²")
     push!(plots, plt)
 end
 plt = plot(plots..., plot_title="Score approximation error", size=(1200, 800), linewidth=3, margin=(13, :mm))

@@ -43,7 +43,7 @@ function pdf_plot(problem_name, d, n, solver_names; t_idx, xrange=range(-5, 5, l
     return p_marginal, p_slice
 end
 
-function plot_all(problem_name, d, ns, solver_names; save=true, dir = "data",
+function plot_all(problem_name, d, ns, solver_names; save=true, dir="data",
     metrics=[
         (:update_score_time, "update score time, s"),
         (:L2_error, "|ρₜ∗ϕ - ρₜ*|₂"),

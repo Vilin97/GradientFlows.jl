@@ -17,7 +17,7 @@ struct SBTMAllocMem{M}
     ζ::M
 end
 
-function SBTM(s::Union{Chain, Nothing}; optimiser=Adam(1.0f-4), epochs=25, denoising_alpha=0.4f0, init_batch_size=2^8, init_loss_tolerance=1.0f-4, init_max_iterations=10^5, allocated_memory=nothing, verbose=0, logger=Logger(), optimiser_state=nothing)
+function SBTM(s::Union{Chain,Nothing}; optimiser=Adam(1.0f-4), epochs=25, denoising_alpha=0.4f0, init_batch_size=2^8, init_loss_tolerance=1.0f-4, init_max_iterations=10^5, allocated_memory=nothing, verbose=0, logger=Logger(), optimiser_state=nothing)
     return SBTM(nothing, s, optimiser, epochs, denoising_alpha, init_batch_size, init_loss_tolerance, init_max_iterations, allocated_memory, verbose, logger, optimiser_state)
 end
 SBTM(; kwargs...) = SBTM(nothing; kwargs...)
@@ -73,7 +73,7 @@ function update!(solver::SBTM, integrator)
     @unpack score_values, s, optimiser, epochs, denoising_alpha, allocated_memory, verbose, logger, optimiser_state = solver
     @unpack ζ = allocated_memory
     log!(logger, solver)
-    
+
     u = integrator.u
     for epoch in 1:epochs
         randn!(ζ)
@@ -111,7 +111,7 @@ function Base.show(io::IO, solver::SBTM)
 end
 name(solver::SBTM) = "sbtm"
 
-function score_matching_loss_D(s, u, ζ, α, D = 1)
-    denoise_val = (s(u .+ α .* ζ) .- s(u .- α .* ζ)) ⋅ (D*ζ) / α
-    return (s(u) ⋅ (D*s(u)) + denoise_val) / size(u, 2)
+function score_matching_loss_D(s, u, ζ, α, D=1)
+    denoise_val = (s(u .+ α .* ζ) .- s(u .- α .* ζ)) ⋅ (D * ζ) / α
+    return (s(u) ⋅ (D * s(u)) + denoise_val) / size(u, 2)
 end

@@ -7,7 +7,7 @@ struct GradFlowProblem{FU,D,M,DF,F,P,S}
     dt::F # time step
     params::P # physical parameters of the problem
     solver::S # the solver to use
-    name::String
+    name::String # short name, e.g. "landau" or "diffusion"
 end
 
 function Base.show(io::IO, prob::GradFlowProblem)

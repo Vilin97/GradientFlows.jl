@@ -10,7 +10,7 @@ function kde(x, u::AbstractMatrix; h=kde_bandwidth(u), kwargs...)
     d = length(x)
     h_inv = inv(h)
     for x_q in eachcol(u)
-        res += exp(-normsq(x, x_q, h_inv)/2)
+        res += exp(-normsq(x, x_q, h_inv) / 2)
     end
     res / (sqrt((2π)^d * det(h)) * size(u, 2))
 end
