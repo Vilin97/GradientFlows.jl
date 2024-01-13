@@ -6,7 +6,7 @@ function landau_problem(d, n, solver_; dt::F=0.01, rng=DEFAULT_RNG, kwargs...) w
     params = LandauParams(d, F(1 / 24))
     t0_ = t0(params)
     f! = choose_f!(d)
-    tspan = (t0_, t0_ + F(0.5))
+    tspan = (t0_, t0_ + 1)
     ρ(t, params) = PolyNormal(d, params.K(t))
     ρ0 = ρ(t0_, params)
     u0 = rand(rng, ρ0, n)
