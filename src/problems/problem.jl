@@ -1,4 +1,4 @@
-struct GradFlowProblem{FU,D,M,DF,F,P,S}
+struct GradFlowProblem{FU,D,M,DF,F,P,S,DC}
     f!::FU # f!(du, u, prob :: GradFlowProblem, t) 
     ρ0::D # initial distribution
     u0::M # sample of initial distribution
@@ -8,6 +8,7 @@ struct GradFlowProblem{FU,D,M,DF,F,P,S}
     params::P # physical parameters of the problem
     solver::S # the solver to use
     name::String # short name, e.g. "landau" or "diffusion"
+    diffusion_coefficient::DC # diffusion_coefficient(u, params) = A∗u in Landau equation, = D in diffusion and FPE
 end
 
 function Base.show(io::IO, prob::GradFlowProblem)

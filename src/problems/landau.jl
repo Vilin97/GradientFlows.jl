@@ -12,7 +12,11 @@ function landau_problem(d, n, solver_; dt::F=0.01, rng=DEFAULT_RNG, kwargs...) w
     u0 = rand(rng, ρ0, n)
     name = "landau"
     solver = initialize(solver_, u0, score(ρ0, u0), name; kwargs...)
-    return GradFlowProblem(f!, ρ0, u0, ρ, tspan, dt, params, solver, name)
+    function diffusion_coefficient(u, params)
+        d, n = size(u)
+        return (I(d).*sum(abs2, u) .- u*u') .* (params.B / n)
+    end
+    return GradFlowProblem(f!, ρ0, u0, ρ, tspan, dt, params, solver, name, diffusion_coefficient)
 end
 
 struct LandauParams{T,F}

@@ -36,7 +36,7 @@ rng = StableRNG(123)
     @test l2_error_normalized(solver.s(u), score_values) ≈ 0 atol = solver.init_loss_tolerance
 
     # test update!
-    integrator = (u=u,)
+    integrator = (u=u, p=(diffusion_coefficient=(u, params)->1, params=nothing, ))
     u .-= 0.01f0 * solver.score_values
     ζ = randn(rng, Float32, d, n)
     old_loss = score_matching_loss(solver.s, u, ζ, solver.denoising_alpha)

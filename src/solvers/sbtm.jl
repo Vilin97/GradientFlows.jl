@@ -72,19 +72,21 @@ end
 function update!(solver::SBTM, integrator)
     @unpack score_values, s, optimiser, epochs, denoising_alpha, allocated_memory, verbose, logger, optimiser_state = solver
     @unpack ζ = allocated_memory
+    prob = integrator.p
+    u = integrator.u
     log!(logger, solver)
 
-    u = integrator.u
+    D = prob.diffusion_coefficient(u, prob.params)
     for epoch in 1:epochs
         randn!(ζ)
-        loss_value, grads = withgradient(s -> score_matching_loss(s, u, ζ, denoising_alpha), s)
+        loss_value, grads = withgradient(s -> score_matching_loss(s, u, ζ, denoising_alpha, D), s)
         Flux.update!(optimiser_state, s, grads[1])
         verbose > 1 && println("Epoch $(lpad(epoch, 2)), loss = $loss_value.")
     end
     score_values .= s(u)
     if verbose > 0 && integrator.iter % 10 == 0
         train_loss = pretty(score_matching_loss(s, u, ζ, denoising_alpha), 7)
-        test_loss = pretty(l2_error_normalized(score_values, true_score(integrator.p, integrator.t, integrator.u)), 7)
+        test_loss = pretty(l2_error_normalized(score_values, true_score(prob, integrator.t, integrator.u)), 7)
         println("Time $(integrator.t) test loss = $test_loss train loss = $train_loss")
     end
     nothing
@@ -93,10 +95,11 @@ end
 "Fisher divergence on CPU: ∑ᵢ (s(xᵢ) - yᵢ)² / |y|²"
 l2_error_normalized(y_hat, y) = sum(abs2, y_hat .- y) / sum(abs2, y)
 
-"≈ ( |s(u)|² + 2∇⋅s(u) ) / n"
-function score_matching_loss(s, u, ζ, α)
-    denoise_val = (s(u .+ α .* ζ) ⋅ ζ - s(u .- α .* ζ) ⋅ ζ) / α
-    return (sum(abs2, s(u)) + denoise_val) / size(u, 2)
+"≈ ( |√D s(u)|² + 2∇⋅Ds(u) ) / n"
+function score_matching_loss(s, u, ζ, α, D=1)
+    denoise_val = (s(u .+ α .* ζ) .- s(u .- α .* ζ)) ⋅ (D * ζ) / α
+    su = s(u)
+    return (su ⋅ (D * su) + denoise_val) / size(u, 2)
 end
 
 function mlp(d::Int; depth=2, width=100, activation=softsign, rng=DEFAULT_RNG)
@@ -110,8 +113,3 @@ function Base.show(io::IO, solver::SBTM)
     Base.print(io, "SBTM")
 end
 name(solver::SBTM) = "sbtm"
-
-function score_matching_loss_D(s, u, ζ, α, D=1)
-    denoise_val = (s(u .+ α .* ζ) .- s(u .- α .* ζ)) ⋅ (D * ζ) / α
-    return (s(u) ⋅ (D * s(u)) + denoise_val) / size(u, 2)
-end
