@@ -1,6 +1,7 @@
 using GradientFlows, StableRNGs, Test
 using GradientFlows: have_true_dist
 
+# isotropic initial condition
 n = 2000
 for d in [3, 5]
     for solver in [Exact(), SBTM(mlp(d, rng=StableRNG(321), depth=2)), Blob()]
@@ -14,6 +15,7 @@ for d in [3, 5]
     end
 end
 
+# anisotropic initial condition
 n = 2000
 d = 3
 for solver in [SBTM(mlp(d, rng=StableRNG(321), depth=2)), Blob()]
