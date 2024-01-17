@@ -1,26 +1,37 @@
-struct GradFlowExperimentResult{F}
+struct GradFlowExperimentResult{F,M1,M2}
+    true_covariance::M1
+    empirical_covariance::M2
+
+    # Errors
     update_score_time::F
-    L2_error::F
-    true_mean_error::F
     true_cov_trace_error::F
     true_cov_norm_error::F
-    true_fourth_moment_error::F
     sample_mean_error::F
     sample_cov_trace_error::F
+
+    # Computable only if have_true_dist(experiment)
+    true_mean_error::F
+    true_fourth_moment_error::F
+    L2_error::F
 end
 
 function GradFlowExperimentResult(experiment::Experiment)
     d = size(experiment.solution[1], 1)
-    lp_error = d <= 5 ? Lp_error(experiment; p=2) : eltype(experiment.solution[1])(NaN)
+    F = eltype(experiment.solution[1])
+    lp_error = d <= 5 ? Lp_error(experiment; p=2) : F(NaN)
     return GradFlowExperimentResult{Float64}(
+        experiment.true_cov[end],
+        emp_cov(experiment.solution[end]),
+
         update_score_time(experiment.timer),
-        lp_error,
-        true_mean_error(experiment),
         true_cov_trace_error(experiment),
         true_cov_norm_error(experiment),
-        true_fourth_moment_error(experiment),
         sample_mean_error(experiment),
         sample_cov_trace_error(experiment)
+        
+        have_true_dist(experiment) ? true_mean_error(experiment) : F(NaN),
+        have_true_dist(experiment) ? true_fourth_moment_error(experiment) : F(NaN),
+        have_true_dist(experiment) ? lp_error : F(NaN),
     )
 end
 
@@ -52,3 +63,5 @@ function Base.show(io::IO, result::GradFlowExperimentResult)
     println(io, "$(rpad("sample cov trace error:", 25)) $(round(sample_cov_trace_error,digits=4))")
     println(io, "$(rpad("update score time:", 25)) $(round(update_score_time,digits=4))")
 end
+
+have_true_dist(experiment) = !isnothing(experiment.true_mean_error)
