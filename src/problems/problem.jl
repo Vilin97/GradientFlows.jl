@@ -1,4 +1,4 @@
-struct GradFlowProblem{FU,D,M,DF,F,P,S,DC}
+struct GradFlowProblem{FU,D,M,DF,F,P,S,DC,C}
     f!::FU # f!(du, u, prob :: GradFlowProblem, t) 
     ρ0::D # initial distribution
     u0::M # sample of initial distribution
