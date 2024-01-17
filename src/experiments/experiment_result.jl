@@ -27,7 +27,7 @@ function GradFlowExperimentResult(experiment::Experiment)
         true_cov_trace_error(experiment),
         true_cov_norm_error(experiment),
         sample_mean_error(experiment),
-        sample_cov_trace_error(experiment)
+        sample_cov_trace_error(experiment),
         
         have_true_dist(experiment) ? true_mean_error(experiment) : F(NaN),
         have_true_dist(experiment) ? true_fourth_moment_error(experiment) : F(NaN),
