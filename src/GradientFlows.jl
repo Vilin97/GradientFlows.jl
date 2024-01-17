@@ -19,7 +19,7 @@ const DEFAULT_RNG = Random.default_rng()
 const DEFAULT_TIMER = TimerOutput()
 
 const SOLVER_NAME_WIDTH = 5
-const PROBLEM_NAME_WIDTH = 9
+const PROBLEM_NAME_WIDTH = 18
 const n_WIDTH = 6
 const PLOT_WINDOW_SIZE = (3000, 1800)
 
@@ -54,7 +54,7 @@ const ALL_SOLVERS = [Exact(), SBTM(), Blob()]
 
 export GradFlowProblem
 export set_u0!
-export diffusion_problem, landau_problem, fpe_problem
+export diffusion_problem, landau_problem, anisotropic_landau_problem, fpe_problem
 export Exact, Blob, SBTM
 export Logger
 export mlp, train_s!
