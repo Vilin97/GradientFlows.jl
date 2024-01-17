@@ -14,7 +14,8 @@ using GradientFlows, Test
         include("fpe.jl")
     end
     @testset "Landau Tests" begin
-        include("landau.jl")
+        include("landau_isotropic.jl")
+        include("landau_anisotropic.jl")
     end
     @testset "Run Experiments" begin
         include("run_experiments.jl")
