@@ -71,7 +71,7 @@ savefig(plt, "data/plots/score_approximation_error_learning_rate_1e-4")
 # n = 1000
 # verbose=1
 # using Flux: Adam
-# prob2 = diffusion_problem(d, n, SBTM(mlp(d,depth=1);verbose=verbose, logger=Logger(1), optimiser=Adam(1f-4)))
+# prob2 = diffusion_problem(d, n, SBTM(mlp(d,depth=1);verbose=verbose, logger=Logger(1), learning_rate=1f-4))
 # ts = collect(prob2.tspan[1]:prob2.dt:prob2.tspan[2])
 # sol2 = solve(prob2)
 
