@@ -19,7 +19,7 @@ rng = StableRNG(123)
     # test score_matching_loss
     seed!(123)
     α = 0.4f0
-    s = mlp(d)
+    s = mlp(d; depth=1)
     true_loss = true_score_matching_loss(s, u)
     approx_loss = mean(score_matching_loss(s, u, ζ, α) for ζ in [randn(rng, Float32, d, n) for _ in 1:1000])
     @test approx_loss ≈ true_loss rtol = 0.1
