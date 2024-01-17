@@ -12,5 +12,6 @@ function fpe_problem(d, n, solver_; t0::F=0.1, t_end::F=1.1, dt::F=0.01, rng=DEF
     name = "fpe"
     solver = initialize(solver_, u0, score(ρ0, u0), name; kwargs...)
     diffusion_coefficient(u, params) = 1
-    return GradFlowProblem(f!, ρ0, u0, ρ, tspan, dt, params, solver, name, diffusion_coefficient)
+    covariance(t, params) = cov(ρ(t, params))
+    return GradFlowProblem(f!, ρ0, u0, ρ, tspan, dt, params, solver, name, diffusion_coefficient, covariance)
 end

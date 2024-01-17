@@ -23,7 +23,12 @@ function landau_problem(d, n, solver_; dt::F=0.01, rng=DEFAULT_RNG, isotropic=tr
         d, n = size(u)
         return (I(d).*sum(abs2, u) .- u*u') .* (params.B / n)
     end
-    return GradFlowProblem(f!, ρ0, u0, ρ, tspan, dt, params, solver, name, diffusion_coefficient)
+    function covariance(t, params)
+        Σ₀ = cov(ρ0)
+        Σ∞ = I(d) .* tr(Σ₀) ./ d
+        return Σ∞ - (Σ∞ - Σ₀)exp(-4d*params.B*t)
+    end
+    return GradFlowProblem(f!, ρ0, u0, ρ, tspan, dt, params, solver, name, diffusion_coefficient, covariance)
 end
 
 struct LandauParams{T,F}

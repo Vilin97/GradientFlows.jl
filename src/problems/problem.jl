@@ -9,6 +9,7 @@ struct GradFlowProblem{FU,D,M,DF,F,P,S,DC}
     solver::S # the solver to use
     name::String # short name, e.g. "landau" or "diffusion"
     diffusion_coefficient::DC # diffusion_coefficient(u, params) = A∗u in Landau equation, = D in diffusion and FPE
+    covariance::C # covariance(t, params) is the covariance matrix of the target distribution at time t
 end
 
 function Base.show(io::IO, prob::GradFlowProblem)

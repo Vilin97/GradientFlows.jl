@@ -12,5 +12,6 @@ function diffusion_problem(d, n, solver_; t0::F=1.0, t_end::F=2.0, dt::F=0.01, r
     name = "diffusion"
     solver = initialize(solver_, u0, score(ρ0, u0), name; kwargs...)
     diffusion_coefficient(u, params) = params.D
-    return GradFlowProblem(f!, ρ0, u0, ρ, tspan, dt, params, solver, name, diffusion_coefficient)
+    covariance(t, params) = cov(ρ(t, params))
+    return GradFlowProblem(f!, ρ0, u0, ρ, tspan, dt, params, solver, name, diffusion_coefficient, covariance)
 end
