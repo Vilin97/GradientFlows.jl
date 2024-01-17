@@ -11,7 +11,7 @@ function landau_problem(d, n, solver_; dt::F=0.01, rng=DEFAULT_RNG, kwargs...) w
     f! = choose_f!(d)
     tspan = (t0_, t0_ + 1)
     u0 = rand(rng, ρ0, n)
-    name = "isotropic landau"
+    name = "landau"
     solver = initialize(solver_, u0, score(ρ0, u0), name; kwargs...)
     function diffusion_coefficient(u, params)
         d, n = size(u)
@@ -24,7 +24,7 @@ end
 "Make an anisotropic homogeneous landau problem with Maxwell kernel with the given dimension, number of particles, and solver."
 function anisotropic_landau_problem(d, n, solver_; dt::F=0.01, rng=DEFAULT_RNG, kwargs...) where {F}
     if solver_ isa SBTM && F == Float64
-        return landau_problem(d, n, solver_; dt=Float32(dt), rng=rng, kwargs...)
+        return anisotropic_landau_problem(d, n, solver_; dt=Float32(dt), rng=rng, kwargs...)
     end
     params = (B=F(1 / 24),) # B = constant in the collision kernel
     t0_ = F(0)
@@ -34,7 +34,7 @@ function anisotropic_landau_problem(d, n, solver_; dt::F=0.01, rng=DEFAULT_RNG, 
     f! = choose_f!(d)
     tspan = (t0_, t0_ + 1)
     u0 = rand(rng, ρ0, n)
-    name = "anisotropic landau"
+    name = "anisotropic_landau"
     solver = initialize(solver_, u0, score(ρ0, u0), name; kwargs...)
     function diffusion_coefficient(u, params)
         d, n = size(u)
