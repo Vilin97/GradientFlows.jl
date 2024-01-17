@@ -1,6 +1,6 @@
 mutable struct Experiment{D,S,P,V,T,M}
     true_dist::Vector{D}
-    true_covariance::Vector{M}
+    true_cov::Vector{M}
     solution::Vector{S}
     params::P
     saveat::V
@@ -15,8 +15,8 @@ function Experiment(problem::GradFlowProblem; saveat=problem.tspan)
     solution = solve(problem, saveat=saveat).u
     timer = deepcopy(DEFAULT_TIMER)
     true_dist_ = [true_dist(problem, t) for t in saveat]
-    true_covariance = [problem.covariance(t, problem.params) for t in saveat]
-    return Experiment(true_dist_, true_covariance, solution, problem.params, saveat, Float64(problem.dt), timer, problem.name, name(problem.solver))
+    true_cov = [problem.covariance(t, problem.params) for t in saveat]
+    return Experiment(true_dist_, true_cov, solution, problem.params, saveat, Float64(problem.dt), timer, problem.name, name(problem.solver))
 end
 
 function Base.show(io::IO, experiment::Experiment)
