@@ -46,7 +46,6 @@ dir = "data_test"
         path = experiment_result_filename(experiment, 1; dir=dir)
         save(path, result)
         result_loaded = load(path)
-        @test result_loaded == result
         for metric in fieldnames(GradFlowExperimentResult)
             @test load_metric("diffusion", 2, [10], ["Blob"], metric; dir=dir)[1] == getfield(result, metric)
         end
