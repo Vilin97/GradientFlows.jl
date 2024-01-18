@@ -35,8 +35,8 @@ end
 
 update_score_time(timer) = TimerOutputs.time(timer["update score"]) / 10^9
 
-top_eigenvalue_error(experiment; t_idx=length(experiment.saveat)) = maximum(eigvals(experiment.solution[t_idx])) - maximum(eigvals(experiment.true_cov[t_idx]))
-bottom_eigenvalue_error(experiment; t_idx=length(experiment.saveat)) = minimum(eigvals(experiment.solution[t_idx])) - minimum(eigvals(experiment.true_cov[t_idx]))
+top_eigenvalue_error(experiment; t_idx=length(experiment.saveat)) = maximum(eigvals(emp_cov(experiment.solution[t_idx]))) - maximum(eigvals(experiment.true_cov[t_idx]))
+bottom_eigenvalue_error(experiment; t_idx=length(experiment.saveat)) = minimum(eigvals(emp_cov(experiment.solution[t_idx]))) - minimum(eigvals(experiment.true_cov[t_idx]))
 
 sample_mean_error(experiment; t_idx=length(experiment.saveat)) = norm(emp_mean(experiment.solution[t_idx]), emp_mean(experiment.solution[1]))
 sample_cov_trace_error(experiment; t_idx=length(experiment.saveat)) = tr(emp_cov(experiment.solution[t_idx])) - tr(emp_cov(experiment.solution[1]))
