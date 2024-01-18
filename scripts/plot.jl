@@ -43,6 +43,24 @@ function pdf_plot(problem_name, d, n, solver_names; t_idx, xrange=range(-5, 5, l
     return p_marginal, p_slice
 end
 
+function cov_trajectory_plot(problem_name, d, solver_names; t_idx, dir="data")
+    experiment = load(experiment_filename(problem_name, d, n, solver_names[1], 1; dir=dir))
+    saveat = experiment.saveat
+    p1 = Plots.plot(size=PLOT_WINDOW_SIZE, xlabel="n", ylabel="Σ₁₁", title="Cov(Xₜ)₁₁ at t = $(saveat[t_idx])")
+    p2 = Plots.plot(size=PLOT_WINDOW_SIZE, xlabel="n", ylabel="Σ₂₂", title="Cov(Xₜ)₁₁ at t = $(saveat[t_idx])")
+    plot!(p1, ns, fill(experiment.true_cov[t_idx][1,1], length(ns)), label="true")
+    plot!(p2, ns, fill(experiment.true_cov[t_idx][2,2], length(ns)), label="true")
+    for solver in solver_names
+        experiments = load_all_experiment_runs(problem_name, d, n, solver; dir=dir)
+        covs = [exp.solution[t_idx] for exp in experiments]
+        covs_1 = [cov[1, 1] for cov in covs]
+        covs_2 = [cov[2, 2] for cov in covs]
+        plot!(p1, ns, covs_1, label=solver)
+        plot!(p2, ns, covs_2, label=solver)
+    end
+    return p1, p2
+end
+
 function plot_all(problem_name, d, ns, solver_names; save=true, dir="data",
     metrics=[
         (:update_score_time, "update score time, s"),
