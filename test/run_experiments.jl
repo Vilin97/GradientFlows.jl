@@ -19,7 +19,7 @@ run_experiments(problems, ns, num_runs, solvers; verbose=1, dir=dir)
 metrics = [:L2_error, :true_mean_error, :true_cov_trace_error, :true_cov_norm_error]
 
 for (problem_name, d) in [("diffusion", 2), ("landau", 3), ("fpe", 2)], metric in metrics
-    metric_matrix = load_metric(problem_name, d, ns, name.(solvers), metric; dir=dir)
+    metric_matrix = load_metric(problem_name, d, ns, name.(solvers), metric; dir=dir)[1]
     @test maximum(metric_matrix[end, :]) < 0.5
 end
 

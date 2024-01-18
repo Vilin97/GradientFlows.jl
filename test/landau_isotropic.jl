@@ -7,9 +7,9 @@ for d in [3, 5]
         problem = landau_problem(d, n, solver; rng=StableRNG(123))
         result = GradFlowExperimentResult(Experiment(problem))
 
-        @test result.L2_error < 0.05
-        @test result.true_mean_error < 0.05
-        @test result.true_cov_trace_error < 0.5
-        @test result.true_cov_norm_error < 0.5
+        @test result.L2_error[1] < 0.05
+        @test result.true_mean_error[1] < 0.05
+        @test result.true_cov_trace_error[1] < 0.5
+        @test result.true_cov_norm_error[1] < 0.5
     end
 end
