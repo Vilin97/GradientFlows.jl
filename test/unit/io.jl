@@ -1,4 +1,5 @@
 using GradientFlows, Flux, Test, TimerOutputs
+using GradientFlows: initialize
 
 dir = "data_test"
 @testset "IO" begin
