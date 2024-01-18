@@ -8,5 +8,5 @@ solvers = [SBTM(), Blob()]
 
 run_experiments(problems, ns, num_runs, solvers)
 
-# include("plot.jl")
-# @time plot_all(ALL_PROBLEMS, ns, [Blob()]; dir="data/eps_reduced_x10");
+include("plot.jl")
+@time plot_all(ALL_PROBLEMS, ns, [SBTM(), Blob()]; dir="data");

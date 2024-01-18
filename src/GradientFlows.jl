@@ -62,7 +62,7 @@ export name
 export solve
 
 export Experiment, GradFlowExperimentResult
-export run_experiments, train_nn
+export run_experiments, save_results, train_nn
 export save, load, model_filename, experiment_filename, experiment_result_filename, load_metric, load_all_experiment_runs, timer_filename, best_model
 export DEFAULT_TIMER, PLOT_WINDOW_SIZE
 export ALL_PROBLEMS, ALL_SOLVERS
