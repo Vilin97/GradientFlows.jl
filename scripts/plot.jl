@@ -47,7 +47,7 @@ function cov_trajectory_plot(problem_name, d, solver_names; t_idx, dir="data")
     experiment = load(experiment_filename(problem_name, d, n, solver_names[1], 1; dir=dir))
     saveat = experiment.saveat
     p1 = Plots.plot(size=PLOT_WINDOW_SIZE, xlabel="n", ylabel="Σ₁₁", title="Cov(Xₜ)₁₁ at t = $(saveat[t_idx])")
-    p2 = Plots.plot(size=PLOT_WINDOW_SIZE, xlabel="n", ylabel="Σ₂₂", title="Cov(Xₜ)₁₁ at t = $(saveat[t_idx])")
+    p2 = Plots.plot(size=PLOT_WINDOW_SIZE, xlabel="n", ylabel="Σ₂₂", title="Cov(Xₜ)₂₂ at t = $(saveat[t_idx])")
     plot!(p1, ns, fill(experiment.true_cov[t_idx][1,1], length(ns)), label="true")
     plot!(p2, ns, fill(experiment.true_cov[t_idx][2,2], length(ns)), label="true")
     for solver in solver_names
@@ -65,10 +65,10 @@ function plot_all(problem_name, d, ns, solver_names; save=true, dir="data",
     metrics=[
         (:update_score_time, "update score time, s"),
         (:L2_error, "|ρₜ∗ϕ - ρₜ*|₂"),
-        (:true_mean_error, "|E(Xₜ)-E(Xₜ*)|₂"),
+        # (:true_mean_error, "|E(Xₜ)-E(Xₜ*)|₂"),
         (:true_cov_trace_error, "|E |Xₜ|² - E |Xₜ*|²|"),
         (:true_cov_norm_error, "|Cov(Xₜ)-Cov(Xₜ*)|₂"),
-        (:true_fourth_moment_error, "|E |Xₜ|⁴ - E |Xₜ*|⁴|"),
+        # (:true_fourth_moment_error, "|E |Xₜ|⁴ - E |Xₜ*|⁴|"),
         (:sample_mean_error, "|E(X₀)-E(Xₜ)|₂|"),
         (:sample_cov_trace_error, "|E |X₀|² - E |Xₜ|²|")])
     println("Plotting $problem_name, d=$d")
@@ -79,6 +79,7 @@ function plot_all(problem_name, d, ns, solver_names; save=true, dir="data",
     push!(plots, p_marginal_start, p_marginal_end, p_slice_start, p_slice_end)
     for (metric, metric_name) in metrics
         metric_matrix = load_metric(problem_name, d, ns, solver_names, metric; dir=dir)
+        any(isnan, metric_matrix) && continue
         p = plot_metric(problem_name, d, ns, solver_names, metric_name, metric_matrix)
         push!(plots, p)
     end
