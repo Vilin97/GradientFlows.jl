@@ -48,7 +48,7 @@ dir = "data_test"
         save(path, result)
         result_loaded = load(path)
         for metric in fieldnames(GradFlowExperimentResult)
-            @test load_metric("diffusion", 2, [10], ["Blob"], metric; dir=dir)[1] == getfield(result, metric)
+            @test load_metric("diffusion", 2, [10], ["Blob"], metric; dir=dir) == getfield(result, metric)
         end
         path_prefix = splitpath(path)[1]
         rm(path_prefix, recursive=true)
