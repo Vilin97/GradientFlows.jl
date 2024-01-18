@@ -16,9 +16,9 @@ end
 
 function GradFlowExperimentResult(experiment::Experiment)
     d = size(experiment.solution[1], 1)
-    F = eltype(experiment.solution[1])
+    F = Float64
     lp_error = d <= 5 && have_true_dist(experiment) ? Lp_error(experiment; p=2) : F(NaN)
-    return GradFlowExperimentResult{F}(
+    return GradFlowExperimentResult{Pair{F, String}}(
         update_score_time(experiment.timer) => "update score time, s",
         top_eigenvalue_error(experiment) => "λ₁ - λ₁*",
         bottom_eigenvalue_error(experiment) => "λₖ - λₖ*",
