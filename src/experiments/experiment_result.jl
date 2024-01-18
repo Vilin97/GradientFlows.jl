@@ -1,10 +1,8 @@
 struct GradFlowExperimentResult{F}
-    # TODO: perhaps include the error in the top and bottom eigen-values of cov
-    # true_cov::Matrix{F}
-    # empirical_cov::Matrix{F}
-
     # Errors
     update_score_time::F
+    top_eigenvalue_error::F
+    bottom_eigenvalue_error::F
     true_cov_trace_error::F
     true_cov_norm_error::F
     sample_mean_error::F
@@ -22,6 +20,8 @@ function GradFlowExperimentResult(experiment::Experiment)
     lp_error = d <= 5 && have_true_dist(experiment) ? Lp_error(experiment; p=2) : F(NaN)
     return GradFlowExperimentResult{F}(
         update_score_time(experiment.timer) => "update score time, s",
+        top_eigenvalue_error(experiment) => "λ₁ - λ₁*",
+        bottom_eigenvalue_error(experiment) => "λₖ - λₖ*",
         true_cov_trace_error(experiment) => "E |Xₜ|² - E |Xₜ*|²",
         true_cov_norm_error(experiment) => "|Cov(Xₜ) - Cov(Xₜ*)|₂",
         sample_mean_error(experiment) => "|E(Xₜ) - E(X₀)|₂",
@@ -34,6 +34,9 @@ function GradFlowExperimentResult(experiment::Experiment)
 end
 
 update_score_time(timer) = TimerOutputs.time(timer["update score"]) / 10^9
+
+top_eigenvalue_error(experiment; t_idx=length(experiment.saveat)) = maximum(eigvals(experiment.solution[t_idx])) - maximum(eigvals(experiment.true_cov[t_idx]))
+bottom_eigenvalue_error(experiment; t_idx=length(experiment.saveat)) = minimum(eigvals(experiment.solution[t_idx])) - minimum(eigvals(experiment.true_cov[t_idx]))
 
 sample_mean_error(experiment; t_idx=length(experiment.saveat)) = norm(emp_mean(experiment.solution[t_idx]), emp_mean(experiment.solution[1]))
 sample_cov_trace_error(experiment; t_idx=length(experiment.saveat)) = tr(emp_cov(experiment.solution[t_idx])) - tr(emp_cov(experiment.solution[1]))

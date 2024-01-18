@@ -65,6 +65,8 @@ function plot_all(problem_name, d, ns, solver_names; save=true, dir="data",
     metrics=[
         :update_score_time,
         :L2_error,
+        :top_eigenvalue_error,
+        :bottom_eigenvalue_error,
         :true_cov_trace_error,
         :true_cov_norm_error, 
         :sample_mean_error,
