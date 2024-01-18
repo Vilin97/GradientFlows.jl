@@ -10,7 +10,7 @@ using GradientFlows, Test, TimerOutputs, StableRNGs
     problem2 = diffusion_problem(2, 100, Exact(); rng=StableRNG(1))
     experiment2 = Experiment(problem2)
     result2 = GradFlowExperimentResult(experiment2)
-    @test !(result.L2_error[1] ≈ result2.L2_error)
+    @test !(result.L2_error[1] ≈ result2.L2_error[1])
 
     # for coverage
     @test "$experiment" isa String

@@ -22,13 +22,15 @@ end
     metric_matrix[i, j] = metric(n = ns[i], solver = solver_names[j])"
 function load_metric(problem_name, d, ns, solver_names, metric::Symbol; kwargs...)
     metric_matrix = zeros(length(ns), length(solver_names))
+    metric_name = ""
     for (i, n) in enumerate(ns), (j, solver_name) in enumerate(solver_names)
         dir = dirname(experiment_result_filename(problem_name, d, n, solver_name, 1; kwargs...))
         filenames = joinpath.(dir, readdir(dir))
+        metric_name = getfield(load(filenames[1]), metric)[2]
         # use the mean of all the runs
         metric_matrix[i, j] = mean([getfield(load(f), metric)[1] for f in filenames])
     end
-    return metric_matrix => getfield(load(filenames[1]), metric)[2]
+    return metric_matrix => metric_name
 end
 
 ### all runs of experiment ###
