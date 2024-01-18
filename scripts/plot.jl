@@ -4,6 +4,9 @@ default(display_type=:inline)
 
 "metric_matrix[i,j] is the metric for the i-th value of n and the j-th solver"
 function plot_metric(problem_name, d, ns, solver_names, metric_name, metric_matrix; scale=:log10)
+    if scale == :log10
+        metric_matrix = abs.(metric_matrix)
+    end
     log_slope(x, y) = Polynomials.fit(log.(x), log.(y), 1).coeffs[2]
     p = Plots.plot(title=metric_name, xlabel="number of patricles, n", ylabel=metric_name, size=PLOT_WINDOW_SIZE)
     for (j, solver_name) in enumerate(solver_names)
@@ -74,24 +77,29 @@ function plot_all(problem_name, d, ns, solver_names; save=true, dir="data",
     println("Plotting $problem_name, d=$d")
     dt = load(experiment_filename(problem_name, d, ns[1], solver_names[1], 1; dir=dir)).dt
     plots = []
-    p_marginal_start, p_slice_start = pdf_plot(problem_name, d, ns[end], solver_names, t_idx=1)
-    p_marginal_end, p_slice_end = pdf_plot(problem_name, d, ns[end], solver_names, t_idx=2)
-    push!(plots, p_marginal_start, p_marginal_end, p_slice_start, p_slice_end)
+    plot_filenames = String[]
+    try
+        p_marginal_start, p_slice_start = pdf_plot(problem_name, d, ns[end], solver_names, t_idx=1)
+        p_marginal_end, p_slice_end = pdf_plot(problem_name, d, ns[end], solver_names, t_idx=2)
+        push!(plots, p_marginal_start, p_marginal_end, p_slice_start, p_slice_end)
+        plot_filenames = ["marginal_start", "marginal_end", "slice_start", "slice_end"]
+    catch e
+    end
     for metric in metrics
         metric_matrix, metric_name = load_metric(problem_name, d, ns, solver_names, metric; dir=dir)
         any(isnan, metric_matrix) && continue
         p = plot_metric(problem_name, d, ns, solver_names, metric_name, metric_matrix)
         push!(plots, p)
+        push!(plot_filenames, string(metric))
     end
     push!(plots, scatter_plot(problem_name, d, ns[end], solver_names))
+    push!(plot_filenames, "scatter")
     plt_all = Plots.plot(plots[1:end-1]..., size=PLOT_WINDOW_SIZE, margin=(13, :mm), plot_title="$problem_name, d=$d, $(ns[1])≤n≤$(ns[end]), dt=$dt")
 
     if save
         path = joinpath(dir, "plots", problem_name, "d_$d")
         mkpath(path)
-        metric_filenames = [string(metric) for (metric, _) in metrics]
-        filenames = ["marginal_start", "marginal_end", "slice_start", "slice_end", metric_filenames..., "scatter"]
-        for (plt, filename) in zip(plots, filenames)
+        for (plt, filename) in zip(plots, plot_filenames)
             savefig(plt, joinpath(path, filename))
         end
         path = joinpath(dir, "plots", "all")
