@@ -63,22 +63,20 @@ end
 
 function plot_all(problem_name, d, ns, solver_names; save=true, dir="data",
     metrics=[
-        (:update_score_time, "update score time, s"),
-        (:L2_error, "|ρₜ∗ϕ - ρₜ*|₂"),
-        # (:true_mean_error, "|E(Xₜ)-E(Xₜ*)|₂"),
-        (:true_cov_trace_error, "|E |Xₜ|² - E |Xₜ*|²|"),
-        (:true_cov_norm_error, "|Cov(Xₜ)-Cov(Xₜ*)|₂"),
-        # (:true_fourth_moment_error, "|E |Xₜ|⁴ - E |Xₜ*|⁴|"),
-        (:sample_mean_error, "|E(X₀)-E(Xₜ)|₂|"),
-        (:sample_cov_trace_error, "|E |X₀|² - E |Xₜ|²|")])
+        :update_score_time,
+        :L2_error,
+        :true_cov_trace_error,
+        :true_cov_norm_error, 
+        :sample_mean_error,
+        :sample_cov_trace_error])
     println("Plotting $problem_name, d=$d")
     dt = load(experiment_filename(problem_name, d, ns[1], solver_names[1], 1; dir=dir)).dt
     plots = []
     p_marginal_start, p_slice_start = pdf_plot(problem_name, d, ns[end], solver_names, t_idx=1)
     p_marginal_end, p_slice_end = pdf_plot(problem_name, d, ns[end], solver_names, t_idx=2)
     push!(plots, p_marginal_start, p_marginal_end, p_slice_start, p_slice_end)
-    for (metric, metric_name) in metrics
-        metric_matrix = load_metric(problem_name, d, ns, solver_names, metric; dir=dir)
+    for metric in metrics
+        metric_matrix, metric_name = load_metric(problem_name, d, ns, solver_names, metric; dir=dir)
         any(isnan, metric_matrix) && continue
         p = plot_metric(problem_name, d, ns, solver_names, metric_name, metric_matrix)
         push!(plots, p)
