@@ -49,7 +49,7 @@ function run_experiments(problems, ns, num_runs, solvers; rng=StableRNG, verbose
                     prob = problem(d, n, solver; dt=dt, dir=dir)
                     set_u0!(prob, prob_.u0)
                     if verbose > 0 && run == num_runs
-                        @time "n=$n $problem_name d=$(rpad(d,2)) run=$run solver=$solver" @timeit timer "$solver" experiment = Experiment(prob)
+                        @time "n=$(rpad(n,5)) $problem_name d=$(rpad(d,2)) run=$run solver=$solver" @timeit timer "$solver" experiment = Experiment(prob)
                     else
                         @timeit timer "$solver" experiment = Experiment(prob)
                     end
