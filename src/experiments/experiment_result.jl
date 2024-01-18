@@ -1,6 +1,7 @@
 struct GradFlowExperimentResult{F}
-    true_cov::Matrix{F}
-    empirical_cov::Matrix{F}
+    # TODO: perhaps include the error in the top and bottom eigen-values of cov
+    # true_cov::Matrix{F}
+    # empirical_cov::Matrix{F}
 
     # Errors
     update_score_time::F
@@ -20,9 +21,6 @@ function GradFlowExperimentResult(experiment::Experiment)
     F = eltype(experiment.solution[1])
     lp_error = d <= 5 && have_true_dist(experiment) ? Lp_error(experiment; p=2) : F(NaN)
     return GradFlowExperimentResult{F}(
-        experiment.true_cov[end],
-        emp_cov(experiment.solution[end]),
-
         update_score_time(experiment.timer),
         true_cov_trace_error(experiment),
         true_cov_norm_error(experiment),
