@@ -97,9 +97,9 @@ l2_error_normalized(y_hat, y) = sum(abs2, y_hat .- y) / sum(abs2, y)
 
 "≈ ( |√D s(u)|² + 2∇⋅Ds(u) ) / n"
 function score_matching_loss(s, u, ζ, α, D=1)
-    denoise_val = (s(u .+ α .* ζ) .- s(u .- α .* ζ)) ⋅ (D * ζ) / α
+    denoise_val = dot(s(u .+ α .* ζ) .- s(u .- α .* ζ), D, ζ) / α
     su = s(u)
-    return (su ⋅ (D * su) + denoise_val) / size(u, 2)
+    return (dot(su, D, su) + denoise_val) / size(u, 2)
 end
 
 function mlp(d::Int; depth, width=100, activation=softsign, rng=DEFAULT_RNG)
