@@ -3,12 +3,12 @@ ENV["GKSwstype"] = "nul" # no GUI
 default(display_type=:inline)
 
 "metric_matrix[i,j] is the metric for the i-th value of n and the j-th solver"
-function plot_metric(problem_name, d, ns, solver_names, metric_name, metric_matrix; scale=:log10)
+function plot_metric(problem_name, d, ns, solver_names, metric_name, metric_math_name, metric_matrix; scale=:log10, kwargs...)
     if scale == :log10
         metric_matrix = abs.(metric_matrix)
     end
-    log_slope(x, y) = Polynomials.fit(log.(x), log.(y), 1).coeffs[2]
-    p = Plots.plot(title=metric_name, xlabel="number of patricles, n", ylabel=metric_name, size=PLOT_WINDOW_SIZE)
+    log_slope(x, y) = Polynomials.fit(log.(abs.(x)), log.(abs.(y)), 1).coeffs[2]
+    p = Plots.plot(title=metric_name, xlabel="number of patricles, n", ylabel=metric_math_name, size=PLOT_WINDOW_SIZE)
     for (j, solver_name) in enumerate(solver_names)
         slope = round(log_slope(ns, metric_matrix[:, j]), digits=2)
         Plots.plot!(p, ns, metric_matrix[:, j], label="$solver_name, log-slope=$slope", marker=:circle, yscale=scale, xscale=scale, markerstrokewidth=0.4)
@@ -73,7 +73,7 @@ function plot_all(problem_name, d, ns, solver_names; save=true, dir="data",
         :true_cov_trace_error,
         :true_cov_norm_error, 
         :sample_mean_error,
-        :sample_cov_trace_error])
+        :sample_cov_trace_error], kwargs...)
     println("Plotting $problem_name, d=$d")
     dt = load(experiment_filename(problem_name, d, ns[1], solver_names[1], 1; dir=dir)).dt
     plots = []
@@ -86,11 +86,12 @@ function plot_all(problem_name, d, ns, solver_names; save=true, dir="data",
     catch e
     end
     for metric in metrics
-        metric_matrix, metric_name = load_metric(problem_name, d, ns, solver_names, metric; dir=dir)
+        metric_matrix, metric_math_name = load_metric(problem_name, d, ns, solver_names, metric; dir=dir)
+        metric_name = string(metric)
         any(isnan, metric_matrix) && continue
-        p = plot_metric(problem_name, d, ns, solver_names, metric_name, metric_matrix)
+        p = plot_metric(problem_name, d, ns, solver_names, metric_name, metric_math_name, metric_matrix; kwargs...)
         push!(plots, p)
-        push!(plot_filenames, string(metric))
+        push!(plot_filenames, metric_name)
     end
     push!(plots, scatter_plot(problem_name, d, ns[end], solver_names))
     push!(plot_filenames, "scatter")
