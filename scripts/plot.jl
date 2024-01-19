@@ -11,7 +11,7 @@ function plot_metric(problem_name, d, ns, solver_names, metric_name, metric_math
     p = Plots.plot(title=metric_name, xlabel="number of patricles, n", ylabel=metric_math_name, size=PLOT_WINDOW_SIZE)
     for (j, solver_name) in enumerate(solver_names)
         slope = round(log_slope(ns, metric_matrix[:, j]), digits=2)
-        Plots.plot!(p, ns, metric_matrix[:, j], label="$solver_name, log-slope=$slope", marker=:circle, yscale=scale, xscale=scale, markerstrokewidth=0.4)
+        Plots.plot!(p, ns, metric_matrix[:, j], label="$solver_name, log-slope=$slope", marker=:circle, yscale=scale, xscale=:log10, markerstrokewidth=0.4)
     end
     return p
 end
@@ -46,21 +46,19 @@ function pdf_plot(problem_name, d, n, solver_names; t_idx, xrange=range(-5, 5, l
     return p_marginal, p_slice
 end
 
-function cov_trajectory_plot(problem_name, d, solver_names; t_idx, dir="data")
-    experiment = load(experiment_filename(problem_name, d, n, solver_names[1], 1; dir=dir))
+function cov_plot(problem_name, d, ns, solver_names; t_idx, dir="data")
+    experiment = load(experiment_filename(problem_name, d, ns[1], solver_names[1], 1; dir=dir))
     saveat = experiment.saveat
-    p1 = Plots.plot(size=PLOT_WINDOW_SIZE, xlabel="n", ylabel="Σ₁₁", title="Cov(Xₜ)₁₁ at t = $(saveat[t_idx])")
-    p2 = Plots.plot(size=PLOT_WINDOW_SIZE, xlabel="n", ylabel="Σ₂₂", title="Cov(Xₜ)₂₂ at t = $(saveat[t_idx])")
-    plot!(p1, ns, fill(experiment.true_cov[t_idx][1,1], length(ns)), label="true")
-    plot!(p2, ns, fill(experiment.true_cov[t_idx][2,2], length(ns)), label="true")
+    p1 = Plots.plot(size=PLOT_WINDOW_SIZE, xlabel="n", ylabel="Σ₁₁", title="Cov(Xₜ)₁₁ at t = $(saveat[t_idx])", xscale=:log10)
+    p2 = Plots.plot(size=PLOT_WINDOW_SIZE, xlabel="n", ylabel="Σ₂₂", title="Cov(Xₜ)₂₂ at t = $(saveat[t_idx])", xscale=:log10)
     for solver in solver_names
-        experiments = load_all_experiment_runs(problem_name, d, n, solver; dir=dir)
-        covs = [exp.solution[t_idx] for exp in experiments]
-        covs_1 = [cov[1, 1] for cov in covs]
-        covs_2 = [cov[2, 2] for cov in covs]
+        covs_1 = [mean([emp_cov(exp.solution[t_idx])[1,1] for exp in load_all_experiment_runs(problem_name, d, n, solver; dir=dir)]) for n in ns]
+        covs_2 = [mean([emp_cov(exp.solution[t_idx])[2,2] for exp in load_all_experiment_runs(problem_name, d, n, solver; dir=dir)]) for n in ns]
         plot!(p1, ns, covs_1, label=solver)
         plot!(p2, ns, covs_2, label=solver)
     end
+    plot!(p1, ns, fill(experiment.true_cov[t_idx][1,1], length(ns)), label="true")
+    plot!(p2, ns, fill(experiment.true_cov[t_idx][2,2], length(ns)), label="true")
     return p1, p2
 end
 
@@ -82,8 +80,11 @@ function plot_all(problem_name, d, ns, solver_names; save=true, dir="data",
         p_marginal_start, p_slice_start = pdf_plot(problem_name, d, ns[end], solver_names, t_idx=1)
         p_marginal_end, p_slice_end = pdf_plot(problem_name, d, ns[end], solver_names, t_idx=2)
         push!(plots, p_marginal_start, p_marginal_end, p_slice_start, p_slice_end)
-        plot_filenames = ["marginal_start", "marginal_end", "slice_start", "slice_end"]
+        push!(plot_filenames, "marginal_start", "marginal_end", "slice_start", "slice_end")
     catch e
+        cov_plot1, cov_plot2 = cov_plot(problem_name, d, ns, solver_names, t_idx=2)
+        push!(plots, cov_plot1, cov_plot2)
+        push!(plot_filenames, "cov1", "cov2")
     end
     for metric in metrics
         metric_matrix, metric_math_name = load_metric(problem_name, d, ns, solver_names, metric; dir=dir)
