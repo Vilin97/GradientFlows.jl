@@ -6,6 +6,7 @@ struct Blob{S,F,A,L} <: Solver
     logger::L
 end
 
+Blob(ε; verbose=0, logger=Logger()) = Blob(nothing, ε, nothing, verbose, logger)
 Blob(; verbose=0, logger=Logger()) = Blob(nothing, nothing, nothing, verbose, logger)
 
 struct BlobAllocMemCPU{T}
@@ -21,7 +22,7 @@ function initialize(solver::Blob, u0, score_values::Matrix{T}, problem_name; kwa
     mol_sum = zeros(T, n)
     mols = zeros(T, n, n)
     allocated_memory = BlobAllocMemCPU(diff_norm2s, mol_sum, mols)
-    ε = blob_bandwidth(u0)
+    isnothing(solver.ε) ? ε = blob_bandwidth(u0) : ε = solver.ε
     logger = Logger(solver.logger.log_level, score_values)
     Blob(copy(score_values), T(ε), allocated_memory, solver.verbose, logger)
 end
@@ -61,6 +62,7 @@ function Base.show(io::IO, solver::Blob)
     Base.print(io, "Blob")
 end
 name(solver::Blob) = "blob"
+long_name(solver::Blob) = "blob ε=$(round(solver.ε, digits=5))"
 
 "ε = C * n^(-2 / (d + 6)) is optimal for gradient matching."
 function blob_bandwidth(u)

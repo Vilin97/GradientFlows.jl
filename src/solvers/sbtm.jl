@@ -113,3 +113,4 @@ function Base.show(io::IO, solver::SBTM)
     Base.print(io, "SBTM")
 end
 name(solver::SBTM) = "sbtm"
+long_name(solver::SBTM) = "sbtm η=$(solver.optimiser.eta)"

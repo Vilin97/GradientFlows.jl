@@ -9,6 +9,7 @@ mutable struct Experiment{D,S,P,V,T,M}
     problem_name::String
     solver_name::String
 end
+# TODO: add logged score values
 
 function Experiment(problem::GradFlowProblem; saveat=problem.tspan)
     reset_timer!(DEFAULT_TIMER)
