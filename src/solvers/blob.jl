@@ -6,8 +6,8 @@ struct Blob{S,F,A,L} <: Solver
     logger::L
 end
 
-Blob(ε; verbose=0, logger=Logger()) = Blob(nothing, ε, nothing, verbose, logger)
-Blob(; verbose=0, logger=Logger()) = Blob(nothing, nothing, nothing, verbose, logger)
+Blob(ε; verbose=0, logger=Logger(1)) = Blob(nothing, ε, nothing, verbose, logger)
+Blob(; kwargs...) = Blob(nothing; kwargs...)
 
 struct BlobAllocMemCPU{T}
     diff_norm2s::Matrix{T}
