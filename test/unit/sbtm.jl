@@ -13,21 +13,21 @@ rng = StableRNG(123)
 @testset "SBTM tests" begin
     d, n = 2, 1000
     dist = MvNormal(1.0 * I(d))
-    u = Float32.(rand(rng, dist, n))
+    u = rand(rng, dist, n)
     score_values = score(dist, u)
 
     # test score_matching_loss
     seed!(123)
-    α = 0.4f0
+    α = 0.4e0
     s = mlp(d; depth=1)
     true_loss = true_score_matching_loss(s, u)
-    approx_loss = mean(score_matching_loss(s, u, ζ, α) for ζ in [randn(rng, Float32, d, n) for _ in 1:1000])
+    approx_loss = mean(score_matching_loss(s, u, ζ, α) for ζ in [randn(rng, d, n) for _ in 1:1000])
     @test approx_loss ≈ true_loss rtol = 0.1
 
     # test initialize
-    solver = initialize(SBTM(s), u, Float32.(copy(score_values)), "dummy_problem_name")
+    solver = initialize(SBTM(s), u, copy(score_values), "dummy_problem_name")
     @test solver.score_values == score_values
-    x = rand(rng, Float32, d, n)
+    x = rand(rng, d, n)
     @test solver.s(x) == s(x)
     @test solver.optimiser_state == Flux.setup(solver.optimiser, s)
 
@@ -37,8 +37,8 @@ rng = StableRNG(123)
 
     # test update!
     integrator = (u=u, p=(diffusion_coefficient=(u, params)->1, params=nothing, ))
-    u .-= 0.01f0 * solver.score_values
-    ζ = randn(rng, Float32, d, n)
+    u .-= 0.01 * solver.score_values
+    ζ = randn(rng, d, n)
     old_loss = score_matching_loss(solver.s, u, ζ, solver.denoising_alpha)
     update!(solver, integrator)
     new_loss = score_matching_loss(solver.s, u, ζ, solver.denoising_alpha)

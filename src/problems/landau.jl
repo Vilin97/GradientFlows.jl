@@ -1,8 +1,5 @@
 "Make an isotropic homogeneous landau problem with Maxwell kernel with the given dimension, number of particles, and solver."
 function landau_problem(d, n, solver_; dt::F=0.01, rng=DEFAULT_RNG, kwargs...) where {F}
-    if solver_ isa SBTM && F == Float64
-        return landau_problem(d, n, solver_; dt=Float32(dt), rng=rng, kwargs...)
-    end
     params = LandauParams(d, F(1 / 24))
     t0_ = t0(params)
     ρ(t, params) = PolyNormal(d, params.K(t))
@@ -23,9 +20,6 @@ end
 
 "Make an anisotropic homogeneous landau problem with Maxwell kernel with the given dimension, number of particles, and solver."
 function anisotropic_landau_problem(d, n, solver_; dt::F=0.01, rng=DEFAULT_RNG, kwargs...) where {F}
-    if solver_ isa SBTM && F == Float64
-        return anisotropic_landau_problem(d, n, solver_; dt=Float32(dt), rng=rng, kwargs...)
-    end
     params = (B=F(1 / 24),) # B = constant in the collision kernel
     t0_ = F(0)
     ρ0 = MvNormal(diagm([F(1.8), F(0.2), ones(F, d-2)...]))

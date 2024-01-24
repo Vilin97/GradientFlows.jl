@@ -17,15 +17,15 @@ struct SBTMAllocMem{M}
     ζ::M
 end
 
-function SBTM(s::Union{Chain,Nothing}; learning_rate=1.0f-4, epochs=25, denoising_alpha=0.4f0, init_batch_size=2^8, init_loss_tolerance=1.0f-4, init_max_iterations=10^5, allocated_memory=nothing, verbose=0, logger=Logger(), optimiser_state=nothing)
+function SBTM(s::Union{Chain,Nothing}; learning_rate=1e-4, epochs=25, denoising_alpha=0.4, init_batch_size=2^8, init_loss_tolerance=1e-4, init_max_iterations=10^5, allocated_memory=nothing, verbose=0, logger=Logger(), optimiser_state=nothing)
     return SBTM(nothing, s, Adam(learning_rate), epochs, denoising_alpha, init_batch_size, init_loss_tolerance, init_max_iterations, allocated_memory, verbose, logger, optimiser_state)
 end
 SBTM(; kwargs...) = SBTM(nothing; kwargs...)
 
-function initialize(solver::SBTM, u0::AbstractMatrix{Float32}, score_values::AbstractMatrix{Float32}, problem_name; kwargs...)
+function initialize(solver::SBTM, u0::AbstractMatrix{F}, score_values::AbstractMatrix{F}, problem_name; kwargs...) where {F}
     ζ = similar(u0)
     allocated_memory = SBTMAllocMem(ζ)
-    if solver.s === nothing
+    if isnothing(solver.s)
         s = best_model(problem_name, size(u0, 1); kwargs...)
     else
         s = solver.s
@@ -107,7 +107,7 @@ function mlp(d::Int; depth, width=100, activation=softsign, rng=DEFAULT_RNG)
         Dense(d => width, activation, init=Flux.glorot_normal(rng)),
         repeat([Dense(width => width, activation, init=Flux.glorot_normal(rng))], depth - 1)...,
         Dense(width => d, init=Flux.glorot_normal(rng))
-    )
+    ) |> f64
 end
 function Base.show(io::IO, solver::SBTM)
     Base.print(io, "SBTM")

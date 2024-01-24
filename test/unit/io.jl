@@ -6,14 +6,14 @@ dir = "data_test"
     @testset "chain" begin
         d = 2
         n = 10
-        s = Chain(Dense(d => d))
+        s = Chain(Dense(d => d)) |> f64
         path = model_filename("test_problem", d, n; dir=dir)
         save(path, s)
         s_loaded = load(path)
-        x = rand(Float32, d)
+        x = rand(d)
         @test s(x) == s_loaded(x)
 
-        other_s = Chain(Dense(d => d))
+        other_s = Chain(Dense(d => d)) |> f64
         path2 = model_filename("test_problem", d, n + 1; dir=dir)
         save(path2, other_s)
         s_loaded = best_model("test_problem", d; dir=dir)
@@ -21,9 +21,9 @@ dir = "data_test"
         @test other_s(x) == s_loaded(x)
 
         # test SBTM no-arg constructor
-        solver = initialize(SBTM(), zeros(Float32, d, n), zeros(Float32, d, n), "test_problem"; dir=dir)
+        solver = initialize(SBTM(), zeros(d, n), zeros(d, n), "test_problem"; dir=dir)
         @test solver.s isa Chain
-        train_s!(solver, zeros(Float32, d, n), zeros(Float32, d, n))
+        train_s!(solver, zeros(d, n), zeros(d, n))
         @test solver.s(x) != s(x)
 
         path_prefix = splitpath(path)[1]

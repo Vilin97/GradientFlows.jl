@@ -96,7 +96,7 @@ function plot_all(problem_name, d, ns, solver_names; save=true, dir="data",
     end
     push!(plots, scatter_plot(problem_name, d, ns[end], solver_names))
     push!(plot_filenames, "scatter")
-    plt_all = Plots.plot(plots[1:end-1]..., size=PLOT_WINDOW_SIZE, margin=(13, :mm), plot_title="$problem_name, d=$d, $(ns[1])≤n≤$(ns[end]), dt=$dt")
+    plt_all = Plots.plot(plots[1:end-1]..., size=PLOT_WINDOW_SIZE, margin=(13, :mm), plot_title="$problem_name, d=$d, $(ns[1])≤n≤$(ns[end]), dt=$dt", linewidth=3)
 
     if save
         path = joinpath(dir, "plots", problem_name, "d_$d")
