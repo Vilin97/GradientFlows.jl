@@ -3,7 +3,7 @@ ENV["GKSwstype"] = "nul" # no GUI
 default(display_type=:inline)
 
 "metric_matrix[i,j] is the metric for the i-th value of n and the j-th solver"
-function plot_metric(problem_name, d, ns, solver_names, metric_name, metric_math_name, metric_matrix; scale=:log10, kwargs...)
+function plot_metric_over_n(problem_name, d, ns, solver_names, metric_name, metric_math_name, metric_matrix; scale=:log10, kwargs...)
     if scale == :log10
         metric_matrix = abs.(metric_matrix)
     end
@@ -47,21 +47,34 @@ function pdf_plot(problem_name, d, n, solver_names; t_idx, xrange=range(-5, 5, l
     return p_marginal, p_slice
 end
 
-function cov_plot(problem_name, d, ns, solver_names; t_idx, dir="data")
-    experiment = load(experiment_filename(problem_name, d, ns[1], solver_names[1], 1; dir=dir))
-    saveat = experiment.saveat
-    t_idx = t_idx < 1 ? length(saveat) + t_idx : t_idx
-    p1 = Plots.plot(size=PLOT_WINDOW_SIZE, xlabel="n", ylabel="Σ₁₁", title="Cov(Xₜ)₁₁ at t = $(saveat[t_idx])", xscale=:log10)
-    p2 = Plots.plot(size=PLOT_WINDOW_SIZE, xlabel="n", ylabel="Σ₂₂", title="Cov(Xₜ)₂₂ at t = $(saveat[t_idx])", xscale=:log10)
-    for solver in solver_names
-        covs_1 = [mean([emp_cov(exp.solution[t_idx])[1,1] for exp in load_all_experiment_runs(problem_name, d, n, solver; dir=dir)]) for n in ns]
-        covs_2 = [mean([emp_cov(exp.solution[t_idx])[2,2] for exp in load_all_experiment_runs(problem_name, d, n, solver; dir=dir)]) for n in ns]
-        plot!(p1, ns, covs_1, label=solver)
-        plot!(p2, ns, covs_2, label=solver)
+"metric(experiment) isa Vector of length(experiment.saveat)"
+function plot_metric_over_t(problem_name, d, n, solver_names, metric, metric_name, metric_math_name; kwargs...)
+    p = Plots.plot(title="$metric_name n=$n", xlabel="time", ylabel=metric_math_name, size=PLOT_WINDOW_SIZE)
+    for solver_name in solver_names
+        experiments = load_all_experiment_runs(problem_name, d, n, solver_name; kwargs...)
+        saveat = round.(experiments[1].saveat, digits=3)
+        metric_ = mean([metric(exp) for exp in experiments])
+        plot!(p, saveat, metric_, label=solver_name)
     end
-    plot!(p1, ns, fill(experiment.true_cov[t_idx][1,1], length(ns)), label="true")
-    plot!(p2, ns, fill(experiment.true_cov[t_idx][2,2], length(ns)), label="true")
-    return p1, p2
+    return p
+end
+
+function plot_score_error(problem_name, d, n, solver_names; kwargs...)
+    function score_error(experiment)
+        true_score_values = [score(dist, u) for (dist, u) in zip(experiment.true_dist, experiment.solution)]
+        return sum.(abs2, experiment.score_values .- true_score_values) ./ sum.(abs2, true_score_values)
+    end
+    metric_name = "score_error"
+    metric_math_name = "∑ᵢ |s(xᵢ) - ∇log ρ*(xᵢ)|² / ∑ᵢ |∇log ρ*(xᵢ)|²"
+    return plot_metric_over_t(problem_name, d, n, solver_names, score_error, metric_name, metric_math_name; kwargs...)
+end
+
+function plot_covariance_trajectory(problem_name, d, n, solver_names; row, column, kwargs...)
+    cov_(experiment) = emp_cov(experiment.solution[t_idx])[row, column]
+    plt = plot_metric_over_t(problem_name, d, n, solver_names, cov_, "covariance($row,$column)", "Σ$row$column"; kwargs...)
+    experiment = load(experiment_filename(problem_name, d, n, solver_names[1], 1; kwargs...))
+    plot!(plt, experiment.saveat, getindex.(true_cov, row, col), label="true")
+    return plt
 end
 
 function plot_all(problem_name, d, ns, solver_names; save=true, dir="data",
@@ -75,37 +88,45 @@ function plot_all(problem_name, d, ns, solver_names; save=true, dir="data",
         :sample_mean_error,
         :sample_cov_trace_error], kwargs...)
     println("Plotting $problem_name, d=$d")
-    dt = load(experiment_filename(problem_name, d, ns[1], solver_names[1], 1; dir=dir)).dt
+    any_experiment = load(experiment_filename(problem_name, d, ns[1], solver_names[1], 1; dir=dir))
+    dt = any_experiment.dt
+    have_true_distribution = have_true_dist(any_experiment)
+    
     plots = []
-    plot_filenames = String[]
-    try
+    if save
+        path = joinpath(dir, "plots", problem_name, "d_$d")
+        mkpath(path)
+        saveplot(plt, plot_name) = savefig(plt, joinpath(path, plot_name))
+        saveplots(plts, plot_names) = for (plt, name) in (plts,plot_names); saveplot(plt, name); end
+    end
+    push_and_save(plt, plot_name) = push!(plots, plt); save && saveplot(plt, plot_name)
+    
+    ### plot ###
+    save && saveplot(scatter_plot(problem_name, d, ns[end], solver_names), "scatter")
+    p_cov_trajectory_1 = plot_covariance_trajectory(problem_name, d, ns[end], solver_names; row=1, column=1)
+    push_and_save(p_cov_trajectory_1, "cov_trajectory_1")
+    if have_true_distribution
         p_marginal_start, p_slice_start = pdf_plot(problem_name, d, ns[end], solver_names, t_idx=1)
         p_marginal_end, p_slice_end = pdf_plot(problem_name, d, ns[end], solver_names, t_idx=0)
-        push!(plots, p_marginal_start, p_marginal_end, p_slice_start, p_slice_end)
-        push!(plot_filenames, "marginal_start", "marginal_end", "slice_start", "slice_end")
-    catch e
-        cov_plot1, cov_plot2 = cov_plot(problem_name, d, ns, solver_names, t_idx=0)
-        push!(plots, cov_plot1, cov_plot2)
-        push!(plot_filenames, "cov1", "cov2")
+        p_score_error = plot_score_error(problem_name, d, ns[end], solver_names)
+        plts_ = [p_marginal_start, p_marginal_end, p_slice_start, p_slice_end, p_score_error]
+        push!(plots, plts_...)
+        save && saveplots(plts_, ["marginal_start", "marginal_end", "slice_start", "slice_end", "score_error"])
+    else
+        p_cov_trajectory_2 = plot_covariance_trajectory(problem_name, d, ns[end], solver_names; row=2, column=2)
+        push_and_save(p_cov_trajectory_2, "cov_trajectory_2")
     end
     for metric in metrics
         metric_matrix, metric_math_name = load_metric(problem_name, d, ns, solver_names, metric; dir=dir)
         metric_name = string(metric)
         any(isnan, metric_matrix) && continue
-        p = plot_metric(problem_name, d, ns, solver_names, metric_name, metric_math_name, metric_matrix; kwargs...)
-        push!(plots, p)
-        push!(plot_filenames, metric_name)
+        p = plot_metric_over_n(problem_name, d, ns, solver_names, metric_name, metric_math_name, metric_matrix; kwargs...)
+        push_and_save(p, metric_name)
     end
-    push!(plots, scatter_plot(problem_name, d, ns[end], solver_names))
-    push!(plot_filenames, "scatter")
-    plt_all = Plots.plot(plots[1:end-1]..., size=PLOT_WINDOW_SIZE, margin=(13, :mm), plot_title="$problem_name, d=$d, $(ns[1])≤n≤$(ns[end]), dt=$dt", linewidth=3)
+    plt_all = Plots.plot(plots..., size=PLOT_WINDOW_SIZE, margin=(13, :mm), plot_title="$problem_name, d=$d, $(ns[1])≤n≤$(ns[end]), dt=$dt", linewidth=PLOT_LINE_WIDTH)
 
+    ### save ###
     if save
-        path = joinpath(dir, "plots", problem_name, "d_$d")
-        mkpath(path)
-        for (plt, filename) in zip(plots, plot_filenames)
-            savefig(plt, joinpath(path, filename))
-        end
         path = joinpath(dir, "plots", "all")
         mkpath(path)
         savefig(plt_all, joinpath(path, "$(problem_name)_d_$d"))

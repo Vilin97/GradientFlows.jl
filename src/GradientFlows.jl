@@ -22,6 +22,7 @@ const SOLVER_NAME_WIDTH = 5
 const PROBLEM_NAME_WIDTH = 18
 const n_WIDTH = 6
 const PLOT_WINDOW_SIZE = (3000, 1800)
+const PLOT_LINE_WIDTH = 3
 
 include("distributions/poly_normal.jl")
 include("distributions/score.jl")
