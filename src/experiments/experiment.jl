@@ -11,7 +11,7 @@ mutable struct Experiment{D,S,C,P,V,T,M}
     solver_name::String
 end
 
-function Experiment(problem::GradFlowProblem; saveat=collect(prob_.tspan[1]:prob_.dt:prob_.tspan[2]))
+function Experiment(problem::GradFlowProblem; saveat=collect(problem.tspan[1]:problem.dt:problem.tspan[2]))
     reset_timer!(DEFAULT_TIMER)
     solution = solve(problem, saveat=saveat).u
     score_values = isempty(solver.logger.score_values) ? fill(NaN, length(solution)) : solver.logger.score_values
