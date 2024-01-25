@@ -37,6 +37,7 @@ include("problems/fpe.jl")
 include("solve.jl")
 
 include("solvers/solver.jl")
+include("solvers/logger.jl")
 include("solvers/exact.jl")
 include("solvers/blob.jl")
 include("solvers/sbtm.jl")
@@ -49,7 +50,7 @@ include("experiments/experiment.jl")
 include("experiments/experiment_result.jl")
 include("experiments/io.jl")
 
-const ALL_PROBLEMS = [(diffusion_problem, 2), (diffusion_problem, 5), (diffusion_problem, 10), (fpe_problem, 2), (fpe_problem, 5), (fpe_problem, 10), (landau_problem, 3), (landau_problem, 5), (landau_problem, 10)]
+const ALL_PROBLEMS = [(diffusion_problem, 2), (diffusion_problem, 5), (diffusion_problem, 10), (fpe_problem, 2), (fpe_problem, 5), (fpe_problem, 10), (landau_problem, 3), (landau_problem, 5), (landau_problem, 10), (anisotropic_landau_problem, 3), (anisotropic_landau_problem, 5), (anisotropic_landau_problem, 10)]
 const ALL_SOLVERS = [Exact(), SBTM(), Blob()]
 
 export GradFlowProblem
