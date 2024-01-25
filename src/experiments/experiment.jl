@@ -1,7 +1,8 @@
-mutable struct Experiment{D,S,P,V,T,M}
+mutable struct Experiment{D,S,C,P,V,T,M}
     true_dist::Vector{D}
     true_cov::Vector{M}
     solution::Vector{S}
+    score_values::Vector{C}
     params::P
     saveat::V
     dt::Float64
@@ -9,15 +10,15 @@ mutable struct Experiment{D,S,P,V,T,M}
     problem_name::String
     solver_name::String
 end
-# TODO: add logged score values
 
-function Experiment(problem::GradFlowProblem; saveat=problem.tspan)
+function Experiment(problem::GradFlowProblem; saveat=collect(prob_.tspan[1]:prob_.dt:prob_.tspan[2]))
     reset_timer!(DEFAULT_TIMER)
     solution = solve(problem, saveat=saveat).u
+    score_values = isempty(solver.logger.score_values) ? fil(NaN, length(solution)) : solver.logger.score_values
     timer = deepcopy(DEFAULT_TIMER)
     true_dist_ = [true_dist(problem, t) for t in saveat]
     true_cov = [problem.covariance(t, problem.params) for t in saveat]
-    return Experiment(true_dist_, true_cov, solution, problem.params, saveat, Float64(problem.dt), timer, problem.name, name(problem.solver))
+    return Experiment(true_dist_, true_cov, solution, score_values, problem.params, saveat, Float64(problem.dt), timer, problem.name, name(problem.solver))
 end
 
 function Base.show(io::IO, experiment::Experiment)
