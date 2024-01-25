@@ -17,7 +17,7 @@ struct SBTMAllocMem{M}
     ζ::M
 end
 
-function SBTM(s::Union{Chain,Nothing}; learning_rate=1e-4, epochs=25, denoising_alpha=0.4, init_batch_size=2^8, init_loss_tolerance=1e-4, init_max_iterations=10^5, allocated_memory=nothing, verbose=0, logger=Logger(1), optimiser_state=nothing)
+function SBTM(s::Union{Chain,Nothing}; learning_rate=4e-4, epochs=25, denoising_alpha=0.4, init_batch_size=2^8, init_loss_tolerance=1e-4, init_max_iterations=10^5, allocated_memory=nothing, verbose=0, logger=Logger(1), optimiser_state=nothing)
     return SBTM(nothing, s, Adam(learning_rate), epochs, denoising_alpha, init_batch_size, init_loss_tolerance, init_max_iterations, allocated_memory, verbose, logger, optimiser_state)
 end
 SBTM(; kwargs...) = SBTM(nothing; kwargs...)
