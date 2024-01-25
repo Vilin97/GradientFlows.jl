@@ -31,6 +31,7 @@ function pdf_plot(problem_name, d, n, solver_names; t_idx, xrange=range(-5, 5, l
     slice(x::Number) = [x, zeros(typeof(x), d - 1)...]
     experiment = load(experiment_filename(problem_name, d, n, solver_names[1], 1; dir=dir))
     saveat = experiment.saveat
+    t_idx = t_idx < 1 ? length(saveat) + t_idx : t_idx
     dist = experiment.true_dist[t_idx]
     p_marginal = Plots.plot(size=PLOT_WINDOW_SIZE, xlabel="x", ylabel="Σᵢϕ(x - Xᵢ[1])/n", title="marginal density n=$n t=$(saveat[t_idx])")
     p_slice = Plots.plot(size=PLOT_WINDOW_SIZE, xlabel="x", ylabel="Σᵢϕ([x,0...] - Xᵢ)/n", title="slice density n=$n t=$(saveat[t_idx])")
@@ -49,6 +50,7 @@ end
 function cov_plot(problem_name, d, ns, solver_names; t_idx, dir="data")
     experiment = load(experiment_filename(problem_name, d, ns[1], solver_names[1], 1; dir=dir))
     saveat = experiment.saveat
+    t_idx = t_idx < 1 ? length(saveat) + t_idx : t_idx
     p1 = Plots.plot(size=PLOT_WINDOW_SIZE, xlabel="n", ylabel="Σ₁₁", title="Cov(Xₜ)₁₁ at t = $(saveat[t_idx])", xscale=:log10)
     p2 = Plots.plot(size=PLOT_WINDOW_SIZE, xlabel="n", ylabel="Σ₂₂", title="Cov(Xₜ)₂₂ at t = $(saveat[t_idx])", xscale=:log10)
     for solver in solver_names
@@ -78,11 +80,11 @@ function plot_all(problem_name, d, ns, solver_names; save=true, dir="data",
     plot_filenames = String[]
     try
         p_marginal_start, p_slice_start = pdf_plot(problem_name, d, ns[end], solver_names, t_idx=1)
-        p_marginal_end, p_slice_end = pdf_plot(problem_name, d, ns[end], solver_names, t_idx=2)
+        p_marginal_end, p_slice_end = pdf_plot(problem_name, d, ns[end], solver_names, t_idx=0)
         push!(plots, p_marginal_start, p_marginal_end, p_slice_start, p_slice_end)
         push!(plot_filenames, "marginal_start", "marginal_end", "slice_start", "slice_end")
     catch e
-        cov_plot1, cov_plot2 = cov_plot(problem_name, d, ns, solver_names, t_idx=2)
+        cov_plot1, cov_plot2 = cov_plot(problem_name, d, ns, solver_names, t_idx=0)
         push!(plots, cov_plot1, cov_plot2)
         push!(plot_filenames, "cov1", "cov2")
     end
