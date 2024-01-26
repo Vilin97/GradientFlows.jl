@@ -70,10 +70,10 @@ function plot_score_error(problem_name, d, n, solver_names; kwargs...)
 end
 
 function plot_covariance_trajectory(problem_name, d, n, solver_names; row, column, kwargs...)
-    cov_(experiment) = emp_cov(experiment.solution[t_idx])[row, column]
+    cov_(experiment) = [emp_cov(u)[row, column] for u in experiment.solution]
     plt = plot_metric_over_t(problem_name, d, n, solver_names, cov_, "covariance($row,$column)", "Σ$row$column"; kwargs...)
     experiment = load(experiment_filename(problem_name, d, n, solver_names[1], 1; kwargs...))
-    plot!(plt, experiment.saveat, getindex.(true_cov, row, col), label="true")
+    plot!(plt, experiment.saveat, getindex.(experiment.true_cov, row, column), label="true")
     return plt
 end
 
@@ -97,23 +97,26 @@ function plot_all(problem_name, d, ns, solver_names; save=true, dir="data",
         path = joinpath(dir, "plots", problem_name, "d_$d")
         mkpath(path)
         saveplot(plt, plot_name) = savefig(plt, joinpath(path, plot_name))
-        saveplots(plts, plot_names) = for (plt, name) in (plts,plot_names); saveplot(plt, name); end
+        saveplots(plts, plot_names) = for (plt, name) in zip(plts,plot_names); saveplot(plt, name); end
     end
-    push_and_save(plt, plot_name) = push!(plots, plt); save && saveplot(plt, plot_name)
-    
+    function push_and_save(plt, plot_name) 
+        push!(plots, plt)
+        save && saveplot(plt, plot_name)
+    end
+
     ### plot ###
     save && saveplot(scatter_plot(problem_name, d, ns[end], solver_names), "scatter")
-    p_cov_trajectory_1 = plot_covariance_trajectory(problem_name, d, ns[end], solver_names; row=1, column=1)
+    p_cov_trajectory_1 = plot_covariance_trajectory(problem_name, d, ns[end], solver_names; row=1, column=1, dir=dir)
     push_and_save(p_cov_trajectory_1, "cov_trajectory_1")
     if have_true_distribution
         p_marginal_start, p_slice_start = pdf_plot(problem_name, d, ns[end], solver_names, t_idx=1)
         p_marginal_end, p_slice_end = pdf_plot(problem_name, d, ns[end], solver_names, t_idx=0)
-        p_score_error = plot_score_error(problem_name, d, ns[end], solver_names)
+        p_score_error = plot_score_error(problem_name, d, ns[end], solver_names; dir=dir)
         plts_ = [p_marginal_start, p_marginal_end, p_slice_start, p_slice_end, p_score_error]
         push!(plots, plts_...)
         save && saveplots(plts_, ["marginal_start", "marginal_end", "slice_start", "slice_end", "score_error"])
     else
-        p_cov_trajectory_2 = plot_covariance_trajectory(problem_name, d, ns[end], solver_names; row=2, column=2)
+        p_cov_trajectory_2 = plot_covariance_trajectory(problem_name, d, ns[end], solver_names; row=2, column=2, dir=dir)
         push_and_save(p_cov_trajectory_2, "cov_trajectory_2")
     end
     for metric in metrics

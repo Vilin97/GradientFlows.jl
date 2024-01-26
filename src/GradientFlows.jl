@@ -66,10 +66,10 @@ export solve
 export Experiment, GradFlowExperimentResult
 export run_experiments, save_results, train_nn
 export save, load, model_filename, experiment_filename, experiment_result_filename, load_metric, load_all_experiment_runs, timer_filename, best_model
-export DEFAULT_TIMER, PLOT_WINDOW_SIZE
+export DEFAULT_TIMER, PLOT_WINDOW_SIZE, PLOT_LINE_WIDTH
 export ALL_PROBLEMS, ALL_SOLVERS
 
-export true_dist, true_score, pdf, marginal_pdf
+export true_dist, have_true_dist, true_score, pdf, marginal_pdf
 export emp_mean, emp_cov, mean, cov
 export kde, kde_bandwidth
 export Lp_distance, Lp_error

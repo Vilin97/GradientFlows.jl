@@ -14,7 +14,7 @@ end
 function Experiment(problem::GradFlowProblem; saveat=collect(problem.tspan[1]:problem.dt:problem.tspan[2]))
     reset_timer!(DEFAULT_TIMER)
     solution = solve(problem, saveat=saveat).u
-    score_values = isempty(problem.solver.logger.score_values) ? fill(NaN, length(solution)) : problem.solver.logger.score_values
+    score_values = (!hasfield(problem.solver, :logger) || isempty(problem.solver.logger.score_values)) ? fill(NaN, length(solution)) : problem.solver.logger.score_values
     timer = deepcopy(DEFAULT_TIMER)
     true_dist_ = [true_dist(problem, t) for t in saveat]
     true_cov = [problem.covariance(t, problem.params) for t in saveat]
