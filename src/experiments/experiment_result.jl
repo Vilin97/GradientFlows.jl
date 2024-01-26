@@ -26,8 +26,8 @@ function GradFlowExperimentResult(experiment::Experiment)
         true_cov_norm_error(experiment) => "|Cov(Xₜ) - Cov(Xₜ*)|₂",
 
         # if moments conserved
-        mean_conserved(experiment) ? sample_mean_error(experiment) => "|E(Xₜ) - E(X₀)|₂" : F(NaN),
-        cov_trace_conserved(experiment) ? sample_cov_trace_error(experiment) => "|E |Xₜ|² - E |X₀|²|": F(NaN),
+        mean_conserved(experiment) ? sample_mean_error(experiment) : F(NaN) => "|E(Xₜ) - E(X₀)|₂",
+        cov_trace_conserved(experiment) ? sample_cov_trace_error(experiment) : F(NaN) => "|E |Xₜ|² - E |X₀|²|",
         
         # if have true distribution
         (have_true_dist(experiment) ? true_mean_error(experiment) : F(NaN)) => "|E(Xₜ)-E(Xₜ*)|₂",
