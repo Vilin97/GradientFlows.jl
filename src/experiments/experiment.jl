@@ -29,6 +29,9 @@ end
 
 have_true_dist(experiment::Experiment) = !isnothing(experiment.true_dist[end])
 
+mean_conserved(experiment::Experiment) = !have_true_dist(experiment) || (mean(experiment.true_dist[end]) ≈ mean(experiment.true_dist[1]))
+cov_trace_conserved(experiment::Experiment) = !have_true_dist(experiment) || (tr(cov(experiment.true_dist[end])) ≈ tr(cov(experiment.true_dist[1])))
+
 """
 run_experiments(problems, ns, num_runs; verbose=true, dt=0.01, dir="data")
 
