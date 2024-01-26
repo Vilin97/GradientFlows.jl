@@ -4,8 +4,11 @@ default(display_type=:inline)
 
 "metric_matrix[i,j] is the metric for the i-th value of n and the j-th solver"
 function plot_metric_over_n(problem_name, d, ns, solver_names, metric_name, metric_math_name, metric_matrix; scale=:log10, kwargs...)
+    metric_matrix = abs.(metric_matrix)
     if scale == :log10
-        metric_matrix = abs.(metric_matrix)
+        metric_matrix += 1e-18
+    else
+        metric_matrix = round.(metric_matrix, digits = 13)
     end
     log_slope(x, y) = Polynomials.fit(log.(abs.(x)), log.(abs.(y)), 1).coeffs[2]
     p = Plots.plot(title=metric_name, xlabel="number of patricles, n", ylabel=metric_math_name, size=PLOT_WINDOW_SIZE)
@@ -49,7 +52,7 @@ end
 
 "metric(experiment) isa Vector of length(experiment.saveat)"
 function plot_metric_over_t(problem_name, d, n, solver_names, metric, metric_name, metric_math_name; kwargs...)
-    p = Plots.plot(title="$metric_name n=$n", xlabel="time", ylabel=metric_math_name, size=PLOT_WINDOW_SIZE)
+    p = Plots.plot(title="$metric_name n=$n", xlabel="simulated time", ylabel=metric_math_name, size=PLOT_WINDOW_SIZE)
     for solver_name in solver_names
         experiments = load_all_experiment_runs(problem_name, d, n, solver_name; kwargs...)
         saveat = round.(experiments[1].saveat, digits=3)
@@ -79,10 +82,9 @@ end
 
 function plot_all(problem_name, d, ns, solver_names; save=true, dir="data",
     metrics=[
+        :top_eigenvalue_error,
         :update_score_time,
         :L2_error,
-        :top_eigenvalue_error,
-        :bottom_eigenvalue_error,
         :true_cov_trace_error,
         :true_cov_norm_error, 
         :sample_mean_error,
@@ -99,32 +101,32 @@ function plot_all(problem_name, d, ns, solver_names; save=true, dir="data",
         saveplot(plt, plot_name) = savefig(plt, joinpath(path, plot_name))
         saveplots(plts, plot_names) = for (plt, name) in zip(plts,plot_names); saveplot(plt, name); end
     end
-    function push_and_save(plt, plot_name) 
-        push!(plots, plt)
-        save && saveplot(plt, plot_name)
-    end
 
     ### plot ###
     save && saveplot(scatter_plot(problem_name, d, ns[end], solver_names), "scatter")
-    p_cov_trajectory_1 = plot_covariance_trajectory(problem_name, d, ns[end], solver_names; row=1, column=1, dir=dir)
-    push_and_save(p_cov_trajectory_1, "cov_trajectory_1")
     if have_true_distribution
         p_marginal_start, p_slice_start = pdf_plot(problem_name, d, ns[end], solver_names, t_idx=1)
         p_marginal_end, p_slice_end = pdf_plot(problem_name, d, ns[end], solver_names, t_idx=0)
+        p_cov_trajectory_1 = plot_covariance_trajectory(problem_name, d, ns[end], solver_names; row=1, column=1, dir=dir)
         p_score_error = plot_score_error(problem_name, d, ns[end], solver_names; dir=dir)
-        plts_ = [p_marginal_start, p_marginal_end, p_slice_start, p_slice_end, p_score_error]
+        plts_ = [p_marginal_start, p_marginal_end, p_slice_start, p_slice_end, p_cov_trajectory_1, p_score_error]
         push!(plots, plts_...)
-        save && saveplots(plts_, ["marginal_start", "marginal_end", "slice_start", "slice_end", "score_error"])
+        save && saveplots(plts_, ["marginal_start", "marginal_end", "slice_start", "slice_end", "cov_trajectory_1", "score_error"])
     else
+        p_cov_trajectory_1 = plot_covariance_trajectory(problem_name, d, ns[end], solver_names; row=1, column=1, dir=dir)
         p_cov_trajectory_2 = plot_covariance_trajectory(problem_name, d, ns[end], solver_names; row=2, column=2, dir=dir)
-        push_and_save(p_cov_trajectory_2, "cov_trajectory_2")
+        plts_ = [p_cov_trajectory_1, p_cov_trajectory_2]
+        push!(plots, plts_...)
+        save && saveplots(plts_, ["cov_trajectory_1", "cov_trajectory_2"])
+        insert!(metrics, 2, :bottom_eigenvalue_error)
     end
     for metric in metrics
         metric_matrix, metric_math_name = load_metric(problem_name, d, ns, solver_names, metric; dir=dir)
         metric_name = string(metric)
         any(isnan, metric_matrix) && continue
         p = plot_metric_over_n(problem_name, d, ns, solver_names, metric_name, metric_math_name, metric_matrix; kwargs...)
-        push_and_save(p, metric_name)
+        push!(plots, p)
+        save && saveplot(p, metric_name)
     end
     plt_all = Plots.plot(plots..., size=PLOT_WINDOW_SIZE, margin=(13, :mm), plot_title="$problem_name, d=$d, $(ns[1])≤n≤$(ns[end]), dt=$dt", linewidth=PLOT_LINE_WIDTH)
 
