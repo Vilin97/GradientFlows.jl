@@ -73,7 +73,8 @@ have_true_dist(experiment) = !isnothing(experiment.true_mean_error)
 "Load experiments, get the ExperimentResult's and save the results."
 function save_results(problems, ns, num_runs, solvers; dir="data")
     println("Saving results")
-    for n in ns, (problem, d) in problems, run in 1:num_runs, solver in solvers
+    for n in ns, (problem, d) in problems, solver in solvers, run in 1:num_runs
+        println("$problem $d $n $solver run $run")
         problem_name = problem(d, n, Exact()).name
         solver_name = "$solver"
         experiment = load(experiment_filename(problem_name, d, n, solver_name, run; dir=dir))
