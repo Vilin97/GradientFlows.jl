@@ -58,14 +58,15 @@ end
 
 function Base.show(io::IO, result::GradFlowExperimentResult)
     @unpack update_score_time, L2_error, true_mean_error, true_cov_trace_error, true_cov_norm_error, true_fourth_moment_error, sample_mean_error, sample_cov_trace_error = result
-    println(io, "$(rpad("L2 error:", 25)) $(round(L2_error[1],digits=4))")
-    println(io, "$(rpad("true mean error:", 25)) $(round(true_mean_error[1],digits=4))")
-    println(io, "$(rpad("true cov trace error:", 25)) $(round(true_cov_trace_error[1],digits=4))")
-    println(io, "$(rpad("true cov norm error:", 25)) $(round(true_cov_norm_error[1],digits=4))")
-    println(io, "$(rpad("true fourth moment error:", 25)) $(round(true_fourth_moment_error[1],digits=4))")
-    println(io, "$(rpad("sample mean error:", 25)) $(round(sample_mean_error[1],digits=4))")
-    println(io, "$(rpad("sample cov trace error:", 25)) $(round(sample_cov_trace_error[1],digits=4))")
-    println(io, "$(rpad("update score time:", 25)) $(round(update_score_time[1],digits=4))")
+    padding_width = 25
+    println(io, "$(rpad("L2 error:", padding_width)) $(round(L2_error[1],digits=4))")
+    println(io, "$(rpad("true mean error:", padding_width)) $(round(true_mean_error[1],digits=4))")
+    println(io, "$(rpad("true cov trace error:", padding_width)) $(round(true_cov_trace_error[1],digits=4))")
+    println(io, "$(rpad("true cov norm error:", padding_width)) $(round(true_cov_norm_error[1],digits=4))")
+    println(io, "$(rpad("true fourth moment error:", padding_width)) $(round(true_fourth_moment_error[1],digits=4))")
+    println(io, "$(rpad("sample mean error:", padding_width)) $(round(sample_mean_error[1],digits=4))")
+    println(io, "$(rpad("sample cov trace error:", padding_width)) $(round(sample_cov_trace_error[1],digits=4))")
+    println(io, "$(rpad("update score time:", padding_width)) $(round(update_score_time[1],digits=4))")
 end
 
 have_true_dist(experiment) = !isnothing(experiment.true_mean_error)
