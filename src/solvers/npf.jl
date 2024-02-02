@@ -1,4 +1,4 @@
-struct SBTM{S,NN,OPT,T,A,L,OS} <: Solver
+struct NPF{S,NN,OPT,T,A,L,OS} <: Solver
     score_values::S
     s::NN
     optimiser::OPT
@@ -13,18 +13,18 @@ struct SBTM{S,NN,OPT,T,A,L,OS} <: Solver
     optimiser_state::OS
 end
 
-struct SBTMAllocMem{M}
+struct NPFAllocMem{M}
     ζ::M
 end
 
-function SBTM(s::Union{Chain,Nothing}; learning_rate=4e-4, epochs=25, denoising_alpha=0.4, init_batch_size=2^8, init_loss_tolerance=1e-4, init_max_iterations=10^5, allocated_memory=nothing, verbose=0, logger=Logger(1), optimiser_state=nothing)
-    return SBTM(nothing, s, Adam(learning_rate), epochs, denoising_alpha, init_batch_size, init_loss_tolerance, init_max_iterations, allocated_memory, verbose, logger, optimiser_state)
+function NPF(s::Union{Chain,Nothing}; learning_rate=4e-4, epochs=25, denoising_alpha=0.4, init_batch_size=2^8, init_loss_tolerance=1e-4, init_max_iterations=10^5, allocated_memory=nothing, verbose=0, logger=Logger(1), optimiser_state=nothing)
+    return NPF(nothing, s, Adam(learning_rate), epochs, denoising_alpha, init_batch_size, init_loss_tolerance, init_max_iterations, allocated_memory, verbose, logger, optimiser_state)
 end
-SBTM(; kwargs...) = SBTM(nothing; kwargs...)
+NPF(; kwargs...) = NPF(nothing; kwargs...)
 
-function initialize(solver::SBTM, u0::AbstractMatrix{F}, score_values::AbstractMatrix{F}, problem_name; kwargs...) where {F}
+function initialize(solver::NPF, u0::AbstractMatrix{F}, score_values::AbstractMatrix{F}, problem_name; kwargs...) where {F}
     ζ = similar(u0)
-    allocated_memory = SBTMAllocMem(ζ)
+    allocated_memory = NPFAllocMem(ζ)
     if isnothing(solver.s)
         s = best_model(problem_name, size(u0, 1); kwargs...)
     else
@@ -32,10 +32,10 @@ function initialize(solver::SBTM, u0::AbstractMatrix{F}, score_values::AbstractM
     end
     logger = Logger(solver.logger.log_level, score_values)
     optimiser_state = Flux.setup(solver.optimiser, s)
-    SBTM(copy(score_values), s, solver.optimiser, solver.epochs, solver.denoising_alpha, solver.init_batch_size, solver.init_loss_tolerance, solver.init_max_iterations, allocated_memory, solver.verbose, logger, optimiser_state)
+    NPF(copy(score_values), s, solver.optimiser, solver.epochs, solver.denoising_alpha, solver.init_batch_size, solver.init_loss_tolerance, solver.init_max_iterations, allocated_memory, solver.verbose, logger, optimiser_state)
 end
 
-function train_s!(solver::SBTM, u, score_values)
+function train_s!(solver::NPF, u, score_values)
     @unpack s, init_batch_size, init_loss_tolerance, init_max_iterations, verbose, optimiser_state = solver
 
     verbose > 1 && println("Training NN for $(size(u, 2)) particles.")
@@ -63,13 +63,13 @@ function train_s!(solver::SBTM, u, score_values)
     nothing
 end
 
-function reset!(solver::SBTM, u0, score_values)
+function reset!(solver::NPF, u0, score_values)
     train_s!(solver, u0, score_values)
     solver.score_values .= score_values
     nothing
 end
 
-function update!(solver::SBTM, integrator)
+function update!(solver::NPF, integrator)
     @unpack score_values, s, optimiser, epochs, denoising_alpha, allocated_memory, verbose, logger, optimiser_state = solver
     @unpack ζ = allocated_memory
     prob = integrator.p
@@ -109,8 +109,8 @@ function mlp(d::Int; depth, width=100, activation=softsign, rng=DEFAULT_RNG)
         Dense(width => d, init=Flux.glorot_normal(rng))
     ) |> f64
 end
-function Base.show(io::IO, solver::SBTM)
-    Base.print(io, "SBTM")
+function Base.show(io::IO, solver::NPF)
+    Base.print(io, "NPF")
 end
-name(solver::SBTM) = "sbtm"
-long_name(solver::SBTM) = "sbtm η=$(solver.optimiser.eta)"
+name(solver::NPF) = "npf"
+long_name(solver::NPF) = "npf η=$(solver.optimiser.eta)"

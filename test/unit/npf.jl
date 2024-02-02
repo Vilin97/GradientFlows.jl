@@ -10,7 +10,7 @@ true_score_matching_loss(s, u) = (sum(abs2, s(u)) + 2 * divergence(s, u)) / size
 
 rng = StableRNG(123)
 
-@testset "SBTM tests" begin
+@testset "NPF tests" begin
     d, n = 2, 1000
     dist = MvNormal(1.0 * I(d))
     u = rand(rng, dist, n)
@@ -25,7 +25,7 @@ rng = StableRNG(123)
     @test approx_loss ≈ true_loss rtol = 0.1
 
     # test initialize
-    solver = initialize(SBTM(s), u, copy(score_values), "dummy_problem_name")
+    solver = initialize(NPF(s), u, copy(score_values), "dummy_problem_name")
     @test solver.score_values == score_values
     x = rand(rng, d, n)
     @test solver.s(x) == s(x)
@@ -45,5 +45,5 @@ rng = StableRNG(123)
     @test new_loss < old_loss
 
     # for coverage
-    @test "$(SBTM())" == "SBTM"
+    @test "$(NPF())" == "NPF"
 end

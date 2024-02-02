@@ -79,7 +79,7 @@ function run_experiments(problems, ns, num_runs, solvers; rng=StableRNG, verbose
 end
 
 function train_nn(problem, d, n, s; verbose=1, init_max_iterations=10^5, dir="data")
-    solver_ = SBTM(s, verbose=verbose, init_max_iterations=init_max_iterations)
+    solver_ = NPF(s, verbose=verbose, init_max_iterations=init_max_iterations)
     prob = problem(d, n, solver_)
     verbose > 0 && println("Training NN for $(prob.name), d = $d, n = $n.")
     @time train_s!(prob.solver, prob.u0, score(prob.ρ0, prob.u0))

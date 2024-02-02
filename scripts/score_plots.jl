@@ -17,9 +17,9 @@ for (i, d) in enumerate(ds)
         ε = blob_bandwidth(prob_.u0)
         η = 1e-4
         solvers = [
-            SBTM(learning_rate=η; verbose=verbose, logger=Logger(1)),
-            SBTM(learning_rate=η * 2; verbose=verbose, logger=Logger(1)),
-            SBTM(learning_rate=η * 4; verbose=verbose, logger=Logger(1)),
+            NPF(learning_rate=η; verbose=verbose, logger=Logger(1)),
+            NPF(learning_rate=η * 2; verbose=verbose, logger=Logger(1)),
+            NPF(learning_rate=η * 4; verbose=verbose, logger=Logger(1)),
             Blob(ε; verbose=verbose, logger=Logger(1)),
             Blob(ε * 2; verbose=verbose, logger=Logger(1)),
             Blob(ε * 4; verbose=verbose, logger=Logger(1)),

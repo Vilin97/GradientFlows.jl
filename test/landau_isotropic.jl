@@ -3,7 +3,7 @@ using GradientFlows, StableRNGs, Test
 # isotropic initial condition
 n = 2000
 for d in [3, 5]
-    for solver in [Exact(), SBTM(mlp(d, rng=StableRNG(321), depth=2)), Blob()]
+    for solver in [Exact(), NPF(mlp(d, rng=StableRNG(321), depth=2)), Blob()]
         problem = landau_problem(d, n, solver; rng=StableRNG(123))
         result = GradFlowExperimentResult(Experiment(problem))
 

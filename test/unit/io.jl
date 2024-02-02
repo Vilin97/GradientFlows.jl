@@ -20,8 +20,8 @@ dir = "data_test"
         @test s(x) != s_loaded(x)
         @test other_s(x) == s_loaded(x)
 
-        # test SBTM no-arg constructor
-        solver = initialize(SBTM(), zeros(d, n), zeros(d, n), "test_problem"; dir=dir)
+        # test NPF no-arg constructor
+        solver = initialize(NPF(), zeros(d, n), zeros(d, n), "test_problem"; dir=dir)
         @test solver.s isa Chain
         train_s!(solver, zeros(d, n), zeros(d, n))
         @test solver.s(x) != s(x)
