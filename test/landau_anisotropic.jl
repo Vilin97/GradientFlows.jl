@@ -8,7 +8,7 @@ for solver in [SBTM(mlp(d, rng=StableRNG(321), depth=2)), Blob()]
     problem = anisotropic_landau_problem(d, n, solver; rng=StableRNG(123))
     experiment = Experiment(problem)
     result = GradFlowExperimentResult(Experiment(problem))
-    
+
     @test have_true_dist(experiment) == false
     @test result.true_cov_trace_error[1] < 0.5
     @test result.true_cov_norm_error[1] < 0.5

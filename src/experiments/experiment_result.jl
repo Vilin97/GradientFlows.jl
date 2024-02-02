@@ -17,7 +17,7 @@ function GradFlowExperimentResult(experiment::Experiment)
     d = size(experiment.solution[1], 1)
     F = Float64
     lp_error = d <= 5 && have_true_dist(experiment) ? Lp_error(experiment; p=2) : F(NaN)
-    return GradFlowExperimentResult{Pair{F, String}}(
+    return GradFlowExperimentResult{Pair{F,String}}(
         update_score_time(experiment.timer) => "update score time, s",
         top_eigenvalue_error(experiment) => "|λ₁ - λ₁*|",
         bottom_eigenvalue_error(experiment) => "|λₖ - λₖ*|",
@@ -27,7 +27,7 @@ function GradFlowExperimentResult(experiment::Experiment)
         # if moments conserved
         (mean_conserved(experiment) ? sample_mean_error(experiment) : F(NaN)) => "|E(Xₜ) - E(X₀)|₂",
         (cov_trace_conserved(experiment) ? sample_cov_trace_error(experiment) : F(NaN)) => "|E |Xₜ|² - E |X₀|²|",
-        
+
         # if have true distribution
         (have_true_dist(experiment) ? true_mean_error(experiment) : F(NaN)) => "|E(Xₜ)-E(Xₜ*)|₂",
         (have_true_dist(experiment) ? true_fourth_moment_error(experiment) : F(NaN)) => "|E |Xₜ|⁴ - E |Xₜ*|⁴|",

@@ -12,7 +12,7 @@ function landau_problem(d, n, solver_; dt::F=0.01, rng=DEFAULT_RNG, kwargs...) w
     solver = initialize(solver_, u0, score(ρ0, u0), name; kwargs...)
     function diffusion_coefficient(u, params)
         d, n = size(u)
-        return (I(d).*sum(abs2, u) .- u*u') .* (params.B / n)
+        return (I(d) .* sum(abs2, u) .- u * u') .* (params.B / n)
     end
     covariance(t, params) = cov(ρ(t, params))
     return GradFlowProblem(f!, ρ0, u0, ρ, tspan, dt, params, solver, name, diffusion_coefficient, covariance)
@@ -22,7 +22,7 @@ end
 function anisotropic_landau_problem(d, n, solver_; dt::F=0.01, rng=DEFAULT_RNG, kwargs...) where {F}
     params = (B=F(1 / 24),) # B = constant in the collision kernel
     t0_ = F(0)
-    ρ0 = MvNormal(diagm([F(1.8), F(0.2), ones(F, d-2)...]))
+    ρ0 = MvNormal(diagm([F(1.8), F(0.2), ones(F, d - 2)...]))
     ρ(t, params) = nothing
 
     f! = choose_f!(d)
@@ -32,12 +32,12 @@ function anisotropic_landau_problem(d, n, solver_; dt::F=0.01, rng=DEFAULT_RNG, 
     solver = initialize(solver_, u0, score(ρ0, u0), name; kwargs...)
     function diffusion_coefficient(u, params)
         d, n = size(u)
-        return (I(d).*sum(abs2, u) .- u*u') .* (params.B / n)
+        return (I(d) .* sum(abs2, u) .- u * u') .* (params.B / n)
     end
     function covariance(t, params)
         Σ₀ = cov(ρ0)
         Σ∞ = I(d) .* tr(Σ₀) ./ d
-        return Σ∞ - (Σ∞ - Σ₀)exp(-4d*params.B*t)
+        return Σ∞ - (Σ∞ - Σ₀)exp(-4d * params.B * t)
     end
     return GradFlowProblem(f!, ρ0, u0, ρ, tspan, dt, params, solver, name, diffusion_coefficient, covariance)
 end

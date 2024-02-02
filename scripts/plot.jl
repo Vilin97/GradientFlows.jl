@@ -8,7 +8,7 @@ function plot_metric_over_n(problem_name, d, ns, solver_names, metric_name, metr
     if scale == :log10
         metric_matrix += 1e-18
     else
-        metric_matrix = round.(metric_matrix, digits = 13)
+        metric_matrix = round.(metric_matrix, digits=13)
     end
     log_slope(x, y) = Polynomials.fit(log.(abs.(x)), log.(abs.(y)), 1).coeffs[2]
     p = Plots.plot(title=metric_name, xlabel="number of patricles, n", ylabel=metric_math_name, size=PLOT_WINDOW_SIZE)
@@ -86,20 +86,23 @@ function plot_all(problem_name, d, ns, solver_names; save=true, dir="data",
         :update_score_time,
         :L2_error,
         :true_cov_trace_error,
-        :true_cov_norm_error, 
+        :true_cov_norm_error,
         :sample_mean_error,
         :sample_cov_trace_error], kwargs...)
     println("Plotting $problem_name, d=$d")
     any_experiment = load(experiment_filename(problem_name, d, ns[1], solver_names[1], 1; dir=dir))
     dt = any_experiment.dt
     have_true_distribution = have_true_dist(any_experiment)
-    
+
     plots = []
     if save
         path = joinpath(dir, "plots", problem_name, "d_$d")
         mkpath(path)
         saveplot(plt, plot_name) = savefig(plt, joinpath(path, plot_name))
-        saveplots(plts, plot_names) = for (plt, name) in zip(plts,plot_names); saveplot(plt, name); end
+        saveplots(plts, plot_names) =
+            for (plt, name) in zip(plts, plot_names)
+                saveplot(plt, name)
+            end
     end
 
     ### plot ###
