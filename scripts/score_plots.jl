@@ -16,9 +16,12 @@ for (i, d) in enumerate(ds)
         ts = collect(prob_.tspan[1]:prob_.dt:prob_.tspan[2])
 
         solvers = [
-            NPF(mlp(d, depth=1); verbose=verbose),
-            NPF(mlp(d, depth=2); verbose=verbose),
-            NPF(mlp(d, depth=3); verbose=verbose),
+            SBTM(learning_rate=η; verbose=verbose, logger=Logger(1)),
+            SBTM(learning_rate=η * 2; verbose=verbose, logger=Logger(1)),
+            SBTM(learning_rate=η * 4; verbose=verbose, logger=Logger(1)),
+            Blob(ε; verbose=verbose, logger=Logger(1)),
+            Blob(ε * 2; verbose=verbose, logger=Logger(1)),
+            Blob(ε * 4; verbose=verbose, logger=Logger(1)),
         ]
 
         for solver in solvers

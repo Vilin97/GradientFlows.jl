@@ -41,7 +41,7 @@ include("solvers/solver.jl")
 include("solvers/logger.jl")
 include("solvers/exact.jl")
 include("solvers/blob.jl")
-include("solvers/npf.jl")
+include("solvers/sbtm.jl")
 
 include("analysis/empirical_moments.jl")
 include("analysis/kde.jl")
@@ -52,12 +52,12 @@ include("experiments/experiment_result.jl")
 include("experiments/io.jl")
 
 const ALL_PROBLEMS = [(diffusion_problem, 2), (diffusion_problem, 5), (diffusion_problem, 10), (fpe_problem, 2), (fpe_problem, 5), (fpe_problem, 10), (landau_problem, 3), (landau_problem, 5), (landau_problem, 10), (anisotropic_landau_problem, 3), (anisotropic_landau_problem, 5), (anisotropic_landau_problem, 10)]
-const ALL_SOLVERS = [Exact(), NPF(), Blob()]
+const ALL_SOLVERS = [Exact(), SBTM(), Blob()]
 
 export GradFlowProblem
 export set_u0!
 export diffusion_problem, landau_problem, anisotropic_landau_problem, fpe_problem
-export Exact, Blob, NPF
+export Exact, Blob, SBTM
 export Logger
 export mlp, train_s!
 export name

@@ -3,7 +3,7 @@ using GradientFlows: have_true_dist
 
 n = 2000
 d = 3
-for solver in [NPF(mlp(d, rng=StableRNG(321), depth=2)), Blob()]
+for solver in [SBTM(mlp(d, rng=StableRNG(321), depth=2)), Blob()]
     @show solver
     problem = anisotropic_landau_problem(d, n, solver; rng=StableRNG(123))
     experiment = Experiment(problem)
