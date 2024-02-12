@@ -1,10 +1,11 @@
 using GradientFlows, StableRNGs, LinearAlgebra, Plots
 using GradientFlows: blob_bandwidth, long_name
+using TimerOutputs
 
-n = 2000
 verbose = 0
-ds = [3, 5, 10]
-problems = [diffusion_problem, landau_problem, fpe_problem]
+n = 2000
+ds = [3, 5]
+problems = [diffusion_problem, fpe_problem]
 plot_data = Matrix{Vector{Any}}(undef, length(ds), length(problems)) # plot_data[d, p] = (score_diff_vector, label)
 for (i, d) in enumerate(ds)
     println("            d=$d")
@@ -14,22 +15,17 @@ for (i, d) in enumerate(ds)
         println("        $(prob_.name)")
         ts = collect(prob_.tspan[1]:prob_.dt:prob_.tspan[2])
 
-        ε = blob_bandwidth(prob_.u0)
-        η = 1e-4
         solvers = [
-            NPF(learning_rate=η; verbose=verbose, logger=Logger(1)),
-            NPF(learning_rate=η * 2; verbose=verbose, logger=Logger(1)),
-            NPF(learning_rate=η * 4; verbose=verbose, logger=Logger(1)),
-            Blob(ε; verbose=verbose, logger=Logger(1)),
-            Blob(ε * 2; verbose=verbose, logger=Logger(1)),
-            Blob(ε * 4; verbose=verbose, logger=Logger(1)),
+            NPF(mlp(d, depth=1); verbose=verbose),
+            NPF(mlp(d, depth=2); verbose=verbose),
+            NPF(mlp(d, depth=3); verbose=verbose),
         ]
 
         for solver in solvers
             println("    $(long_name(solver))")
             prob = problem(d, n, solver)
             set_u0!(prob, prob.u0)
-            sol = solve(prob)
+            @time (@timeit DEFAULT_TIMER "$problem $d $(long_name(solver))" sol = solve(prob))
 
             logged_score_values = prob.solver.logger.score_values
             true_score_values = [true_score(prob, t, u) for (t, u) in zip(ts, sol.u)]
@@ -39,6 +35,8 @@ for (i, d) in enumerate(ds)
         end
     end
 end
+
+@show DEFAULT_TIMER
 
 plots = []
 for (i, d) in enumerate(ds), (j, problem) in enumerate(problems)
@@ -53,4 +51,4 @@ for (i, d) in enumerate(ds), (j, problem) in enumerate(problems)
 end
 
 plt = plot(plots..., plot_title="Score trajectories", size=PLOT_WINDOW_SIZE, linewidth=4, margin=(13, :mm))
-savefig(plt, "data/plots/score_plots/score_trajectories")
+savefig(plt, "data/plots/score_plots/npf_score_trajectories_nn_sizes")
