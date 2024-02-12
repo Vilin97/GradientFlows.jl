@@ -6,15 +6,15 @@ default(display_type=:inline)
 function plot_metric_over_n(problem_name, d, ns, solver_names, metric_name, metric_math_name, metric_matrix; scale=:log10, kwargs...)
     metric_matrix = abs.(metric_matrix)
     if scale == :log10
-        metric_matrix += 1e-18
+        metric_matrix .+= 1e-18
     else
         metric_matrix = round.(metric_matrix, digits=13)
     end
     log_slope(x, y) = Polynomials.fit(log.(abs.(x)), log.(abs.(y)), 1).coeffs[2]
-    p = Plots.plot(title=metric_name, xlabel="number of patricles, n", ylabel=metric_math_name, size=PLOT_WINDOW_SIZE)
+    p = Plots.plot(title=metric_name, xlabel="number of patricles, n", ylabel=metric_math_name, size=PLOT_WINDOW_SIZE, margin=PLOT_MARGIN)
     for (j, solver_name) in enumerate(solver_names)
         slope = round(log_slope(ns, metric_matrix[:, j]), digits=2)
-        Plots.plot!(p, ns, metric_matrix[:, j], label="$solver_name, log-slope=$slope", marker=:circle, yscale=scale, xscale=:log10, markerstrokewidth=0.4)
+        Plots.plot!(p, ns, metric_matrix[:, j], label="$solver_name, log-slope=$slope", marker=:circle, yscale=scale, xscale=:log10, markerstrokewidth=0.4, lw=PLOT_LINE_WIDTH)
     end
     return p
 end
@@ -36,28 +36,28 @@ function pdf_plot(problem_name, d, n, solver_names; t_idx, xrange=range(-5, 5, l
     saveat = experiment.saveat
     t_idx = t_idx < 1 ? length(saveat) + t_idx : t_idx
     dist = experiment.true_dist[t_idx]
-    p_marginal = Plots.plot(size=PLOT_WINDOW_SIZE, xlabel="x", ylabel="Σᵢϕ(x - Xᵢ[1])/n", title="marginal density n=$n t=$(saveat[t_idx])")
-    p_slice = Plots.plot(size=PLOT_WINDOW_SIZE, xlabel="x", ylabel="Σᵢϕ([x,0...] - Xᵢ)/n", title="slice density n=$n t=$(saveat[t_idx])")
+    p_marginal = Plots.plot(size=PLOT_WINDOW_SIZE, xlabel="x", ylabel="Σᵢϕ(x - Xᵢ[1])/n", title="marginal density n=$n t=$(saveat[t_idx])", margin=PLOT_MARGIN)
+    p_slice = Plots.plot(size=PLOT_WINDOW_SIZE, xlabel="x", ylabel="Σᵢϕ([x,0...] - Xᵢ)/n", title="slice density n=$n t=$(saveat[t_idx])", margin=PLOT_MARGIN)
     for solver in solver_names
         experiments = load_all_experiment_runs(problem_name, d, n, solver; dir=dir)
         u = hcat([exp.solution[t_idx] for exp in experiments]...)
         u_marginal = reshape(u[1, :], 1, :)
-        plot!(p_marginal, xrange, x -> kde([x], u_marginal), label="$solver h=$(round.(kde_bandwidth(u_marginal)[1],digits=3))")
-        plot!(p_slice, xrange, x -> kde(slice(x), u), label="$solver h=$(round.((det(kde_bandwidth(u))^(1/d)), digits=3))")
+        plot!(p_marginal, xrange, x -> kde([x], u_marginal), label="$solver h=$(round.(kde_bandwidth(u_marginal)[1],digits=3))", lw=PLOT_LINE_WIDTH)
+        plot!(p_slice, xrange, x -> kde(slice(x), u), label="$solver h=$(round.((det(kde_bandwidth(u))^(1/d)), digits=3))", lw=PLOT_LINE_WIDTH)
     end
-    plot!(p_marginal, xrange, x -> marginal_pdf(dist, x), label="true")
-    plot!(p_slice, xrange, x -> pdf(dist, slice(x)), label="true")
+    plot!(p_marginal, xrange, x -> marginal_pdf(dist, x), label="true", lw=PLOT_LINE_WIDTH)
+    plot!(p_slice, xrange, x -> pdf(dist, slice(x)), label="true", lw=PLOT_LINE_WIDTH)
     return p_marginal, p_slice
 end
 
 "metric(experiment) isa Vector of length(experiment.saveat)"
 function plot_metric_over_t(problem_name, d, n, solver_names, metric, metric_name, metric_math_name; kwargs...)
-    p = Plots.plot(title="$metric_name n=$n", xlabel="simulated time", ylabel=metric_math_name, size=PLOT_WINDOW_SIZE)
+    p = Plots.plot(title="$metric_name n=$n", xlabel="simulated time", ylabel=metric_math_name, size=PLOT_WINDOW_SIZE, margin=PLOT_MARGIN)
     for solver_name in solver_names
         experiments = load_all_experiment_runs(problem_name, d, n, solver_name; kwargs...)
         saveat = round.(experiments[1].saveat, digits=3)
         metric_ = mean([metric(exp) for exp in experiments])
-        plot!(p, saveat, metric_, label=solver_name)
+        plot!(p, saveat, metric_, label=solver_name, lw=PLOT_LINE_WIDTH)
     end
     return p
 end
@@ -98,7 +98,7 @@ function plot_all(problem_name, d, ns, solver_names; save=true, dir="data",
     if save
         path = joinpath(dir, "plots", problem_name, "d_$d")
         mkpath(path)
-        saveplot(plt, plot_name) = savefig(plt, joinpath(path, plot_name))
+        saveplot(plt, plot_name) = savefig(plot(plt, thickness_scaling=4), joinpath(path, plot_name))
         saveplots(plts, plot_names) =
             for (plt, name) in zip(plts, plot_names)
                 saveplot(plt, name)
@@ -131,7 +131,7 @@ function plot_all(problem_name, d, ns, solver_names; save=true, dir="data",
         push!(plots, p)
         save && saveplot(p, metric_name)
     end
-    plt_all = Plots.plot(plots..., size=PLOT_WINDOW_SIZE, margin=(13, :mm), plot_title="$problem_name, d=$d, $(ns[1])≤n≤$(ns[end]), dt=$dt", linewidth=PLOT_LINE_WIDTH)
+    plt_all = Plots.plot(plots..., size=PLOT_WINDOW_SIZE, margin=PLOT_MARGIN, plot_title="$problem_name, d=$d, $(ns[1])≤n≤$(ns[end]), dt=$dt", linewidth=PLOT_LINE_WIDTH)
 
     ### save ###
     if save

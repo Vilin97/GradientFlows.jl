@@ -9,4 +9,4 @@ solvers = [Blob(), SBTM()]
 # run_experiments(problems, ns, num_runs, [SBTM(), Blob()])
 
 include("plot.jl")
-@time plot_all(problems, ns, solvers; dir="data", scale=:identity);
+@time plot_all(problems, ns, solvers; dir="data");
