@@ -103,14 +103,23 @@ function score_matching_loss(s, u, ζ, α, D=1)
 end
 
 function mlp(d::Int; depth, width=100, activation=softsign, rng=DEFAULT_RNG)
+    if depth == 0
+        return Chain(Dense(d => d, init=Flux.glorot_normal(rng))) |> f64
+    end
     return Chain(
         Dense(d => width, activation, init=Flux.glorot_normal(rng)),
         repeat([Dense(width => width, activation, init=Flux.glorot_normal(rng))], depth - 1)...,
         Dense(width => d, init=Flux.glorot_normal(rng))
     ) |> f64
 end
+
+### Display ###
 function Base.show(io::IO, solver::NPF)
     Base.print(io, "NPF")
 end
+
+hidden_layer_dimensions(solver::NPF) = [length(layer.bias) for layer in solver.s.layers[1:end-1]]
+
 name(solver::NPF) = "npf"
-long_name(solver::NPF) = "npf η=$(solver.optimiser.eta)"
+
+long_name(solver::NPF) = "npf s=$(hidden_layer_dimensions(solver))"
