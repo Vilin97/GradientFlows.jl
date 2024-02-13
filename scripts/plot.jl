@@ -11,7 +11,7 @@ function plot_metric_over_n(problem_name, d, ns, solver_names, metric_name, metr
         metric_matrix = round.(metric_matrix, digits=13)
     end
     log_slope(x, y) = Polynomials.fit(log.(abs.(x)), log.(abs.(y)), 1).coeffs[2]
-    p = Plots.plot(title=metric_name, xlabel="number of patricles, n", ylabel=metric_math_name, size=PLOT_WINDOW_SIZE, margin=PLOT_MARGIN)
+    p = Plots.plot(title=metric_name, xlabel="number of patricles, n", ylabel=metric_math_name, margin=PLOT_MARGIN)
     for (j, solver_name) in enumerate(solver_names)
         slope = round(log_slope(ns, metric_matrix[:, j]), digits=2)
         Plots.plot!(p, ns, metric_matrix[:, j], label="$solver_name, log-slope=$slope", marker=:circle, yscale=scale, xscale=:log10, markerstrokewidth=0.4, lw=PLOT_LINE_WIDTH)
@@ -20,7 +20,7 @@ function plot_metric_over_n(problem_name, d, ns, solver_names, metric_name, metr
 end
 
 function scatter_plot(problem_name, d, n, solver_names; num_samples=min(2000, n), dir="data")
-    p = Plots.plot(title="$problem_name, d=$d, $num_samples/$n samples"; size=(PLOT_WINDOW_SIZE[2], PLOT_WINDOW_SIZE[2]))
+    p = Plots.plot(title="$problem_name, d=$d, $num_samples/$n samples")
     for solver in solver_names
         experiment = load(experiment_filename(problem_name, d, n, solver, 1; dir=dir))
         u = experiment.solution[end][:, 1:num_samples]
@@ -36,8 +36,8 @@ function pdf_plot(problem_name, d, n, solver_names; t_idx, xrange=range(-5, 5, l
     saveat = experiment.saveat
     t_idx = t_idx < 1 ? length(saveat) + t_idx : t_idx
     dist = experiment.true_dist[t_idx]
-    p_marginal = Plots.plot(size=PLOT_WINDOW_SIZE, xlabel="x", ylabel="Σᵢϕ(x - Xᵢ[1])/n", title="marginal density n=$n t=$(saveat[t_idx])", margin=PLOT_MARGIN)
-    p_slice = Plots.plot(size=PLOT_WINDOW_SIZE, xlabel="x", ylabel="Σᵢϕ([x,0...] - Xᵢ)/n", title="slice density n=$n t=$(saveat[t_idx])", margin=PLOT_MARGIN)
+    p_marginal = Plots.plot(xlabel="x", ylabel="Σᵢϕ(x - Xᵢ[1])/n", title="marginal density n=$n t=$(saveat[t_idx])", margin=PLOT_MARGIN)
+    p_slice = Plots.plot(xlabel="x", ylabel="Σᵢϕ([x,0...] - Xᵢ)/n", title="slice density n=$n t=$(saveat[t_idx])", margin=PLOT_MARGIN)
     for solver in solver_names
         experiments = load_all_experiment_runs(problem_name, d, n, solver; dir=dir)
         u = hcat([exp.solution[t_idx] for exp in experiments]...)
@@ -52,7 +52,7 @@ end
 
 "metric(experiment) isa Vector of length(experiment.saveat)"
 function plot_metric_over_t(problem_name, d, n, solver_names, metric, metric_name, metric_math_name; kwargs...)
-    p = Plots.plot(title="$metric_name n=$n", xlabel="simulated time", ylabel=metric_math_name, size=PLOT_WINDOW_SIZE, margin=PLOT_MARGIN)
+    p = Plots.plot(title="$metric_name n=$n", xlabel="simulated time", ylabel=metric_math_name, margin=PLOT_MARGIN)
     for solver_name in solver_names
         experiments = load_all_experiment_runs(problem_name, d, n, solver_name; kwargs...)
         saveat = round.(experiments[1].saveat, digits=3)
@@ -76,7 +76,7 @@ function plot_covariance_trajectory(problem_name, d, n, solver_names; row, colum
     cov_(experiment) = [emp_cov(u)[row, column] for u in experiment.solution]
     plt = plot_metric_over_t(problem_name, d, n, solver_names, cov_, "covariance($row,$column)", "Σ$row$column"; kwargs...)
     experiment = load(experiment_filename(problem_name, d, n, solver_names[1], 1; kwargs...))
-    plot!(plt, experiment.saveat, getindex.(experiment.true_cov, row, column), label="true")
+    plot!(plt, experiment.saveat, getindex.(experiment.true_cov, row, column), label="true", lw=PLOT_LINE_WIDTH, linestyle=:dash)
     return plt
 end
 
@@ -98,7 +98,7 @@ function plot_all(problem_name, d, ns, solver_names; save=true, dir="data",
     if save
         path = joinpath(dir, "plots", problem_name, "d_$d")
         mkpath(path)
-        saveplot(plt, plot_name) = savefig(plot(plt, thickness_scaling=4), joinpath(path, plot_name))
+        saveplot(plt, plot_name) = savefig(plt, joinpath(path, plot_name))
         saveplots(plts, plot_names) =
             for (plt, name) in zip(plts, plot_names)
                 saveplot(plt, name)
