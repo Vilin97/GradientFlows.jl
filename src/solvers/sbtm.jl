@@ -122,4 +122,4 @@ hidden_layer_dimensions(solver::SBTM) = [length(layer.bias) for layer in solver.
 
 name(solver::SBTM) = "sbtm"
 
-long_name(solver::SBTM) = "sbtm s=$(hidden_layer_dimensions(solver))"
+long_name(solver::SBTM) = "sbtm η=$(solver.optimiser.eta)"

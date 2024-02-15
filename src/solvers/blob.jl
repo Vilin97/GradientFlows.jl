@@ -62,7 +62,7 @@ function Base.show(io::IO, solver::Blob)
     Base.print(io, "Blob")
 end
 name(solver::Blob) = "blob"
-long_name(solver::Blob) = "blob ε=$(round(solver.ε, digits=5))"
+long_name(solver::Blob) = "blob ε=$(round(solver.ε, digits=3))"
 
 "ε = C * n^(-2 / (d + 6)) is optimal for gradient matching."
 function blob_bandwidth(u)
