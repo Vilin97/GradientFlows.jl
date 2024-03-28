@@ -2,8 +2,8 @@ using GradientFlows, Plots, Polynomials, TimerOutputs, LinearAlgebra
 ENV["GKSwstype"] = "nul" # no GUI
 default(display_type=:inline)
 
-"metric_matrix[i,j] is the metric for the i-th value of n and the j-th solver"
-function plot_metric_over_n(problem_name, d, ns, solver_names, metric_name, metric_math_name, metric_matrix; scale=:log10, kwargs...)
+"metric_matrix[i,j] is the metric for the i-th value of n and the j-th trajectory"
+function plot_metric_over_n(ns, trajectory_names, plot_title, metric_math_name, metric_matrix; scale=:log10, kwargs...)
     metric_matrix = abs.(metric_matrix)
     if scale == :log10
         metric_matrix .+= 1e-18
@@ -11,10 +11,10 @@ function plot_metric_over_n(problem_name, d, ns, solver_names, metric_name, metr
         metric_matrix = round.(metric_matrix, digits=13)
     end
     log_slope(x, y) = Polynomials.fit(log.(abs.(x)), log.(abs.(y)), 1).coeffs[2]
-    p = Plots.plot(title=metric_name, xlabel="number of patricles, n", ylabel=metric_math_name, margin=PLOT_MARGIN)
-    for (j, solver_name) in enumerate(solver_names)
+    p = Plots.plot(title=plot_title, xlabel="number of patricles, n", ylabel=metric_math_name, margin=PLOT_MARGIN)
+    for (j, trajectory_name) in enumerate(trajectory_names)
         slope = round(log_slope(ns, metric_matrix[:, j]), digits=2)
-        Plots.plot!(p, ns, metric_matrix[:, j], label="$solver_name, log-slope=$slope", marker=:circle, yscale=scale, xscale=:log10, markerstrokewidth=0.4, lw=PLOT_LINE_WIDTH)
+        Plots.plot!(p, ns, metric_matrix[:, j], label="$trajectory_name, log-slope=$slope", marker=:circle, yscale=scale, xscale=:log10, markerstrokewidth=0.4, lw=PLOT_LINE_WIDTH)
     end
     return p
 end
@@ -127,7 +127,7 @@ function plot_all(problem_name, d, ns, solver_names; save=true, dir="data",
         metric_matrix, metric_math_name = load_metric(problem_name, d, ns, solver_names, metric; dir=dir)
         metric_name = string(metric)
         any(isnan, metric_matrix) && continue
-        p = plot_metric_over_n(problem_name, d, ns, solver_names, metric_name, metric_math_name, metric_matrix; kwargs...)
+        p = plot_metric_over_n(ns, solver_names, metric_name, metric_math_name, metric_matrix; kwargs...)
         push!(plots, p)
         save && saveplot(p, metric_name)
     end

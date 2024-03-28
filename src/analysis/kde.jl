@@ -1,7 +1,7 @@
 "Σ n^(-2 / (d + 4)), from Equation 3.17 in https://bookdown.org/egarpor/NP-UC3M/kde-ii-bwd.html (first constant is ~1)"
 function kde_bandwidth(u)
     d, n = size(u)
-    Σ = diagm(diag(cov(u')))
+    Σ = cov(u')
     Σ .* n^(-2 / (d + 4))
 end
 
