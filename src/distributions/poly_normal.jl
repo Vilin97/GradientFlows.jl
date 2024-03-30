@@ -2,7 +2,18 @@
 struct PolyNormal{F} <: ContinuousMultivariateDistribution
     d::Int
     K::F
+    function PolyNormal(d, K)
+        dist = new{typeof(K)}(d, K)
+        if get_P(dist) < 0
+            error("P = $(get_P(dist)) < 0 for d = $d, K = $K.")
+        end
+        if get_Q(dist) < 0
+            error("Q = $(get_Q(dist)) < 0 for d = $d, K = $K.")
+        end
+        return dist
+    end
 end
+
 
 get_P(dist::PolyNormal) = ((dist.d + 2) * dist.K - dist.d) / (2dist.K)
 get_Q(dist::PolyNormal) = (1 - dist.K) / (2dist.K^2)
