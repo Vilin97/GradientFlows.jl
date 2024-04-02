@@ -5,10 +5,10 @@ struct PolyNormal{F} <: ContinuousMultivariateDistribution
     function PolyNormal(d, K)
         dist = new{typeof(K)}(d, K)
         if get_P(dist) < 0
-            error("P = $(get_P(dist)) < 0 for d = $d, K = $K.")
+            error("P = $(get_P(dist)) < 0 for d = $d, K = $K. Make sure K > d/(d+2).")
         end
         if get_Q(dist) < 0
-            error("Q = $(get_Q(dist)) < 0 for d = $d, K = $K.")
+            error("Q = $(get_Q(dist)) < 0 for d = $d, K = $K. Make sure K < 1.")
         end
         return dist
     end

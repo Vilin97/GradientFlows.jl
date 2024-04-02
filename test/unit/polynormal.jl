@@ -40,7 +40,7 @@ using GradientFlows: LandauParams, PolyNormal, t0, abs_moment, emp_abs_moment
     end
 
     @testset "marginal" begin
-        dist = PolyNormal(5, 1 / 5)
+        dist = PolyNormal(5, 0.72)
         result, error = hcubature(x -> marginal_pdf(dist, x[1]), [-10], [10])
         @test result ≈ 1 atol = 2 * error
     end
