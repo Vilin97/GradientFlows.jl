@@ -68,5 +68,5 @@ long_name(solver::Blob) = "blob ε=$(round(solver.ε, digits=3))"
 function blob_bandwidth(u)
     d, n = size(u)
     Σ = diag(cov(u'))
-    4 * prod(Σ)^(1 / d) * n^(-2 / (d + 6))
+    4 * prod(Σ)^(1 / d) * n^(-2 / (d + 4))
 end

@@ -4,14 +4,14 @@ using UnPack: @unpack
 using OrdinaryDiffEq: solve, ODEProblem, Euler, u_modified!
 using DiffEqCallbacks: PresetTimeCallback
 using HCubature: hcubature
-using Zygote: withgradient
+using Zygote: withgradient, gradient
 using Flux
 using LinearAlgebra, Random, LoopVectorization
 using TimerOutputs
 using JLD2
 using StableRNGs: StableRNG
 
-import Distributions: MvNormal, Distribution, MultivariateDistribution, mean, cov, gradlogpdf, pdf, rand, ContinuousMultivariateDistribution
+import Distributions: MvNormal, Distribution, MultivariateDistribution, mean, cov, gradlogpdf, logpdf, pdf, rand, ContinuousMultivariateDistribution, MixtureModel
 import OrdinaryDiffEq.solve
 import Statistics.mean, Statistics.cov
 
@@ -28,6 +28,7 @@ const PLOT_MARGIN = (13, :mm)
 include("distributions/poly_normal.jl")
 include("distributions/score.jl")
 include("distributions/normal.jl")
+include("distributions/mixture.jl")
 
 include("linalg.jl")
 
@@ -57,7 +58,7 @@ const ALL_SOLVERS = [Exact(), SBTM(), Blob()]
 
 export GradFlowProblem
 export set_u0!
-export diffusion_problem, landau_problem, anisotropic_landau_problem, fpe_problem
+export diffusion_problem, fpe_problem, landau_problem, anisotropic_landau_problem, coulomb_landau_problem
 export Exact, Blob, SBTM
 export Logger
 export mlp, train_s!

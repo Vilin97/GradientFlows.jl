@@ -1,23 +1,29 @@
+############ Isotropic Landau with Maxwell kernel ############
+struct LandauParams{T,F}
+    d::Int # dimension
+    B::T   # collision kernel constant
+    C::T
+    K::F   # variance of MvNormal
+end
+LandauParams(d, B::T, C=one(T)) where {T} = LandauParams(d, B, C, t -> 1 - C * exp(-(d - 1) * 2 * B * t))
+
 "Make an isotropic homogeneous landau problem with Maxwell kernel with the given dimension, number of particles, and solver."
 function landau_problem(d, n, solver_; dt::F=0.01, rng=DEFAULT_RNG, kwargs...) where {F}
     params = LandauParams(d, F(1 / 24))
-    t0_ = t0(params)
+    # Choose the starting time `t0` so that P ≈ 0 and P ≥ 0.
+    t0_ = round(log((params.d + 2) * params.C / 2) / (2params.B * (params.d - 1)), RoundUp, digits=1)
     ρ(t, params) = PolyNormal(d, params.K(t))
     ρ0 = ρ(t0_, params)
-
-    f! = choose_f!(d)
+    f! = landau_f!(d)
     tspan = (t0_, t0_ + 1)
     u0 = rand(rng, ρ0, n)
     name = "landau"
     solver = initialize(solver_, u0, score(ρ0, u0), name; kwargs...)
-    function diffusion_coefficient(u, params)
-        d, n = size(u)
-        return (I(d) .* sum(abs2, u) .- u * u') .* (params.B / n)
-    end
     covariance(t, params) = cov(ρ(t, params))
-    return GradFlowProblem(f!, ρ0, u0, ρ, tspan, dt, params, solver, name, diffusion_coefficient, covariance)
+    return GradFlowProblem(f!, ρ0, u0, ρ, tspan, dt, params, solver, name, landau_diffusion_coefficient, covariance)
 end
 
+############ Anisotropic Landau with Maxwell kernel ############
 "Make an anisotropic homogeneous landau problem with Maxwell kernel with the given dimension, number of particles, and solver."
 function anisotropic_landau_problem(d, n, solver_; dt::F=0.01, rng=DEFAULT_RNG, kwargs...) where {F}
     params = (B=F(1 / 24),) # B = constant in the collision kernel
@@ -25,122 +31,103 @@ function anisotropic_landau_problem(d, n, solver_; dt::F=0.01, rng=DEFAULT_RNG, 
     ρ0 = MvNormal(diagm([F(1.8), F(0.2), ones(F, d - 2)...]))
     ρ(t, params) = nothing
 
-    f! = choose_f!(d)
+    f! = landau_f!(d)
     tspan = (t0_, t0_ + 1)
     u0 = rand(rng, ρ0, n)
     name = "anisotropic_landau"
     solver = initialize(solver_, u0, score(ρ0, u0), name; kwargs...)
-    function diffusion_coefficient(u, params)
-        d, n = size(u)
-        return (I(d) .* sum(abs2, u) .- u * u') .* (params.B / n)
-    end
     function covariance(t, params)
         Σ₀ = cov(ρ0)
         Σ∞ = I(d) .* tr(Σ₀) ./ d
         return Σ∞ - (Σ∞ - Σ₀)exp(-4d * params.B * t)
     end
-    return GradFlowProblem(f!, ρ0, u0, ρ, tspan, dt, params, solver, name, diffusion_coefficient, covariance)
+    return GradFlowProblem(f!, ρ0, u0, ρ, tspan, dt, params, solver, name, landau_diffusion_coefficient, covariance)
 end
 
-struct LandauParams{T,F}
-    d::Int # dimension
-    B::T
-    C::T
-    K::F   # variance of MvNormal
+############ Anisotropic Landau with Coulomb kernel ############
+"Make an anisotropic homogeneous landau problem with Coulomb kernel with the given dimension, number of particles, and solver."
+function coulomb_landau_problem(d, n, solver_; dt::F=0.01, rng=DEFAULT_RNG, kwargs...) where {F}
+    t0_ = F(0)
+    if d == 2
+        params = (B=F(1 / 16),)
+        # TODO: rotate the initial distribution to have diagonal covariance diag([3,1]). Means should be μ1 = [3,1]/sqrt(2), μ2 = [-1,1]/sqrt(2)
+        ρ0 = MixtureModel(MvNormal[MvNormal([-2,1], I(2)), MvNormal([0, -1], I(2))], [1/2, 1/2])
+    else
+        params = (B=F(1 / (4π)),)
+        error("Only dimension d=2 is implemented so far.")
+    end
+    ρ(t, params) = nothing
+    γ = -3
+    f! = landau_f!(d, γ)
+    # TODO: make the end time large enough that solutions from solvers stop changing significantly
+    tspan = (t0_, t0_ + 1)
+    u0 = rand(rng, ρ0, n)
+    name = "coulomb_landau"
+    solver = initialize(solver_, u0, score(ρ0, u0), name; kwargs...)
+    function covariance(t, params)
+        Σ₀ = cov(ρ0)
+        Σ∞ = I(d) .* tr(Σ₀) ./ d
+        # TODO: error if t is too small for convergence to steady-state
+        return Σ∞
+    end
+    return GradFlowProblem(f!, ρ0, u0, ρ, tspan, dt, params, solver, name, landau_diffusion_coefficient, covariance)
 end
-LandauParams(d, B::T, C=one(T)) where {T} = LandauParams(d, B, C, t -> 1 - C * exp(-(d - 1) * 2 * B * t))
 
-"Choose the starting time `t0` so that P ≈ 0 and P ≥ 0."
-t0(params::LandauParams) = round(log((params.d + 2) * params.C / 2) / (2params.B * (params.d - 1)), RoundUp, digits=1)
+############ Helper functions ############
 
-# f! for different dimensions
-function choose_f!(d)
-    if d == 3
-        return landau_3d_f!
+"D = A∗u"
+function landau_diffusion_coefficient(u, params)
+    d, n = size(u)
+    return (I(d) .* sum(abs2, u) .- u * u') .* (params.B / n)
+end
+
+"f! for different dimensions"
+function landau_f!(d, γ=0)
+    if d == 2
+        return (args...) -> landau_2d_f!(args...; γ=γ)
+    elseif d == 3
+        return (args...) -> landau_3d_f!(args...; γ=γ)
     elseif d == 5
-        return landau_5d_f!
+        return (args...) -> landau_5d_f!(args...; γ=γ)
     elseif d == 10
-        return landau_10d_f!
+        return (args...) -> landau_10d_f!(args...; γ=γ)
     else
         error("Landau problem with dimension d = $d is not implemented.")
     end
 end
 
-function landau_3d_f!(du, u, prob, t)
-    s = prob.solver.score_values
-    du .= 0
-    n = size(u, 2)
-    @tturbo for p = 1:n
-        Base.Cartesian.@nexprs 3 i -> dx_i = zero(eltype(du))
-        for q = 1:n
-            dotzv = zero(eltype(du))
-            normsqz = zero(eltype(du))
-            Base.Cartesian.@nexprs 3 i -> begin
-                z_i = u[i, p] - u[i, q]
-                v_i = s[i, q] - s[i, p]
-                dotzv += z_i * v_i
-                normsqz += z_i * z_i
+landau_2d_f!(du, u, prob, t; γ) = landau_f_aux!(du, u, prob, Val(2); γ=γ)
+landau_3d_f!(du, u, prob, t; γ) = landau_f_aux!(du, u, prob, Val(3); γ=γ)
+landau_5d_f!(du, u, prob, t; γ) = landau_f_aux!(du, u, prob, Val(5); γ=γ)
+landau_10d_f!(du, u, prob, t; γ) = landau_f_aux!(du, u, prob, Val(10); γ=γ)
+
+@generated function landau_f_aux!(du, u, prob, ::Val{d}; γ) where {d}
+    quote
+        ε = γ < 0 ? eps(eltype(du)) : 0
+        s = prob.solver.score_values
+        du .= 0
+        n = size(u, 2)
+        @tturbo for p = 1:n
+            Base.Cartesian.@nexprs $d i -> dx_i = zero(eltype(du))
+            for q = 1:n
+                dotzv = zero(eltype(du))
+                normsqz = zero(eltype(du))
+                Base.Cartesian.@nexprs $d i -> begin
+                    z_i = u[i, p] - u[i, q]
+                    v_i = s[i, q] - s[i, p]
+                    dotzv += z_i * v_i
+                    normsqz += z_i * z_i
+                end
+                normz_pow_γ = 1/(sqrt(normsqz) + ε)^(-γ)
+                Base.Cartesian.@nexprs $d i -> begin
+                    dx_i += (v_i * normsqz - dotzv * z_i) * normz_pow_γ
+                end
             end
-            Base.Cartesian.@nexprs 3 i -> begin
-                dx_i += v_i * normsqz - dotzv * z_i
+            Base.Cartesian.@nexprs $d i -> begin
+                du[i, p] += dx_i
             end
         end
-        Base.Cartesian.@nexprs 3 i -> begin
-            du[i, p] += dx_i
-        end
+        du .*= prob.params.B / n
+        nothing
     end
-    du .*= prob.params.B / n
-    nothing
-end
-function landau_5d_f!(du, u, prob, t)
-    s = prob.solver.score_values
-    du .= 0
-    n = size(u, 2)
-    @tturbo for p = 1:n
-        Base.Cartesian.@nexprs 5 i -> dx_i = zero(eltype(du))
-        for q = 1:n
-            dotzv = zero(eltype(du))
-            normsqz = zero(eltype(du))
-            Base.Cartesian.@nexprs 5 i -> begin
-                z_i = u[i, p] - u[i, q]
-                v_i = s[i, q] - s[i, p]
-                dotzv += z_i * v_i
-                normsqz += z_i * z_i
-            end
-            Base.Cartesian.@nexprs 5 i -> begin
-                dx_i += v_i * normsqz - dotzv * z_i
-            end
-        end
-        Base.Cartesian.@nexprs 5 i -> begin
-            du[i, p] += dx_i
-        end
-    end
-    du .*= prob.params.B / n
-    nothing
-end
-function landau_10d_f!(du, u, prob, t)
-    s = prob.solver.score_values
-    du .= 0
-    n = size(u, 2)
-    @tturbo for p = 1:n
-        Base.Cartesian.@nexprs 10 i -> dx_i = zero(eltype(du))
-        for q = 1:n
-            dotzv = zero(eltype(du))
-            normsqz = zero(eltype(du))
-            Base.Cartesian.@nexprs 10 i -> begin
-                z_i = u[i, p] - u[i, q]
-                v_i = s[i, q] - s[i, p]
-                dotzv += z_i * v_i
-                normsqz += z_i * z_i
-            end
-            Base.Cartesian.@nexprs 10 i -> begin
-                dx_i += v_i * normsqz - dotzv * z_i
-            end
-        end
-        Base.Cartesian.@nexprs 10 i -> begin
-            du[i, p] += dx_i
-        end
-    end
-    du .*= prob.params.B / n
-    nothing
 end
