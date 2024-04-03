@@ -86,8 +86,12 @@ function update!(solver::SBTM, integrator)
     score_values .= s(u)
     if verbose > 0 && integrator.iter % 10 == 0
         train_loss = pretty(score_matching_loss(s, u, ζ, denoising_alpha), 7)
-        test_loss = pretty(l2_error_normalized(score_values, true_score(prob, integrator.t, integrator.u)), 7)
-        println("Time $(integrator.t) test loss = $test_loss train loss = $train_loss")
+        if !isnothing(true_dist(integrator.p, integrator.t))
+            test_loss = pretty(l2_error_normalized(score_values, true_score(prob, integrator.t, integrator.u)), 7)
+            println("Time $(integrator.t) test loss = $test_loss train loss = $train_loss")
+        else
+            println("Time $(integrator.t) train loss = $train_loss")
+        end
     end
     nothing
 end

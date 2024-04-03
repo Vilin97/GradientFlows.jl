@@ -51,8 +51,12 @@ function update!(solver::Blob{S,F,A}, integrator) where {S,F,A<:BlobAllocMemCPU}
         score_values[k, p] += fac * diff_k / mol_sum[q]
     end
     if verbose > 0 && integrator.iter % 10 == 0
-        test_loss = pretty(l2_error_normalized(score_values, true_score(integrator.p, integrator.t, integrator.u)), 7)
-        println("Time $(integrator.t) test loss = $test_loss")
+        if !isnothing(true_dist(integrator.p, integrator.t))
+            test_loss = pretty(l2_error_normalized(score_values, true_score(integrator.p, integrator.t, integrator.u)), 7)
+            println("Time $(integrator.t) test loss = $test_loss")
+        else
+            println("Time $(integrator.t)")
+        end
     end
     log!(logger, solver)
     nothing
@@ -67,6 +71,6 @@ long_name(solver::Blob) = "blob ε=$(round(solver.ε, digits=3))"
 "ε = C * n^(-2 / (d + 6)) is optimal for gradient matching."
 function blob_bandwidth(u)
     d, n = size(u)
-    Σ = diag(cov(u'))
-    4 * prod(Σ)^(1 / d) * n^(-2 / (d + 4))
+    ε = prod(eigen(cov(u')).values)^(1/d)
+    4 * ε * n^(-2 / (d + 4))
 end

@@ -44,14 +44,13 @@ function anisotropic_landau_problem(d, n, solver_; dt::F=0.01, rng=DEFAULT_RNG, 
     return GradFlowProblem(f!, ρ0, u0, ρ, tspan, dt, params, solver, name, landau_diffusion_coefficient, covariance)
 end
 
-############ Anisotropic Landau with Coulomb kernel ############
+############ Landau with Coulomb kernel ############
 "Make an anisotropic homogeneous landau problem with Coulomb kernel with the given dimension, number of particles, and solver."
 function coulomb_landau_problem(d, n, solver_; dt::F=0.01, rng=DEFAULT_RNG, kwargs...) where {F}
     t0 = F(0)
     if d == 2
         params = (B=F(1 / 16),)
-        # TODO: rotate the initial distribution to have diagonal covariance diag([3,1]). Means should be μ1 = [3,1]/sqrt(2), μ2 = [-1,1]/sqrt(2)
-        ρ0 = MixtureModel(MvNormal[MvNormal([-2,1], I(2)), MvNormal([0, -1], I(2))], [1/2, 1/2])
+        ρ0 = MixtureModel(MvNormal[MvNormal([3,1]/sqrt(2), I(2)), MvNormal([-1,1]/sqrt(2), I(2))], [1/2, 1/2])
     else
         params = (B=F(1 / (4π)),)
         error("Only dimension d=2 is implemented so far.")

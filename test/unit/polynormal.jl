@@ -1,7 +1,7 @@
 using GradientFlows, Test, StableRNGs
 using LinearAlgebra, Distributions, Zygote
 using HCubature: hcubature
-using GradientFlows: LandauParams, PolyNormal, t0, abs_moment, emp_abs_moment
+using GradientFlows: LandauParams, PolyNormal, abs_moment, emp_abs_moment
 
 @testset "PolyNormal distribution" begin
     rng = StableRNG(123)
@@ -9,8 +9,6 @@ using GradientFlows: LandauParams, PolyNormal, t0, abs_moment, emp_abs_moment
     d = 3
     B = 1 / 24
     params = LandauParams(d, B)
-
-    @test t0(params) == 5.5
 
     @testset "pdf" begin
         for t in 5.5:0.1:6.5
