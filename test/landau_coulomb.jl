@@ -10,7 +10,6 @@ for solver in [Blob(), SBTM(mlp(d, rng=StableRNG(321), depth=2))]
     result = GradFlowExperimentResult(experiment)
 
     @test have_true_dist(experiment) == false
-    # TODO
-    # @test result.true_cov_trace_error[1] < 0.5
-    # @test result.true_cov_norm_error[1] < 0.5
+    @test result.true_cov_trace_error[1] < 0.5
+    @test result.true_cov_norm_error[1] < 0.5
 end
