@@ -55,14 +55,14 @@ function coulomb_landau_problem(d, n, solver_; dt::F=0.01, rng=DEFAULT_RNG, kwar
         params = (B=F(1 / (4π)),)
         error("Only dimension d=2 is implemented so far.")
     end
-    ρ(t, params) = nothing
+    ρ(t, params) = MvNormal(covariance(t, params)) # steady-state, only accurate for large t
     γ = -3
     f! = landau_f!(d, γ)
     tspan = (t0, t0 + 40) # same as in https://www.sciencedirect.com/science/article/pii/S2590055220300184
     u0 = rand(rng, ρ0, n)
     name = "coulomb_landau"
     solver = initialize(solver_, u0, score(ρ0, u0), name; kwargs...)
-    function covariance(t, params)
+    function covariance(t, params) # steady-state, only accurate for large t
         Σ₀ = cov(ρ0)
         Σ∞ = I(d) .* tr(Σ₀) ./ d
         # TODO: error if t is too small for convergence to steady-state
