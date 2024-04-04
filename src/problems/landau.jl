@@ -58,8 +58,7 @@ function coulomb_landau_problem(d, n, solver_; dt::F=0.01, rng=DEFAULT_RNG, kwar
     ρ(t, params) = nothing
     γ = -3
     f! = landau_f!(d, γ)
-    # TODO: make the end time large enough that solutions from solvers stop changing significantly
-    tspan = (t0, t0 + 1)
+    tspan = (t0, t0 + 40) # same as in https://www.sciencedirect.com/science/article/pii/S2590055220300184
     u0 = rand(rng, ρ0, n)
     name = "coulomb_landau"
     solver = initialize(solver_, u0, score(ρ0, u0), name; kwargs...)
