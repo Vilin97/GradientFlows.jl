@@ -46,7 +46,7 @@ end
 
 ############ Landau with Coulomb kernel ############
 "Make an anisotropic homogeneous landau problem with Coulomb kernel with the given dimension, number of particles, and solver."
-function coulomb_landau_problem(d, n, solver_; dt::F=0.01, rng=DEFAULT_RNG, kwargs...) where {F}
+function coulomb_landau_problem(d, n, solver_; dt::F=0.05, rng=DEFAULT_RNG, kwargs...) where {F}
     t0 = F(0)
     if d == 2
         params = (B=F(1 / 16),)
@@ -55,7 +55,7 @@ function coulomb_landau_problem(d, n, solver_; dt::F=0.01, rng=DEFAULT_RNG, kwar
         params = (B=F(1 / (4π)),)
         error("Only dimension d=2 is implemented so far.")
     end
-    ρ(t, params) = MvNormal(covariance(t, params)) # steady-state, only accurate for large t
+    ρ(t, params) = t ≈ 0 ? ρ0 : MvNormal(covariance(t, params)) # if t > 0, steady-state, only accurate for large t
     γ = -3
     f! = landau_f!(d, γ)
     tspan = (t0, t0 + 40) # same as in https://www.sciencedirect.com/science/article/pii/S2590055220300184
