@@ -39,8 +39,9 @@ Run experiments for all the problems and save the results.
     problems = [(problem, d), ...]
     ns = [n, ...]
     num_runs = number of runs for each experiment
+    solvers = [Blob(), ...]
 """
-function run_experiments(problems, ns, num_runs, solvers; rng=StableRNG, verbose=1, dt=0.01, dir="data")
+function run_experiments(problems, ns, num_runs, solvers; rng=StableRNG, verbose=1, dir="data", kwargs...)
 
     verbose > 0 && println("Generating data")
     timer = TimerOutput()
@@ -51,7 +52,7 @@ function run_experiments(problems, ns, num_runs, solvers; rng=StableRNG, verbose
                 prob_ = problem(d, n, Exact(); rng=rng(100 * n + 10 * d + run))
                 problem_name = prob_.name
                 @timeit timer "$problem_name" for solver in solvers
-                    prob = problem(d, n, solver; dt=dt, dir=dir)
+                    prob = problem(d, n, solver; dir=dir, kwargs...)
                     set_u0!(prob, prob_.u0)
                     if verbose > 0 && run == num_runs
                         @time "n=$(rpad(n,5)) $problem_name d=$(rpad(d,2)) run=$run solver=$solver" @timeit timer "$solver" experiment = Experiment(prob)
