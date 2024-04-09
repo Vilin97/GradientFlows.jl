@@ -72,7 +72,7 @@ function coulomb_landau_problem(d, n, solver_; dt::F=0.05, rng=DEFAULT_RNG, kwar
 end
 
 "Make an anisotropic homogeneous landau problem with Maxwell kernel with the given dimension, number of particles, and solver."
-function maxwell_landau_problem(d, n, solver_; dt::F=0.05, rng=DEFAULT_RNG, kwargs...) where {F}
+function maxwell_landau_problem(d, n, solver_; dt::F=0.01, rng=DEFAULT_RNG, kwargs...) where {F}
     t0 = F(0)
     if d == 2
         params = (B=F(1 / 16),)
