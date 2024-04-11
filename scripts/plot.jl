@@ -105,7 +105,7 @@ function plot_all(problem_name, d, ns, solver_names; save=true, dir="data",
     end
 
     ### plot ###
-    save && saveplot(scatter_plot(problem_name, d, ns[end], solver_names), "scatter")
+    save && saveplot(scatter_plot(problem_name, d, ns[end], solver_names; dir=dir), "scatter")
     if have_true_distribution
         p_marginal_start, p_slice_start = pdf_plot(problem_name, d, ns[end], solver_names, t_idx=1)
         p_marginal_end, p_slice_end = pdf_plot(problem_name, d, ns[end], solver_names, t_idx=0)
