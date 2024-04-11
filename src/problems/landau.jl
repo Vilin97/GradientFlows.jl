@@ -84,7 +84,7 @@ function maxwell_landau_problem(d, n, solver_; dt::F=0.01, rng=DEFAULT_RNG, kwar
     ρ(t, params) = t ≈ 0 ? ρ0 : MvNormal(covariance(t, params)) # if t > 0, steady-state, only accurate for large t
     γ = 0
     f! = landau_f!(d, γ)
-    tspan = (t0, t0 + 4*40)
+    tspan = (t0, t0 + 10)
     u0 = rand(rng, ρ0, n)
     name = "maxwell_landau"
     solver = initialize(solver_, u0, score(ρ0, u0), name; kwargs...)
@@ -126,7 +126,7 @@ landau_10d_f!(du, u, prob, t; γ) = landau_f_aux!(du, u, prob, Val(10); γ=γ)
 
 @generated function landau_f_aux!(du, u, prob, ::Val{d}; γ) where {d}
     quote
-        ε = γ < 0 ? eps(eltype(du)) : 0
+        ε = γ < 0 ? eps(eltype(du)) : 0 # TODO: keep epsilon positive
         s = prob.solver.score_values
         du .= 0
         n = size(u, 2)

@@ -4,11 +4,12 @@ using GradientFlows
 # train_nn(maxwell_landau_problem, 2, 20000, mlp(2, depth=2); verbose=1, init_max_iterations=10^5, dir="data")
 
 ### generate data ###
-problems = [(maxwell_landau_problem, 2)]
+dir = "data"
+problems = [(coulomb_landau_problem, 2), (maxwell_landau_problem, 2)]
 num_runs = 1
-ns = 100 * 2 .^ (0:4)
+ns = 100 * 2 .^ (0:6)
 solvers = [SBTM(), Blob()]
-run_experiments(problems, ns, num_runs, solvers; dt=0.0025)
+# run_experiments(problems, ns, num_runs, solvers; dir=dir)
 
 include("plot.jl")
-@time plot_all(problems, ns, solvers; dir="data");
+@time plot_all(problems, ns, solvers; dir=dir);
