@@ -12,10 +12,10 @@ dirs = [joinpath("data","dt_$(round(Int, dt * 1000))ms") for dt in dts]
 ### train nn ###
 
 ### generate data ###
-for (dt, dir_) in zip(dts, dirs)
-    @shoe dt
-    run_experiments(problems, ns, num_runs, solvers; dir=dir_, dt=dt)
-end
+# for (dt, dir_) in zip(dts, dirs)
+#     @shoe dt
+#     run_experiments(problems, ns, num_runs, solvers; dir=dir_, dt=dt)
+# end
 for (dt, dir_) in zip(dts, dirs)
     @time plot_all(problems, ns, solvers; dir=dir_);
 end

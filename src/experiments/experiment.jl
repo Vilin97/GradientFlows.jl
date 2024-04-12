@@ -49,7 +49,7 @@ function run_experiments(problems, ns, num_runs, solvers; rng=StableRNG, verbose
     for n in ns
         @timeit timer "n $n" for (problem, d) in problems
             @timeit timer "d $d" for run in 1:num_runs
-                prob_ = problem(d, n, Exact(); rng=rng(100 * n + 10 * d + run))
+                prob_ = problem(d, n, Exact(); rng=rng(10 * d + run))
                 problem_name = prob_.name
                 @timeit timer "$problem_name" for solver in solvers
                     prob = problem(d, n, solver; dir=dir, kwargs...)

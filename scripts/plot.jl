@@ -86,7 +86,6 @@ function plot_all(problem_name, d, ns, solver_names; save=true, dir="data",
         :update_score_time,
         :L2_error,
         :true_cov_norm_error,
-        :sample_mean_error,
         :sample_cov_trace_error], kwargs...)
     println("Plotting $problem_name, d=$d")
     any_experiment = load(experiment_filename(problem_name, d, ns[1], solver_names[1], 1; dir=dir))
@@ -119,7 +118,7 @@ function plot_all(problem_name, d, ns, solver_names; save=true, dir="data",
         p_cov_trajectory_1 = plot_covariance_trajectory(problem_name, d, ns[end], solver_names; row=1, column=1, dir=dir)
         p_cov_trajectory_2 = plot_covariance_trajectory(problem_name, d, ns[end], solver_names; row=2, column=2, dir=dir)
         p_cov_trajectory_1_low_n = plot_covariance_trajectory(problem_name, d, ns[1], solver_names; row=1, column=1, dir=dir)
-        p_cov_trajectory_2_low_n = plot_covariance_trajectory(problem_name, d, ns[end], solver_names; row=2, column=2, dir=dir)
+        p_cov_trajectory_2_low_n = plot_covariance_trajectory(problem_name, d, ns[1], solver_names; row=2, column=2, dir=dir)
         plts_ = [p_cov_trajectory_1, p_cov_trajectory_2, p_cov_trajectory_1_low_n, p_cov_trajectory_2_low_n]
         push!(plots, plts_...)
         save && saveplots(plts_, ["cov_trajectory_1", "cov_trajectory_2", "cov_trajectory_1_low_n", "cov_trajectory_2_low_n"])
