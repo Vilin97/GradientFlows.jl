@@ -29,7 +29,7 @@ function anisotropic_landau_problem(d, n, solver_; dt::F=0.01, rng=DEFAULT_RNG, 
     params = (B=F(1 / 24),) # B = constant in the collision kernel
     t0 = F(0)
     ρ0 = MvNormal(diagm([F(1.8), F(0.2), ones(F, d - 2)...]))
-    ρ(t, params) = nothing
+    ρ(t, params) = t ≈ 0 ? ρ0 : MvNormal(covariance(F(Inf), params)) # if t > 0, steady-state, only accurate for large t
 
     f! = landau_f!(d)
     tspan = (t0, t0 + 10)
