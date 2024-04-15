@@ -3,7 +3,7 @@ using GradientFlows: have_true_dist
 
 n = 2000
 d = 2
-for solver in [Blob(), SBTM(mlp(d, rng=StableRNG(321), depth=2))]
+for solver in [Blob(), SBTM(mlp(d, rng=StableRNG(321), depth=1))]
     @show solver
     problem = coulomb_landau_problem(d, n, solver; rng=StableRNG(123))
     experiment = Experiment(problem)
