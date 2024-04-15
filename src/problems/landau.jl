@@ -46,16 +46,36 @@ end
 
 ############ Landau with Coulomb kernel ############
 "Make an anisotropic homogeneous landau problem with Coulomb kernel with the given dimension, number of particles, and solver."
-function coulomb_landau_problem(d, n, solver_; dt::F=0.01, rng=DEFAULT_RNG, kwargs...) where {F}
+function coulomb_landau_normal_problem(d, n, solver_; dt::F=1.0, rng=DEFAULT_RNG, kwargs...) where {F}
     t0 = F(0)
     params = (B=F(1 / 24),)
     ρ0 = MvNormal(diagm([F(1.8), F(0.2), ones(F, d - 2)...]))
     ρ(t, params) = t ≈ 0 ? ρ0 : MvNormal(covariance(t, params)) # if t > 0, steady-state, only accurate for large t
     γ = -3
     f! = landau_f!(d, γ)
-    tspan = (t0, t0 + 10) # t_end = 40 is used in https://www.sciencedirect.com/science/article/pii/S2590055220300184
+    tspan = (t0, t0 + 200) # t_end = 40 is used in https://www.sciencedirect.com/science/article/pii/S2590055220300184
     u0 = rand(rng, ρ0, n)
-    name = "coulomb_landau"
+    name = "coulomb_landau_normal"
+    solver = initialize(solver_, u0, score(ρ0, u0), name; kwargs...)
+    function covariance(t, params) # steady-state, only accurate for large t
+        Σ₀ = cov(ρ0)
+        Σ∞ = I(d) .* tr(Σ₀) ./ d
+        return Σ∞
+    end
+    return GradFlowProblem(f!, ρ0, u0, ρ, tspan, dt, params, solver, name, landau_diffusion_coefficient, covariance)
+end
+
+"Make an anisotropic homogeneous landau problem with Coulomb kernel with the given dimension, number of particles, and solver."
+function coulomb_landau_mixture_problem(d, n, solver_; dt::F=1.0, rng=DEFAULT_RNG, kwargs...) where {F}
+    t0 = F(0)
+    params = (B=F(1 / 24),)
+    ρ0 = MixtureModel(MvNormal[MvNormal([3,1]/sqrt(2), I(2)), MvNormal([-1,1]/sqrt(2), I(2))], [1/2, 1/2])
+    ρ(t, params) = t ≈ 0 ? ρ0 : MvNormal(covariance(t, params)) # if t > 0, steady-state, only accurate for large t
+    γ = -3
+    f! = landau_f!(d, γ)
+    tspan = (t0, t0 + 200) # t_end = 40 is used in https://www.sciencedirect.com/science/article/pii/S2590055220300184
+    u0 = rand(rng, ρ0, n)
+    name = "coulomb_landau_mixture"
     solver = initialize(solver_, u0, score(ρ0, u0), name; kwargs...)
     function covariance(t, params) # steady-state, only accurate for large t
         Σ₀ = cov(ρ0)
