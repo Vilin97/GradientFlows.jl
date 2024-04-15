@@ -58,7 +58,7 @@ const ALL_SOLVERS = [Exact(), SBTM(), Blob()]
 
 export GradFlowProblem
 export set_u0!
-export diffusion_problem, fpe_problem, landau_problem, anisotropic_landau_problem, coulomb_normal_landau_problem, coulomb_mixture_landau_problem
+export diffusion_problem, fpe_problem, landau_problem, anisotropic_landau_problem, coulomb_landau_normal_problem, coulomb_landau_mixture_problem
 export Exact, Blob, SBTM
 export Logger
 export mlp, train_s!

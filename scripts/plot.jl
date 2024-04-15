@@ -106,8 +106,8 @@ function plot_all(problem_name, d, ns, solver_names; save=true, dir="data",
     ### plot ###
     save && saveplot(scatter_plot(problem_name, d, ns[end], solver_names; dir=dir), "scatter")
     if have_true_distribution
-        p_marginal_start, p_slice_start = pdf_plot(problem_name, d, ns[end], solver_names, t_idx=1)
-        p_marginal_end, p_slice_end = pdf_plot(problem_name, d, ns[end], solver_names, t_idx=0)
+        p_marginal_start, p_slice_start = pdf_plot(problem_name, d, ns[end], solver_names, t_idx=1; dir=dir)
+        p_marginal_end, p_slice_end = pdf_plot(problem_name, d, ns[end], solver_names, t_idx=0; dir=dir)
         p_cov_trajectory_1 = plot_covariance_trajectory(problem_name, d, ns[end], solver_names; row=1, column=1, dir=dir)
         p_cov_trajectory_1_low_n = plot_covariance_trajectory(problem_name, d, ns[1], solver_names; row=1, column=1, dir=dir)
         p_score_error = plot_score_error(problem_name, d, ns[end], solver_names; dir=dir)

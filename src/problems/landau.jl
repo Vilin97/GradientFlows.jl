@@ -7,7 +7,7 @@ struct LandauParams{T,F}
 end
 LandauParams(d, B::T, C=one(T)) where {T} = LandauParams(d, B, C, t -> 1 - C * exp(-(d - 1) * 2 * B * t))
 
-"Make an isotropic homogeneous landau problem with Maxwell kernel with the given dimension, number of particles, and solver."
+"Make an isotropic landau problem with Maxwell kernel with the given dimension, number of particles, and solver."
 function landau_problem(d, n, solver_; dt::F=0.01, rng=DEFAULT_RNG, kwargs...) where {F}
     params = LandauParams(d, F(1 / 24))
     # Choose the starting time `t0` so that P ≈ 0 and P ≥ 0.
@@ -24,12 +24,12 @@ function landau_problem(d, n, solver_; dt::F=0.01, rng=DEFAULT_RNG, kwargs...) w
 end
 
 ############ Anisotropic Landau with Maxwell kernel ############
-"Make an anisotropic homogeneous landau problem with Maxwell kernel with the given dimension, number of particles, and solver."
+"Make an anisotropic landau problem with Maxwell kernel with the given dimension, number of particles, and solver."
 function anisotropic_landau_problem(d, n, solver_; dt::F=0.01, rng=DEFAULT_RNG, kwargs...) where {F}
     params = (B=F(1 / 24),) # B = constant in the collision kernel
     t0 = F(0)
     ρ0 = MvNormal(diagm([F(1.8), F(0.2), ones(F, d - 2)...]))
-    ρ(t, params) = t ≈ 0 ? ρ0 : MvNormal(covariance(F(Inf), params)) # if t > 0, steady-state, only accurate for large t
+    ρ(t, params) = t ≈ 0 ? ρ0 : MvNormal(mean(ρ0), covariance(F(Inf), params)) # if t > 0, steady-state, only accurate for large t
 
     f! = landau_f!(d)
     tspan = (t0, t0 + 10)
@@ -45,37 +45,36 @@ function anisotropic_landau_problem(d, n, solver_; dt::F=0.01, rng=DEFAULT_RNG, 
 end
 
 ############ Landau with Coulomb kernel ############
-"Make an anisotropic homogeneous landau problem with Coulomb kernel with the given dimension, number of particles, and solver."
-function coulomb_landau_normal_problem(d, n, solver_; dt::F=1.0, rng=DEFAULT_RNG, kwargs...) where {F}
-    t0 = F(0)
-    params = (B=F(1 / 24),)
-    ρ0 = MvNormal(diagm([F(1.8), F(0.2), ones(F, d - 2)...]))
-    ρ(t, params) = t ≈ 0 ? ρ0 : MvNormal(covariance(t, params)) # if t > 0, steady-state, only accurate for large t
-    γ = -3
-    f! = landau_f!(d, γ)
-    tspan = (t0, t0 + 200) # t_end = 40 is used in https://www.sciencedirect.com/science/article/pii/S2590055220300184
-    u0 = rand(rng, ρ0, n)
+"Make an anisotropic landau problem with Coulomb kernel with Gaussian initial condition with the given dimension, number of particles, and solver."
+function coulomb_landau_normal_problem(d, args...; kwargs...)
+    ρ0 = MvNormal(diagm([1.8, 0.2, ones(d - 2)...]))
     name = "coulomb_landau_normal"
-    solver = initialize(solver_, u0, score(ρ0, u0), name; kwargs...)
-    function covariance(t, params) # steady-state, only accurate for large t
-        Σ₀ = cov(ρ0)
-        Σ∞ = I(d) .* tr(Σ₀) ./ d
-        return Σ∞
-    end
-    return GradFlowProblem(f!, ρ0, u0, ρ, tspan, dt, params, solver, name, landau_diffusion_coefficient, covariance)
+    return coulomb_landau_problem_aux(args...; ρ0=ρ0, name=name, kwargs...)
 end
 
-"Make an anisotropic homogeneous landau problem with Coulomb kernel with the given dimension, number of particles, and solver."
-function coulomb_landau_mixture_problem(d, n, solver_; dt::F=1.0, rng=DEFAULT_RNG, kwargs...) where {F}
+"Make an anisotropic landau problem with Coulomb kernel with mixture of Gaussians initial condition with the given dimension, number of particles, and solver."
+function coulomb_landau_mixture_problem(d, args...; kwargs...)
+    if d != 2
+        error("Coulomb Landau mixture problem with dimension d != 2 is not implemented.")
+    end
+    δ = 0.2
+    μ = [sqrt(8*(1-δ))/2, 0]
+    ρ0 = MixtureModel(MvNormal[MvNormal(μ, δ*I(2)), MvNormal(-μ, δ*I(2))], [1/2, 1/2])
+    name = "coulomb_landau_mixture"
+    return coulomb_landau_problem_aux(args...; ρ0=ρ0, name=name, kwargs...)
+end
+
+"Auxillary function to make a landau problem with Coulomb kernel."
+function coulomb_landau_problem_aux(n, solver_; ρ0, name, dt::F=1.0, rng=DEFAULT_RNG, kwargs...) where {F}
+    d = length(mean(ρ0))
+    @assert(eltype(mean(ρ0)) == typeof(dt))
     t0 = F(0)
     params = (B=F(1 / 24),)
-    ρ0 = MixtureModel(MvNormal[MvNormal([3,1]/sqrt(2), I(2)), MvNormal([-1,1]/sqrt(2), I(2))], [1/2, 1/2])
-    ρ(t, params) = t ≈ 0 ? ρ0 : MvNormal(covariance(t, params)) # if t > 0, steady-state, only accurate for large t
+    ρ(t, params) = t ≈ 0 ? ρ0 : MvNormal(mean(ρ0), covariance(t, params)) # if t > 0, steady-state, only accurate for large t
     γ = -3
     f! = landau_f!(d, γ)
     tspan = (t0, t0 + 200) # t_end = 40 is used in https://www.sciencedirect.com/science/article/pii/S2590055220300184
     u0 = rand(rng, ρ0, n)
-    name = "coulomb_landau_mixture"
     solver = initialize(solver_, u0, score(ρ0, u0), name; kwargs...)
     function covariance(t, params) # steady-state, only accurate for large t
         Σ₀ = cov(ρ0)
