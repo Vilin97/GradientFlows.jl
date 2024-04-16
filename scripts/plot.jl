@@ -83,7 +83,7 @@ end
 function plot_entropy_production_rate(problem_name, d, n, solver_names; kwargs...)
     metric_name = "entropy_production_rate"
     metric_math_name = "d/dt ∫ρ(x)logρ(x)dx ≈ ∑ᵢ v[s](xᵢ)⋅s(xᵢ) / n"
-    entropy_production_rate(experiment) = [dot(experiment.velocity_values[i], experiment.score_values[i]) / size(prob.u0, 2) for i in 1:length(experiment.score_values)]
+entropy_production_rate(experiment) = [dot(experiment.velocity_values[i], experiment.score_values[i]) / size(experiment.solution[i], 2) for i in 1:length(experiment.score_values)]
     return plot_metric_over_t(problem_name, d, n, solver_names, entropy_production_rate, metric_name, metric_math_name; kwargs...)
 end
 
@@ -140,7 +140,7 @@ function plot_all(problem_name, d, ns, solver_names; save=true, dir="data",
     entropy_plot = plot_entropy_production_rate(problem_name, d, ns[end], solver_names; dir=dir)
     entropy_plot_low_n = plot_entropy_production_rate(problem_name, d, ns[1], solver_names; dir=dir)
     push!(plots, entropy_plot, entropy_plot_low_n)
-    save && saveplots([entropy_plot_1, entropy_plot_2], ["entropy_production_rate", "entropy_production_rate_low_n"])
+    save && saveplots([entropy_plot, entropy_plot_low_n], ["entropy_production_rate", "entropy_production_rate_low_n"])
     for metric in metrics
         metric_matrix, metric_math_name = load_metric(problem_name, d, ns, solver_names, metric; dir=dir)
         metric_name = string(metric)
