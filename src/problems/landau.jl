@@ -32,7 +32,7 @@ function anisotropic_landau_problem(d, n, solver_; dt::F=0.01, rng=DEFAULT_RNG, 
     ρ(t, params) = t ≈ 0 ? ρ0 : MvNormal(mean(ρ0), covariance(F(Inf), params)) # if t > 0, steady-state, only accurate for large t
 
     f! = landau_f!(d)
-    tspan = (t0, t0 + 10)
+    tspan = (t0, t0 + 4)
     u0 = rand(rng, ρ0, n)
     name = "anisotropic_landau"
     solver = initialize(solver_, u0, score(ρ0, u0), name; kwargs...)

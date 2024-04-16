@@ -118,9 +118,15 @@ function plot_all(problem_name, d, ns, solver_names; save=true, dir="data",
         p_cov_trajectory_1 = plot_covariance_trajectory(problem_name, d, ns[end], solver_names; row=1, column=1, dir=dir)
         p_cov_trajectory_1_low_n = plot_covariance_trajectory(problem_name, d, ns[1], solver_names; row=1, column=1, dir=dir)
         p_score_error = plot_score_error(problem_name, d, ns[end], solver_names; dir=dir)
-        plts_ = [p_marginal_start, p_marginal_end, p_slice_start, p_slice_end, p_cov_trajectory_1, p_cov_trajectory_1_low_n, p_score_error]
+        if d <= 3 # do not include marginal pdf
+            plts_ = [p_slice_start, p_slice_end, p_cov_trajectory_1, p_cov_trajectory_1_low_n, p_score_error]
+            names = ["slice_start", "slice_end", "cov_trajectory_1", "cov_trajectory_1_low_n", "score_error"]
+        else
+            plts_ = [p_marginal_start, p_marginal_end, p_slice_start, p_slice_end, p_cov_trajectory_1, p_cov_trajectory_1_low_n, p_score_error]
+            names = ["marginal_start", "marginal_end", "slice_start", "slice_end", "cov_trajectory_1", "cov_trajectory_1_low_n", "score_error"]
+        end
         push!(plots, plts_...)
-        save && saveplots(plts_, ["marginal_start", "marginal_end", "slice_start", "slice_end", "cov_trajectory_1", "cov_trajectory_1_low_n", "score_error"])
+        save && saveplots(plts_, names)
     else
         p_cov_trajectory_1 = plot_covariance_trajectory(problem_name, d, ns[end], solver_names; row=1, column=1, dir=dir)
         p_cov_trajectory_2 = plot_covariance_trajectory(problem_name, d, ns[end], solver_names; row=2, column=2, dir=dir)
