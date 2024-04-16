@@ -73,7 +73,7 @@ function coulomb_landau_problem_aux(n, solver_; ρ0, name, dt::F=1.0, rng=DEFAUL
     ρ(t, params) = t ≈ 0 ? ρ0 : MvNormal(mean(ρ0), covariance(t, params)) # if t > 0, steady-state, only accurate for large t
     γ = -3
     f! = landau_f!(d, γ)
-    tspan = (t0, t0 + 200) # t_end = 40 is used in https://www.sciencedirect.com/science/article/pii/S2590055220300184
+    tspan = (t0, t0 + 400) # t_end = 40 is used in https://www.sciencedirect.com/science/article/pii/S2590055220300184
     u0 = rand(rng, ρ0, n)
     solver = initialize(solver_, u0, score(ρ0, u0), name; kwargs...)
     function covariance(t, params) # steady-state, only accurate for large t
