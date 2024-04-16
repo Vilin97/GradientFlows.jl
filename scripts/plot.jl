@@ -80,6 +80,13 @@ function plot_covariance_trajectory(problem_name, d, n, solver_names; row, colum
     return plt
 end
 
+function plot_entropy_production_rate(problem_name, d, n, solver_names; kwargs...)
+    metric_name = "entropy_production_rate"
+    metric_math_name = "d/dt ∫ρ(x)logρ(x)dx ≈ ∑ᵢ v[s](xᵢ)⋅s(xᵢ) / n"
+    entropy_production_rate(experiment) = [dot(experiment.velocity_values[i], experiment.score_values[i]) / size(prob.u0, 2) for i in 1:length(experiment.score_values)]
+    return plot_metric_over_t(problem_name, d, n, solver_names, entropy_production_rate, metric_name, metric_math_name; kwargs...)
+end
+
 function plot_all(problem_name, d, ns, solver_names; save=true, dir="data",
     metrics=[
         :top_eigenvalue_error,
@@ -124,6 +131,10 @@ function plot_all(problem_name, d, ns, solver_names; save=true, dir="data",
         save && saveplots(plts_, ["cov_trajectory_1", "cov_trajectory_2", "cov_trajectory_1_low_n", "cov_trajectory_2_low_n"])
         insert!(metrics, 2, :bottom_eigenvalue_error)
     end
+    entropy_plot = plot_entropy_production_rate(problem_name, d, ns[end], solver_names; dir=dir)
+    entropy_plot_low_n = plot_entropy_production_rate(problem_name, d, ns[1], solver_names; dir=dir)
+    push!(plots, entropy_plot, entropy_plot_low_n)
+    save && saveplots([entropy_plot_1, entropy_plot_2], ["entropy_production_rate", "entropy_production_rate_low_n"])
     for metric in metrics
         metric_matrix, metric_math_name = load_metric(problem_name, d, ns, solver_names, metric; dir=dir)
         metric_name = string(metric)
