@@ -1,7 +1,7 @@
 using GradientFlows
 include("plot.jl")
 
-problems = [(coulomb_landau_normal_problem, 2), (coulomb_landau_mixture_problem, 2), (anisotropic_landau_problem, 2)]
+problems = [(coulomb_landau_normal_problem, 2), (coulomb_landau_mixture_problem, 2)]
 num_runs = 1
 ns = 100 * 2 .^ (0:6)
 solvers = [SBTM(), Blob()]
