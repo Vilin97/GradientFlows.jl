@@ -5,7 +5,7 @@ struct Logger{S}
     velocity_values::Vector{S}
 end
 
-Logger(log_level, score_values::S) where {S} = Logger(log_level, S[])
+Logger(log_level, ::S) where {S} = Logger(log_level, S[], S[])
 Logger(log_level) = Logger(log_level, nothing)
 Logger() = Logger(0, nothing)
 
