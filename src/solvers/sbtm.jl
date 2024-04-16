@@ -74,7 +74,7 @@ function update!(solver::SBTM, integrator)
     @unpack ζ = allocated_memory
     prob = integrator.p
     u = integrator.u
-    log!(logger, solver)
+    log!(logger, integrator)
 
     D = prob.diffusion_coefficient(u, prob.params)
     for epoch in 1:epochs

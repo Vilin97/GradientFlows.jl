@@ -3,6 +3,7 @@ mutable struct Experiment{D,S,C,P,V,T,M}
     true_cov::Vector{M}
     solution::Vector{S}
     score_values::Vector{C}
+    velocity_values::Vector{C}
     params::P
     saveat::V
     dt::Float64
@@ -15,10 +16,11 @@ function Experiment(problem::GradFlowProblem; saveat=collect(problem.tspan[1]:pr
     reset_timer!(DEFAULT_TIMER)
     solution = solve(problem, saveat=saveat).u
     score_values = (!hasfield(typeof(problem.solver), :logger) || isempty(problem.solver.logger.score_values)) ? fill(NaN, length(solution)) : problem.solver.logger.score_values
+    velocity_values = (!hasfield(typeof(problem.solver), :logger) || isempty(problem.solver.logger.velocity_values)) ? fill(NaN, length(solution)) : problem.solver.logger.velocity_values
     timer = deepcopy(DEFAULT_TIMER)
     true_dist_ = [true_dist(problem, t) for t in saveat]
     true_cov = [problem.covariance(t, problem.params) for t in saveat]
-    return Experiment(true_dist_, true_cov, solution, score_values, problem.params, saveat, Float64(problem.dt), timer, problem.name, name(problem.solver))
+    return Experiment(true_dist_, true_cov, solution, score_values, velocity_values, problem.params, saveat, Float64(problem.dt), timer, problem.name, name(problem.solver))
 end
 
 function Base.show(io::IO, experiment::Experiment)

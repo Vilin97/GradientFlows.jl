@@ -58,7 +58,7 @@ function update!(solver::Blob{S,F,A}, integrator) where {S,F,A<:BlobAllocMemCPU}
             println("Time $(integrator.t)")
         end
     end
-    log!(logger, solver)
+    log!(logger, integrator)
     nothing
 end
 
