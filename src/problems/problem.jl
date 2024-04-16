@@ -32,7 +32,7 @@ function set_u0!(problem::GradFlowProblem, u0)
     nothing
 end
 
-function velocity_values(prob::GradFlowProblem, u, t)
+function velocity_values(prob, u, t)
     velocity = similar(u)
     prob.f!(velocity, u, prob, t)
     return velocity

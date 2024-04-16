@@ -14,7 +14,8 @@ rng = StableRNG(123)
     @test solver.score_values == score_values
 
     # test that update! is idempotent
-    integrator = (u=u,)
+    prob = (solver=solver, f! = (args...) -> nothing, )
+    integrator = (u=u, p=prob, t=0., )
     update!(solver, integrator)
     score_values = copy(solver.score_values)
     update!(solver, integrator)
