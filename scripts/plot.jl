@@ -50,6 +50,19 @@ function pdf_plot(problem_name, d, n, solver_names; t_idx, xrange=range(-5, 5, l
     return p_marginal, p_slice
 end
 
+function save_pdfs_over_n(problem_name, d, ns, solver_names; dir="data")
+    for n in ns
+        p_marginal_start, p_slice_start = pdf_plot(problem_name, d, n, solver_names, t_idx=1; dir=dir)
+        p_marginal_end, p_slice_end = pdf_plot(problem_name, d, n, solver_names, t_idx=0; dir=dir)
+        plt = plot(p_marginal_start, p_marginal_end, p_slice_start, p_slice_end, size=PLOT_WINDOW_SIZE, margin=PLOT_MARGIN, plot_title="$problem_name, d=$d, n=$n", linewidth=PLOT_LINE_WIDTH, legendfontsize=PLOT_FONT_SIZE)
+        path = joinpath(dir, "plots", problem_name, "d_$d", "pdf")
+        plot_name = "n_$n"
+        mkpath(path)
+        savefig(plt, joinpath(path, plot_name))
+    end
+    nothing
+end
+
 "metric(experiment) isa Vector of length(experiment.saveat)"
 function plot_metric_over_t(problem_name, d, n, solver_names, metric, metric_name, metric_math_name; kwargs...)
     p = Plots.plot(title="$metric_name n=$n", xlabel="simulated time", ylabel=metric_math_name, margin=PLOT_MARGIN)
@@ -101,6 +114,7 @@ function plot_all(problem_name, d, ns, solver_names; save=true, dir="data",
 
     plots = []
     if save
+        mkpath(joinpath(dir, "plots", "all"))
         path = joinpath(dir, "plots", problem_name, "d_$d")
         mkpath(path)
         saveplot(plt, plot_name) = savefig(plt, joinpath(path, plot_name))
@@ -110,37 +124,41 @@ function plot_all(problem_name, d, ns, solver_names; save=true, dir="data",
             end
     end
 
-    ### plot ###
+    #### save ###
     save && saveplot(scatter_plot(problem_name, d, ns[end], solver_names; dir=dir), "scatter")
+    save && save_pdfs_over_n(problem_name, d, ns, solver_names; dir=dir)
+
+    ### if have true distribution ###
     if have_true_distribution
         p_marginal_start, p_slice_start = pdf_plot(problem_name, d, ns[end], solver_names, t_idx=1; dir=dir)
         p_marginal_end, p_slice_end = pdf_plot(problem_name, d, ns[end], solver_names, t_idx=0; dir=dir)
         p_cov_trajectory_1 = plot_covariance_trajectory(problem_name, d, ns[end], solver_names; row=1, column=1, dir=dir)
         p_cov_trajectory_1_low_n = plot_covariance_trajectory(problem_name, d, ns[1], solver_names; row=1, column=1, dir=dir)
         p_score_error = plot_score_error(problem_name, d, ns[end], solver_names; dir=dir)
-        if d <= 3 # do not include marginal pdf
-            plts_ = [p_slice_start, p_slice_end, p_cov_trajectory_1, p_cov_trajectory_1_low_n, p_score_error]
-            names = ["slice_start", "slice_end", "cov_trajectory_1", "cov_trajectory_1_low_n", "score_error"]
-        else
-            plts_ = [p_marginal_start, p_marginal_end, p_slice_start, p_slice_end, p_cov_trajectory_1, p_cov_trajectory_1_low_n, p_score_error]
-            names = ["marginal_start", "marginal_end", "slice_start", "slice_end", "cov_trajectory_1", "cov_trajectory_1_low_n", "score_error"]
+        plts = [p_slice_start, p_slice_end, p_cov_trajectory_1, p_cov_trajectory_1_low_n, p_score_error]
+        names = ["slice_start", "slice_end", "cov_trajectory_1", "cov_trajectory_1_low_n", "score_error"]
+        if d > 3 # plot marginal densities only for d > 3
+            pushfirst!(plts, p_marginal_start, p_marginal_end)
+            pushfirst!(names, "marginal_start", "marginal_end")
         end
-        push!(plots, plts_...)
-        save && saveplots(plts_, names)
-    else
+        push!(plots, plts...)
+        save && saveplots(plts, names)
+    else ### if don't have true distribution ###
         p_cov_trajectory_1 = plot_covariance_trajectory(problem_name, d, ns[end], solver_names; row=1, column=1, dir=dir)
         p_cov_trajectory_2 = plot_covariance_trajectory(problem_name, d, ns[end], solver_names; row=2, column=2, dir=dir)
         p_cov_trajectory_1_low_n = plot_covariance_trajectory(problem_name, d, ns[1], solver_names; row=1, column=1, dir=dir)
         p_cov_trajectory_2_low_n = plot_covariance_trajectory(problem_name, d, ns[1], solver_names; row=2, column=2, dir=dir)
-        plts_ = [p_cov_trajectory_1, p_cov_trajectory_2, p_cov_trajectory_1_low_n, p_cov_trajectory_2_low_n]
-        push!(plots, plts_...)
-        save && saveplots(plts_, ["cov_trajectory_1", "cov_trajectory_2", "cov_trajectory_1_low_n", "cov_trajectory_2_low_n"])
+        plts = [p_cov_trajectory_1, p_cov_trajectory_2, p_cov_trajectory_1_low_n, p_cov_trajectory_2_low_n]
+        push!(plots, plts...)
+        save && saveplots(plts, ["cov_trajectory_1", "cov_trajectory_2", "cov_trajectory_1_low_n", "cov_trajectory_2_low_n"])
         insert!(metrics, 2, :bottom_eigenvalue_error)
     end
+    ### plot entropy ###
     entropy_plot = plot_entropy_production_rate(problem_name, d, ns[end], solver_names; dir=dir)
     entropy_plot_low_n = plot_entropy_production_rate(problem_name, d, ns[1], solver_names; dir=dir)
     push!(plots, entropy_plot, entropy_plot_low_n)
     save && saveplots([entropy_plot, entropy_plot_low_n], ["entropy_production_rate", "entropy_production_rate_low_n"])
+    ### plot metrics over n ###
     for metric in metrics
         metric_matrix, metric_math_name = load_metric(problem_name, d, ns, solver_names, metric; dir=dir)
         metric_name = string(metric)
@@ -149,14 +167,10 @@ function plot_all(problem_name, d, ns, solver_names; save=true, dir="data",
         push!(plots, p)
         save && saveplot(p, metric_name)
     end
-    plt_all = Plots.plot(plots..., size=PLOT_WINDOW_SIZE, margin=PLOT_MARGIN, plot_title="$problem_name, d=$d, $(ns[1])≤n≤$(ns[end]), dt=$dt", linewidth=PLOT_LINE_WIDTH)
+    plt_all = Plots.plot(plots..., plot_title="$problem_name, d=$d, $(ns[1])≤n≤$(ns[end]), dt=$dt", size=PLOT_WINDOW_SIZE, margin=PLOT_MARGIN, linewidth=PLOT_LINE_WIDTH, legendfontsize=PLOT_FONT_SIZE)
 
     ### save ###
-    if save
-        path = joinpath(dir, "plots", "all")
-        mkpath(path)
-        savefig(plt_all, joinpath(path, "$(problem_name)_d_$d"))
-    end
+    save && savefig(plt_all, joinpath(dir, "plots", "all", "$(problem_name)_d_$d"))
     return plt_all
 end
 
