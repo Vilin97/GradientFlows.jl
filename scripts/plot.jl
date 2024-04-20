@@ -24,7 +24,7 @@ function scatter_plot(problem_name, d, n, solver_names; num_samples=min(2000, n)
     for solver in solver_names
         experiment = load(experiment_filename(problem_name, d, n, solver, 1; dir=dir))
         u = experiment.solution[end][:, 1:num_samples]
-        scatter!(p, u[1, :], u[2, :], label=solver, markersize=4, markerstrokewidth=0.4)
+        scatter!(p, u[1, :], u[2, :], label=solver, markersize=4, markerstrokewidth=0.4, size = (1000, 1000))
     end
     return p
 end
@@ -102,75 +102,69 @@ end
 
 function plot_all(problem_name, d, ns, solver_names; save=true, dir="data",
     metrics=[
-        :top_eigenvalue_error,
         :update_score_time,
         :L2_error,
         :true_cov_norm_error,
-        :sample_cov_trace_error], kwargs...)
+        :true_cov_trace_error], kwargs...)
     println("Plotting $problem_name, d=$d")
     any_experiment = load(experiment_filename(problem_name, d, ns[1], solver_names[1], 1; dir=dir))
     dt = any_experiment.dt
     have_true_distribution = have_true_dist(any_experiment)
 
+    ### plot ###
     plots = []
-    if save
-        mkpath(joinpath(dir, "plots", "all"))
-        path = joinpath(dir, "plots", problem_name, "d_$d")
-        mkpath(path)
-        saveplot(plt, plot_name) = savefig(plt, joinpath(path, plot_name))
-        saveplots(plts, plot_names) =
-            for (plt, name) in zip(plts, plot_names)
-                saveplot(plt, name)
-            end
-    end
-
-    #### save ###
-    save && saveplot(scatter_plot(problem_name, d, ns[end], solver_names; dir=dir), "scatter")
-    save && save_pdfs_over_n(problem_name, d, ns, solver_names; dir=dir)
-
-    ### if have true distribution ###
+    plot_names = []
     if have_true_distribution
+        # pdfs
         p_marginal_start, p_slice_start = pdf_plot(problem_name, d, ns[end], solver_names, t_idx=1; dir=dir)
         p_marginal_end, p_slice_end = pdf_plot(problem_name, d, ns[end], solver_names, t_idx=0; dir=dir)
-        p_cov_trajectory_1 = plot_covariance_trajectory(problem_name, d, ns[end], solver_names; row=1, column=1, dir=dir)
-        p_cov_trajectory_1_low_n = plot_covariance_trajectory(problem_name, d, ns[1], solver_names; row=1, column=1, dir=dir)
+        p_marginal_start_low_n, p_slice_start_low_n = pdf_plot(problem_name, d, ns[1], solver_names, t_idx=1; dir=dir)
+        p_marginal_end_low_n, p_slice_end_low_n = pdf_plot(problem_name, d, ns[1], solver_names, t_idx=0; dir=dir)
+        # scores
         p_score_error = plot_score_error(problem_name, d, ns[end], solver_names; dir=dir)
-        plts = [p_slice_start, p_slice_end, p_cov_trajectory_1, p_cov_trajectory_1_low_n, p_score_error]
-        names = ["slice_start", "slice_end", "cov_trajectory_1", "cov_trajectory_1_low_n", "score_error"]
+        p_score_error_low_n = plot_score_error(problem_name, d, ns[1], solver_names; dir=dir)
         if d > 3 # plot marginal densities only for d > 3
-            pushfirst!(plts, p_marginal_start, p_marginal_end)
-            pushfirst!(names, "marginal_start", "marginal_end")
+            push!(plots, p_marginal_start, p_marginal_end, p_marginal_start_low_n, p_marginal_end_low_n)
+            push!(plot_names, "marginal_start", "marginal_end", "marginal_start_low_n", "marginal_end_low_n")
         end
-        push!(plots, plts...)
-        save && saveplots(plts, names)
-    else ### if don't have true distribution ###
-        p_cov_trajectory_1 = plot_covariance_trajectory(problem_name, d, ns[end], solver_names; row=1, column=1, dir=dir)
-        p_cov_trajectory_2 = plot_covariance_trajectory(problem_name, d, ns[end], solver_names; row=2, column=2, dir=dir)
-        p_cov_trajectory_1_low_n = plot_covariance_trajectory(problem_name, d, ns[1], solver_names; row=1, column=1, dir=dir)
-        p_cov_trajectory_2_low_n = plot_covariance_trajectory(problem_name, d, ns[1], solver_names; row=2, column=2, dir=dir)
-        plts = [p_cov_trajectory_1, p_cov_trajectory_2, p_cov_trajectory_1_low_n, p_cov_trajectory_2_low_n]
-        push!(plots, plts...)
-        save && saveplots(plts, ["cov_trajectory_1", "cov_trajectory_2", "cov_trajectory_1_low_n", "cov_trajectory_2_low_n"])
-        insert!(metrics, 2, :bottom_eigenvalue_error)
+        push!(plots, p_slice_start, p_slice_end, p_slice_start_low_n, p_slice_end_low_n, p_score_error, p_score_error_low_n)
+        push!(plot_names, "slice_start", "slice_end", "slice_start_low_n", "slice_end_low_n", "score_error", "score_error_low_n")
     end
-    ### plot entropy ###
+    # covariance trajectory
+    p_cov_trajectory_1 = plot_covariance_trajectory(problem_name, d, ns[end], solver_names; row=1, column=1, dir=dir)
+    p_cov_trajectory_2 = plot_covariance_trajectory(problem_name, d, ns[end], solver_names; row=2, column=2, dir=dir)
+    p_cov_trajectory_1_low_n = plot_covariance_trajectory(problem_name, d, ns[1], solver_names; row=1, column=1, dir=dir)
+    p_cov_trajectory_2_low_n = plot_covariance_trajectory(problem_name, d, ns[1], solver_names; row=2, column=2, dir=dir)
+    # entropy trajectory
     entropy_plot = plot_entropy_production_rate(problem_name, d, ns[end], solver_names; dir=dir)
     entropy_plot_low_n = plot_entropy_production_rate(problem_name, d, ns[1], solver_names; dir=dir)
-    push!(plots, entropy_plot, entropy_plot_low_n)
-    save && saveplots([entropy_plot, entropy_plot_low_n], ["entropy_production_rate", "entropy_production_rate_low_n"])
-    ### plot metrics over n ###
+    push!(plots, p_cov_trajectory_1, p_cov_trajectory_2, p_cov_trajectory_1_low_n, p_cov_trajectory_2_low_n, entropy_plot, entropy_plot_low_n)
+    push!(plot_names, "cov_trajectory_1", "cov_trajectory_2", "cov_trajectory_1_low_n", "cov_trajectory_2_low_n", "entropy_production_rate", "entropy_production_rate_low_n")
+    # other metrics, against n
     for metric in metrics
         metric_matrix, metric_math_name = load_metric(problem_name, d, ns, solver_names, metric; dir=dir)
         metric_name = string(metric)
         any(isnan, metric_matrix) && continue
         p = plot_metric_over_n(ns, solver_names, metric_name, metric_math_name, metric_matrix; kwargs...)
         push!(plots, p)
-        save && saveplot(p, metric_name)
+        push!(plot_names, metric_name)
     end
     plt_all = Plots.plot(plots..., plot_title="$problem_name, d=$d, $(ns[1])≤n≤$(ns[end]), dt=$dt", size=PLOT_WINDOW_SIZE, margin=PLOT_MARGIN, linewidth=PLOT_LINE_WIDTH, legendfontsize=PLOT_FONT_SIZE)
-
+    
     ### save ###
-    save && savefig(plt_all, joinpath(dir, "plots", "all", "$(problem_name)_d_$d"))
+    if save
+        mkpath(joinpath(dir, "plots", "all"))
+        path = joinpath(dir, "plots", problem_name, "d_$d")
+        mkpath(path)
+        saveplot(plt, plot_name) = savefig(plt, joinpath(path, plot_name))
+        
+        for (plt, name) in zip(plots, plot_names)
+            saveplot(plt, name)
+        end
+        savefig(plt_all, joinpath(dir, "plots", "all", "$(problem_name)_d_$d"))
+        saveplot(scatter_plot(problem_name, d, ns[end], solver_names; dir=dir), "scatter")
+        save_pdfs_over_n(problem_name, d, ns, solver_names; dir=dir)
+    end
     return plt_all
 end
 

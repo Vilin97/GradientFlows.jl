@@ -54,12 +54,10 @@ end
 
 "Make an anisotropic landau problem with Coulomb kernel with mixture of Gaussians initial condition with the given dimension, number of particles, and solver."
 function coulomb_landau_mixture_problem(d, args...; kwargs...)
-    if d != 2
-        error("Coulomb Landau mixture problem with dimension d != 2 is not implemented.")
-    end
     δ = 0.2
-    μ = [sqrt(8*(1-δ))/2, 0]
-    ρ0 = MixtureModel(MvNormal[MvNormal(μ, δ*I(2)), MvNormal(-μ, δ*I(2))], [1/2, 1/2])
+    μ = [1, zeros(d-1)...]
+    Σ = diagm([1-δ, δ, ones(d-2)...])
+    ρ0 = MixtureModel(MvNormal[MvNormal(μ, Σ), MvNormal(-μ, Σ)], [1/2, 1/2])
     name = "coulomb_landau_mixture"
     return coulomb_landau_problem_aux(args...; ρ0=ρ0, name=name, kwargs...)
 end
@@ -73,7 +71,7 @@ function coulomb_landau_problem_aux(n, solver_; ρ0, name, dt::F=1.0, rng=DEFAUL
     ρ(t, params) = t ≈ 0 ? ρ0 : MvNormal(mean(ρ0), covariance(t, params)) # if t > 0, steady-state, only accurate for large t
     γ = -3
     f! = landau_f!(d, γ)
-    tspan = (t0, t0 + 600) # t_end = 40 is used in https://www.sciencedirect.com/science/article/pii/S2590055220300184
+    tspan = (t0, t0 + 300) # t_end = 40 is used in https://www.sciencedirect.com/science/article/pii/S2590055220300184
     u0 = rand(rng, ρ0, n)
     solver = initialize(solver_, u0, score(ρ0, u0), name; kwargs...)
     function covariance(t, params) # steady-state, only accurate for large t
