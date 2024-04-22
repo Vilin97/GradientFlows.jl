@@ -1,5 +1,6 @@
 using GradientFlows
 include("plot.jl")
+include("telegram_alerts.jl")
 
 problems = [(coulomb_landau_normal_problem, 3)]
 num_runs = 5
@@ -12,5 +13,11 @@ for (problem, d) in problems
 end
 
 ### generate data ###
-run_experiments(problems, ns, num_runs, solvers)
+try
+    elapsed = @elapsed run_experiments(problems, ns, num_runs, solvers)
+    sendTelegramMessage("Experiments finished in $elapsed seconds.")
+catch e
+    sendTelegramMessage("Error in experiments.")
+    rethrow(e)
+end
 plot_all(problems, ns, solvers)
