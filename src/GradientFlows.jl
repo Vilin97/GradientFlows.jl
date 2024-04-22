@@ -10,8 +10,9 @@ using LinearAlgebra, Random, LoopVectorization
 using TimerOutputs
 using JLD2
 using StableRNGs: StableRNG
+using Distributions
 
-import Distributions: MvNormal, Distribution, MultivariateDistribution, mean, cov, gradlogpdf, logpdf, pdf, rand, ContinuousMultivariateDistribution, MixtureModel
+import Distributions: mean, cov, gradlogpdf, logpdf, pdf, rand
 import OrdinaryDiffEq.solve
 import Statistics.mean, Statistics.cov
 
@@ -30,6 +31,7 @@ include("distributions/poly_normal.jl")
 include("distributions/score.jl")
 include("distributions/normal.jl")
 include("distributions/mixture.jl")
+include("distributions/rosenbluth.jl")
 
 include("linalg.jl")
 
