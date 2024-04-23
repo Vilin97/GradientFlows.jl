@@ -1,4 +1,4 @@
-using Telegram, ConfigEnv
+using Telegram, Telegram.API, ConfigEnv
 
 function sendTelegramMessage(message::String = "Calculation finished")
     dotenv() # populate ENV with the data from .env

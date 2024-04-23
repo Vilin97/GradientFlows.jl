@@ -5,7 +5,7 @@ struct Rosenbluth{F} <: ContinuousMultivariateDistribution
     S::F
 end
 
-function pdf(dist::Rosenbluth, x)
+function pdf(dist::Rosenbluth, x::AbstractVector)
     @unpack d, σ, S = dist
     return 1/(S^2) * exp(-S * (sqrt(sum(abs2, x)) - σ)^2 / σ^2)
 end

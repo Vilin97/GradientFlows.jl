@@ -64,8 +64,10 @@ end
 
 function save_pdfs_over_n(problem_name, d, ns, solver_names; dir="data")
     for n in ns
-        p_marginal_start, p_slice_start = pdf_plot(problem_name, d, n, solver_names, t_idx=1; dir=dir)
-        p_marginal_end, p_slice_end = pdf_plot(problem_name, d, n, solver_names, t_idx=0; dir=dir)
+        p_marginal_start = marginal_pdf_plot(problem_name, d, n, solver_names, t_idx=1; dir=dir)
+        p_marginal_end = marginal_pdf_plot(problem_name, d, n, solver_names, t_idx=0; dir=dir)
+        p_slice_start = slice_pdf_plot(problem_name, d, n, solver_names, t_idx=1; dir=dir)
+        p_slice_end = slice_pdf_plot(problem_name, d, n, solver_names, t_idx=0; dir=dir)
         plt = plot(p_marginal_start, p_marginal_end, p_slice_start, p_slice_end, size=PLOT_WINDOW_SIZE, margin=PLOT_MARGIN, plot_title="$problem_name, d=$d, n=$n", linewidth=PLOT_LINE_WIDTH, legendfontsize=PLOT_FONT_SIZE)
         path = joinpath(dir, "plots", problem_name, "d_$d", "pdf")
         plot_name = "n_$n"
@@ -179,7 +181,7 @@ function plot_all(problem_name, d, ns, solver_names; save=true, dir="data",
         end
         savefig(plt_all, joinpath(dir, "plots", "all", "$(problem_name)_d_$d"))
         saveplot(scatter_plot(problem_name, d, ns[end], solver_names; dir=dir), "scatter")
-        save_pdfs_over_n(problem_name, d, ns, solver_names; dir=dir)
+        # save_pdfs_over_n(problem_name, d, ns, solver_names; dir=dir)
     end
     return plt_all
 end

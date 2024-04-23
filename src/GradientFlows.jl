@@ -25,7 +25,7 @@ const n_WIDTH = 6
 const PLOT_WINDOW_SIZE = (3000, 1800)
 const PLOT_LINE_WIDTH = 4
 const PLOT_MARGIN = (13, :mm)
-const PLOT_FONT_SIZE = 30
+const PLOT_FONT_SIZE = 15
 
 include("distributions/rejection_sample.jl")
 include("distributions/poly_normal.jl")
