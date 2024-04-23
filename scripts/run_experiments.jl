@@ -2,14 +2,14 @@ using GradientFlows
 include("plot.jl")
 include("telegram_alerts.jl")
 
-problems = [(coulomb_landau_mixture_problem, 3), (anisotropic_landau_problem, 3), (anisotropic_landau_problem, 2)]
-num_runs = 5
+problems = [(coulomb_landau_rosenbluth_problem, 2), (coulomb_landau_rosenbluth_problem, 3)]
+num_runs = 1
 ns = 100 * 2 .^ (0:6)
 solvers = [SBTM(), Blob()]
 
 ### train nn ###
 for (problem, d) in problems
-    train_nn(problem, d, 20000, mlp(d, depth=1))
+    train_nn(problem, d, 20000, mlp(d, depth=1); verbose=2)
 end
 
 ### generate data ###

@@ -27,6 +27,7 @@ const PLOT_LINE_WIDTH = 4
 const PLOT_MARGIN = (13, :mm)
 const PLOT_FONT_SIZE = 30
 
+include("distributions/rejection_sample.jl")
 include("distributions/poly_normal.jl")
 include("distributions/score.jl")
 include("distributions/normal.jl")
@@ -61,7 +62,7 @@ const ALL_SOLVERS = [Exact(), SBTM(), Blob()]
 
 export GradFlowProblem
 export set_u0!
-export diffusion_problem, fpe_problem, landau_problem, anisotropic_landau_problem, coulomb_landau_normal_problem, coulomb_landau_mixture_problem
+export diffusion_problem, fpe_problem, landau_problem, anisotropic_landau_problem, coulomb_landau_normal_problem, coulomb_landau_mixture_problem, coulomb_landau_rosenbluth_problem
 export Exact, Blob, SBTM
 export Logger
 export mlp, train_s!

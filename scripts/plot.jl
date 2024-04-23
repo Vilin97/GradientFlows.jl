@@ -30,24 +30,36 @@ function scatter_plot(problem_name, d, n, solver_names; num_samples=min(2000, n)
 end
 
 "experiment.saveat[t_idx] is the time at which to plot the pdf"
-function pdf_plot(problem_name, d, n, solver_names; t_idx, xrange=range(-5, 5, length=200), dir="data")
-    slice(x::Number) = [x, zeros(typeof(x), d - 1)...]
+function marginal_pdf_plot(problem_name, d, n, solver_names; t_idx, xrange=range(-5, 5, length=200), dir="data")
     experiment = load(experiment_filename(problem_name, d, n, solver_names[1], 1; dir=dir))
     saveat = experiment.saveat
     t_idx = t_idx < 1 ? length(saveat) + t_idx : t_idx
     dist = experiment.true_dist[t_idx]
     p_marginal = Plots.plot(xlabel="x", ylabel="Σᵢϕ(x - Xᵢ[1])/n", title="marginal density n=$n t=$(saveat[t_idx])", margin=PLOT_MARGIN)
-    p_slice = Plots.plot(xlabel="x", ylabel="Σᵢϕ([x,0...] - Xᵢ)/n", title="slice density n=$n t=$(saveat[t_idx])", margin=PLOT_MARGIN)
     for solver in solver_names
         experiments = load_all_experiment_runs(problem_name, d, n, solver; dir=dir)
         u = hcat([exp.solution[t_idx] for exp in experiments]...)
         u_marginal = reshape(u[1, :], 1, :)
         plot!(p_marginal, xrange, x -> kde([x], u_marginal), label="$solver h=$(round.(kde_bandwidth(u_marginal)[1],digits=3))", lw=PLOT_LINE_WIDTH)
-        plot!(p_slice, xrange, x -> kde(slice(x), u), label="$solver h=$(round.((det(kde_bandwidth(u))^(1/d)), digits=3))", lw=PLOT_LINE_WIDTH)
     end
     plot!(p_marginal, xrange, x -> marginal_pdf(dist, x), label="true", lw=PLOT_LINE_WIDTH)
+    return p_marginal
+end
+
+function slice_pdf_plot(problem_name, d, n, solver_names; t_idx, xrange=range(-5, 5, length=200), dir="data")
+    slice(x::Number) = [x, zeros(typeof(x), d - 1)...]
+    experiment = load(experiment_filename(problem_name, d, n, solver_names[1], 1; dir=dir))
+    saveat = experiment.saveat
+    t_idx = t_idx < 1 ? length(saveat) + t_idx : t_idx
+    dist = experiment.true_dist[t_idx]
+    p_slice = Plots.plot(xlabel="x", ylabel="Σᵢϕ([x,0...] - Xᵢ)/n", title="slice density n=$n t=$(saveat[t_idx])", margin=PLOT_MARGIN)
+    for solver in solver_names
+        experiments = load_all_experiment_runs(problem_name, d, n, solver; dir=dir)
+        u = hcat([exp.solution[t_idx] for exp in experiments]...)
+        plot!(p_slice, xrange, x -> kde(slice(x), u), label="$solver h=$(round.((det(kde_bandwidth(u))^(1/d)), digits=3))", lw=PLOT_LINE_WIDTH)
+    end
     plot!(p_slice, xrange, x -> pdf(dist, slice(x)), label="true", lw=PLOT_LINE_WIDTH)
-    return p_marginal, p_slice
+    return p_slice
 end
 
 function save_pdfs_over_n(problem_name, d, ns, solver_names; dir="data")
@@ -115,20 +127,24 @@ function plot_all(problem_name, d, ns, solver_names; save=true, dir="data",
     plots = []
     plot_names = []
     if have_true_distribution
-        # pdfs
-        p_marginal_start, p_slice_start = pdf_plot(problem_name, d, ns[end], solver_names, t_idx=1; dir=dir)
-        p_marginal_end, p_slice_end = pdf_plot(problem_name, d, ns[end], solver_names, t_idx=0; dir=dir)
-        p_marginal_start_low_n, p_slice_start_low_n = pdf_plot(problem_name, d, ns[1], solver_names, t_idx=1; dir=dir)
-        p_marginal_end_low_n, p_slice_end_low_n = pdf_plot(problem_name, d, ns[1], solver_names, t_idx=0; dir=dir)
+        # slice pdfs
+        p_slice_start = slice_pdf_plot(problem_name, d, ns[end], solver_names, t_idx=1; dir=dir)
+        p_slice_end = slice_pdf_plot(problem_name, d, ns[end], solver_names, t_idx=0; dir=dir)
+        p_slice_start_low_n = slice_pdf_plot(problem_name, d, ns[1], solver_names, t_idx=1; dir=dir)
+        p_slice_end_low_n = slice_pdf_plot(problem_name, d, ns[1], solver_names, t_idx=0; dir=dir)
         # scores
         p_score_error = plot_score_error(problem_name, d, ns[end], solver_names; dir=dir)
         p_score_error_low_n = plot_score_error(problem_name, d, ns[1], solver_names; dir=dir)
-        if d > 3 # plot marginal densities only for d > 3
-            push!(plots, p_marginal_start, p_marginal_end, p_marginal_start_low_n, p_marginal_end_low_n)
-            push!(plot_names, "marginal_start", "marginal_end", "marginal_start_low_n", "marginal_end_low_n")
-        end
         push!(plots, p_slice_start, p_slice_end, p_slice_start_low_n, p_slice_end_low_n, p_score_error, p_score_error_low_n)
         push!(plot_names, "slice_start", "slice_end", "slice_start_low_n", "slice_end_low_n", "score_error", "score_error_low_n")
+        if d > 3 # plot marginal pdfs only for d > 3
+            p_marginal_start = marginal_pdf_plot(problem_name, d, ns[end], solver_names; t_idx=1, dir=dir)
+            p_marginal_end = marginal_pdf_plot(problem_name, d, ns[end], solver_names; t_idx=0, dir=dir)
+            p_marginal_start_low_n = marginal_pdf_plot(problem_name, d, ns[1], solver_names, t_idx=1; dir=dir)
+            p_marginal_end_low_n = marginal_pdf_plot(problem_name, d, ns[1], solver_names, t_idx=0; dir=dir)
+            pushfirst!(plots, p_marginal_start, p_marginal_end, p_marginal_start_low_n, p_marginal_end_low_n)
+            pushfirst!(plot_names, "marginal_start", "marginal_end", "marginal_start_low_n", "marginal_end_low_n")
+        end
     end
     # covariance trajectory
     p_cov_trajectory_1 = plot_covariance_trajectory(problem_name, d, ns[end], solver_names; row=1, column=1, dir=dir)

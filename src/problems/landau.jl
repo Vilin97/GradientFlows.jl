@@ -64,7 +64,7 @@ end
 
 "Make an isotropic landau problem with Coulomb kernel with S⁻²exp(-S(|x|-σ)²/σ²) initial condition with the given dimension, number of particles, and solver."
 function coulomb_landau_rosenbluth_problem(d, args...; kwargs...)
-    ρ0 = RosenbluthDistribution(d, 0.3, 10.)
+    ρ0 = Rosenbluth(d, 0.3, 10.)
     name = "coulomb_landau_rosenbluth"
     return coulomb_landau_problem_aux(args...; ρ0=ρ0, name=name, kwargs...)
 end

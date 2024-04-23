@@ -48,20 +48,6 @@ function Random.rand(rng::Random.AbstractRNG, dist::PolyNormal, n::Int)
     return u
 end
 
-function rejection_sample(target_dist, proposal_dist, M, rng=DEFAULT_RNG)
-    f(x) = pdf(target_dist, x)
-    g(x) = pdf(proposal_dist, x)
-    while true
-        x = rand(rng, proposal_dist)
-        if M * g(x) < f(x)
-            error("M = $M is too low: $(M*g(x)) = Mg(x) < f(x) = $(f(x)) for x = $x.")
-        end
-        if rand(rng) * M * g(x) < f(x) # accept with probability f(x)/Mg(x)
-            return x
-        end
-    end
-end
-
 function gradlogpdf(dist::PolyNormal, x)
     K = dist.K
     P, Q = get_P(dist), get_Q(dist)
