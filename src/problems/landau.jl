@@ -62,6 +62,13 @@ function coulomb_landau_mixture_problem(d, args...; kwargs...)
     return coulomb_landau_problem_aux(args...; ρ0=ρ0, name=name, kwargs...)
 end
 
+"Make an isotropic landau problem with Coulomb kernel with S⁻²exp(-S(|x|-σ)²/σ²) initial condition with the given dimension, number of particles, and solver."
+function coulomb_landau_rosenbluth_problem(d, args...; kwargs...)
+    ρ0 = RosenbluthDistribution(d, 0.3, 10.)
+    name = "coulomb_landau_rosenbluth"
+    return coulomb_landau_problem_aux(args...; ρ0=ρ0, name=name, kwargs...)
+end
+
 "Auxillary function to make a landau problem with Coulomb kernel."
 function coulomb_landau_problem_aux(n, solver_; ρ0, name, dt::F=1.0, rng=DEFAULT_RNG, kwargs...) where {F}
     d = length(mean(ρ0))

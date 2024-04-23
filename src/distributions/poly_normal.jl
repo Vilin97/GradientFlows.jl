@@ -14,7 +14,6 @@ struct PolyNormal{F} <: ContinuousMultivariateDistribution
     end
 end
 
-
 get_P(dist::PolyNormal) = ((dist.d + 2) * dist.K - dist.d) / (2dist.K)
 get_Q(dist::PolyNormal) = (1 - dist.K) / (2dist.K^2)
 

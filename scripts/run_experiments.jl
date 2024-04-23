@@ -2,7 +2,7 @@ using GradientFlows
 include("plot.jl")
 include("telegram_alerts.jl")
 
-problems = [(coulomb_landau_normal_problem, 3)]
+problems = [(coulomb_landau_mixture_problem, 3), (anisotropic_landau_problem, 3), (anisotropic_landau_problem, 2)]
 num_runs = 5
 ns = 100 * 2 .^ (0:6)
 solvers = [SBTM(), Blob()]
