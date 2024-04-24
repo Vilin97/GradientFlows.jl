@@ -89,3 +89,8 @@ function train_nn(problem, d, n, s; verbose=1, init_max_iterations=10^5, dir="da
     save(model_filename(prob.name, d, n; dir=dir), prob.solver.s)
     nothing
 end
+function train_nns(problems, n; nn_depth, kwargs...)
+    for (problem, d) in problems
+        train_nn(problem, d, n, mlp(d, depth=nn_depth); kwargs...)
+    end
+end

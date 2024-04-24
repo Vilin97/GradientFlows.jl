@@ -24,26 +24,30 @@ function landau_problem(d, n, solver_; dt::F=0.01, rng=DEFAULT_RNG, kwargs...) w
 end
 
 ############ Anisotropic Landau with Maxwell kernel ############
-"Make an anisotropic landau problem with Maxwell kernel with the given dimension, number of particles, and solver."
-function anisotropic_landau_problem(d, n, solver_; dt::F=0.01, rng=DEFAULT_RNG, kwargs...) where {F}
-    params = (B=F(1 / 24),) # B = constant in the collision kernel
-    t0 = F(0)
-    ρ0 = MvNormal(diagm([F(1.8), F(0.2), ones(F, d - 2)...]))
-    ρ(t, params) = t ≈ 0 ? ρ0 : MvNormal(mean(ρ0), covariance(F(Inf), params)) # if t > 0, steady-state, only accurate for large t
-
-    f! = landau_f!(d)
-    tspan = (t0, t0 + 4)
-    u0 = rand(rng, ρ0, n)
-    name = "anisotropic_landau"
-    solver = initialize(solver_, u0, score(ρ0, u0), name; kwargs...)
-    function covariance(t, params)
+"Make an anisotropic landau problem with Maxwell kernel with Gaussian initial condition with the given dimension, number of particles, and solver."
+function maxwell_landau_normal_problem(d, args...; kwargs...)
+    ρ0 = MvNormal(diagm([1.8, 0.2, ones(d - 2)...]))
+    name = "maxwell_landau_normal"
+    return maxwell_landau_problem_aux(args...; ρ0=ρ0, name=name, kwargs...)
+end
+"Make an anisotropic landau problem with Maxwell kernel with mixture of Gaussians initial condition with the given dimension, number of particles, and solver."
+function maxwell_landau_mixture_problem(d, args...; kwargs...)
+    δ = 0.2
+    μ = [1, zeros(d-1)...]
+    Σ = diagm([1-δ, δ, ones(d-2)...])
+    ρ0 = MixtureModel(MvNormal[MvNormal(μ, Σ), MvNormal(-μ, Σ)], [1/2, 1/2])
+    name = "maxwell_landau_mixture"
+    return maxwell_landau_problem_aux(args...; ρ0=ρ0, name=name, kwargs...)
+end
+function maxwell_landau_problem_aux(args...; ρ0, kwargs...)
+    d = length(mean(ρ0))
+    function covariance(t, params) # accurate for all t
         Σ₀ = cov(ρ0)
         Σ∞ = I(d) .* tr(Σ₀) ./ d
         return Σ∞ - (Σ∞ - Σ₀)exp(-4d * params.B * t)
     end
-    return GradFlowProblem(f!, ρ0, u0, ρ, tspan, dt, params, solver, name, landau_diffusion_coefficient, covariance)
+    landau_problem_aux(args...; covariance=covariance, γ=0, ρ0=ρ0, dt=0.01, t_end=4., kwargs...)
 end
-
 ############ Landau with Coulomb kernel ############
 "Make an anisotropic landau problem with Coulomb kernel with Gaussian initial condition with the given dimension, number of particles, and solver."
 function coulomb_landau_normal_problem(d, args...; kwargs...)
@@ -62,30 +66,33 @@ function coulomb_landau_mixture_problem(d, args...; kwargs...)
     return coulomb_landau_problem_aux(args...; ρ0=ρ0, name=name, kwargs...)
 end
 
-"Make an isotropic landau problem with Coulomb kernel with S⁻²exp(-S(|x|-σ)²/σ²) initial condition with the given dimension, number of particles, and solver."
-function coulomb_landau_rosenbluth_problem(d, args...; kwargs...)
-    ρ0 = Rosenbluth(d, 0.3, 10.)
-    name = "coulomb_landau_rosenbluth"
-    return coulomb_landau_problem_aux(args...; ρ0=ρ0, name=name, kwargs...)
-end
+# "Make an isotropic landau problem with Coulomb kernel with S⁻²exp(-S(|x|-σ)²/σ²) initial condition with the given dimension, number of particles, and solver."
+# function coulomb_landau_rosenbluth_problem(d, args...; kwargs...)
+#     ρ0 = Rosenbluth(d, 0.3, 10.)
+#     name = "coulomb_landau_rosenbluth"
+#     return landau_problem_aux(args...; γ=-3, ρ0=ρ0, name=name, dt=1.0, kwargs...)
+# end
 
-"Auxillary function to make a landau problem with Coulomb kernel."
-function coulomb_landau_problem_aux(n, solver_; ρ0, name, dt::F=1.0, rng=DEFAULT_RNG, kwargs...) where {F}
+function coulomb_landau_problem_aux(args...; ρ0, kwargs...)
+    d = length(mean(ρ0))
+    function covariance(t, params) # steady-state, only accurate for large t
+        Σ₀ = cov(ρ0)
+        Σ∞ = I(d) .* tr(Σ₀) ./ d
+        return Σ∞
+    end 
+    landau_problem_aux(args...; covariance=covariance, γ=-3, ρ0=ρ0, dt=1.0, t_end=300., kwargs...)
+end
+"Auxillary function to make a landau problem."
+function landau_problem_aux(n, solver_; covariance, γ, ρ0, name, dt::F, t_end::F, rng=DEFAULT_RNG, kwargs...) where {F}
     d = length(mean(ρ0))
     @assert(eltype(mean(ρ0)) == typeof(dt))
     t0 = F(0)
     params = (B=F(1 / 24),)
     ρ(t, params) = t ≈ 0 ? ρ0 : MvNormal(mean(ρ0), covariance(t, params)) # if t > 0, steady-state, only accurate for large t
-    γ = -3
     f! = landau_f!(d, γ)
-    tspan = (t0, t0 + 300) # t_end = 40 is used in https://www.sciencedirect.com/science/article/pii/S2590055220300184
+    tspan = (t0, t0 + t_end) # t_end = 40 is used in https://www.sciencedirect.com/science/article/pii/S2590055220300184
     u0 = rand(rng, ρ0, n)
     solver = initialize(solver_, u0, score(ρ0, u0), name; kwargs...)
-    function covariance(t, params) # steady-state, only accurate for large t
-        Σ₀ = cov(ρ0)
-        Σ∞ = I(d) .* tr(Σ₀) ./ d
-        return Σ∞
-    end
     return GradFlowProblem(f!, ρ0, u0, ρ, tspan, dt, params, solver, name, landau_diffusion_coefficient, covariance)
 end
 

@@ -62,7 +62,7 @@ const ALL_SOLVERS = [Exact(), SBTM(), Blob()]
 
 export GradFlowProblem
 export set_u0!
-export diffusion_problem, fpe_problem, landau_problem, anisotropic_landau_problem, coulomb_landau_normal_problem, coulomb_landau_mixture_problem, coulomb_landau_rosenbluth_problem
+export diffusion_problem, fpe_problem, landau_problem, maxwell_landau_normal_problem, maxwell_landau_mixture_problem, coulomb_landau_normal_problem, coulomb_landau_mixture_problem, coulomb_landau_rosenbluth_problem
 export Exact, Blob, SBTM
 export Logger
 export mlp, train_s!
@@ -70,7 +70,7 @@ export name
 export solve
 
 export Experiment, GradFlowExperimentResult
-export run_experiments, save_results, train_nn
+export run_experiments, save_results, train_nn, train_nns
 export save, load, model_filename, experiment_filename, experiment_result_filename, load_metric, load_all_experiment_runs, timer_filename, best_model
 export DEFAULT_TIMER, PLOT_WINDOW_SIZE, PLOT_LINE_WIDTH, PLOT_MARGIN, PLOT_FONT_SIZE
 export ALL_PROBLEMS, ALL_SOLVERS
