@@ -5,7 +5,7 @@ n = 2000
 d = 3
 for solver in [SBTM(mlp(d, rng=StableRNG(321), depth=2)), Blob()]
     @show solver
-    problem = landau_problem_factory("normal", 0, 1)(d, n, solver; rng=StableRNG(123))
+    problem = landau_problem_factory(d;IC="normal", γ=0, covariance_scale=1)(d, n, solver; rng=StableRNG(123))
     experiment = Experiment(problem)
     result = GradFlowExperimentResult(experiment)
 
