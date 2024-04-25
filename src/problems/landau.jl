@@ -23,65 +23,44 @@ function landau_problem(d, n, solver_; dt::F=0.01, rng=DEFAULT_RNG, kwargs...) w
     return GradFlowProblem(f!, ρ0, u0, ρ, tspan, dt, params, solver, name, landau_diffusion_coefficient, covariance)
 end
 
-############ Anisotropic Landau with Maxwell kernel ############
-"Make an anisotropic landau problem with Maxwell kernel with Gaussian initial condition with the given dimension, number of particles, and solver."
-function maxwell_landau_normal_problem(d, args...; kwargs...)
-    ρ0 = MvNormal(diagm([1.8, 0.2, ones(d - 2)...]))
-    name = "maxwell_landau_normal"
-    return maxwell_landau_problem_aux(args...; ρ0=ρ0, name=name, kwargs...)
-end
-"Make an anisotropic landau problem with Maxwell kernel with mixture of Gaussians initial condition with the given dimension, number of particles, and solver."
-function maxwell_landau_mixture_problem(d, args...; kwargs...)
+############ Anisotropic Landau ############
+"""
+    landau_problem_factory(d, n, solver_; IC::String, γ::Number, covariance_scale::Int, kwargs...)
+
+Return a function `problem(d, n, solver)` that creates a landau problem with the given dimension, number of particles, and solver.
+
+IC ∈ {"normal", "mixture"} : initial condition
+γ  ∈ {0, -3}               : power in collision kernel
+covariance_scale           : scale of the covariance matrix
+"""
+function landau_problem_factory(d; IC::String, γ::Number, covariance_scale::Int, kwargs...)
+    σ = covariance_scale
     δ = 0.2
-    μ = [1, zeros(d-1)...]
-    Σ = diagm([1-δ, δ, ones(d-2)...])
-    ρ0 = MixtureModel(MvNormal[MvNormal(μ, Σ), MvNormal(-μ, Σ)], [1/2, 1/2])
-    name = "maxwell_landau_mixture"
-    return maxwell_landau_problem_aux(args...; ρ0=ρ0, name=name, kwargs...)
-end
-function maxwell_landau_problem_aux(args...; ρ0, kwargs...)
-    d = length(mean(ρ0))
-    function covariance(t, params) # accurate for all t
-        Σ₀ = cov(ρ0)
-        Σ∞ = I(d) .* tr(Σ₀) ./ d
-        return Σ∞ - (Σ∞ - Σ₀)exp(-4d * params.B * t)
+    if IC == "normal"
+        ρ0 = MvNormal(diagm(σ .* [2-δ, δ, ones(d - 2)...]))
+    elseif IC == "mixture"
+        μ = [sqrt(σ), zeros(d-1)...]
+        Σ = diagm(σ .* [1-δ, δ, ones(d-2)...])
+        ρ0 = MixtureModel(MvNormal[MvNormal(μ, Σ), MvNormal(-μ, Σ)], [1/2, 1/2])
     end
-    landau_problem_aux(args...; covariance=covariance, γ=0, ρ0=ρ0, dt=0.01, t_end=4., kwargs...)
-end
-############ Landau with Coulomb kernel ############
-"Make an anisotropic landau problem with Coulomb kernel with Gaussian initial condition with the given dimension, number of particles, and solver."
-function coulomb_landau_normal_problem(d, args...; kwargs...)
-    ρ0 = MvNormal(diagm([1.8, 0.2, ones(d - 2)...]))
-    name = "coulomb_landau_normal"
-    return coulomb_landau_problem_aux(args...; ρ0=ρ0, name=name, kwargs...)
-end
-
-"Make an anisotropic landau problem with Coulomb kernel with mixture of Gaussians initial condition with the given dimension, number of particles, and solver."
-function coulomb_landau_mixture_problem(d, args...; kwargs...)
-    δ = 0.2
-    μ = [1, zeros(d-1)...]
-    Σ = diagm([1-δ, δ, ones(d-2)...])
-    ρ0 = MixtureModel(MvNormal[MvNormal(μ, Σ), MvNormal(-μ, Σ)], [1/2, 1/2])
-    name = "coulomb_landau_mixture"
-    return coulomb_landau_problem_aux(args...; ρ0=ρ0, name=name, kwargs...)
-end
-
-# "Make an isotropic landau problem with Coulomb kernel with S⁻²exp(-S(|x|-σ)²/σ²) initial condition with the given dimension, number of particles, and solver."
-# function coulomb_landau_rosenbluth_problem(d, args...; kwargs...)
-#     ρ0 = Rosenbluth(d, 0.3, 10.)
-#     name = "coulomb_landau_rosenbluth"
-#     return landau_problem_aux(args...; γ=-3, ρ0=ρ0, name=name, dt=1.0, kwargs...)
-# end
-
-function coulomb_landau_problem_aux(args...; ρ0, kwargs...)
-    d = length(mean(ρ0))
-    function covariance(t, params) # steady-state, only accurate for large t
+    function covariance(t, params)
         Σ₀ = cov(ρ0)
         Σ∞ = I(d) .* tr(Σ₀) ./ d
-        return Σ∞
-    end 
-    landau_problem_aux(args...; covariance=covariance, γ=-3, ρ0=ρ0, dt=1.0, t_end=300., kwargs...)
+        return γ==0 ? Σ∞ - (Σ∞ - Σ₀)exp(-4d * params.B * t) : Σ∞
+    end
+    if γ == 0
+        dt = 0.01
+        t_end = 4.
+    elseif γ==-3
+        dt = 1.0
+        t_end = 300.
+    end
+    kernel = γ == 0 ? "maxwell" : "coulomb"
+    name = "$(kernel)_landau_$(IC)_cov_$σ"
+    
+    return (d, n, solver_; kwargs...) -> landau_problem_aux(n, solver_; covariance=covariance, γ=γ, ρ0=ρ0, name=name, dt=dt, t_end=t_end, kwargs...)
 end
+
 "Auxillary function to make a landau problem."
 function landau_problem_aux(n, solver_; covariance, γ, ρ0, name, dt::F, t_end::F, rng=DEFAULT_RNG, kwargs...) where {F}
     d = length(mean(ρ0))
@@ -126,7 +105,7 @@ landau_10d_f!(du, u, prob, t; γ) = landau_f_aux!(du, u, prob, Val(10); γ=γ)
 
 @generated function landau_f_aux!(du, u, prob, ::Val{d}; γ) where {d}
     quote
-        ε = γ < 0 ? eps(eltype(du)) : 0 # TODO: keep epsilon positive
+        ε = eps(eltype(du))
         s = prob.solver.score_values
         du .= 0
         n = size(u, 2)

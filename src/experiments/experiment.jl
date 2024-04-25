@@ -38,7 +38,7 @@ cov_trace_conserved(experiment::Experiment) = !have_true_dist(experiment) || (tr
 run_experiments(problems, ns, num_runs; verbose=true, dt=0.01, dir="data")
 
 Run experiments for all the problems and save the results.
-    problems = [(problem, d), ...]
+    problems = [(problem, d), ...], where problem(d, n, solver; kwargs...)
     ns = [n, ...]
     num_runs = number of runs for each experiment
     solvers = [Blob(), ...]

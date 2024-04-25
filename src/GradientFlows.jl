@@ -57,12 +57,12 @@ include("experiments/experiment.jl")
 include("experiments/experiment_result.jl")
 include("experiments/io.jl")
 
-const ALL_PROBLEMS = [(diffusion_problem, 2), (diffusion_problem, 5), (diffusion_problem, 10), (fpe_problem, 2), (fpe_problem, 5), (fpe_problem, 10), (landau_problem, 3), (landau_problem, 5), (landau_problem, 10), (anisotropic_landau_problem, 3), (anisotropic_landau_problem, 5), (anisotropic_landau_problem, 10)]
 const ALL_SOLVERS = [Exact(), SBTM(), Blob()]
 
 export GradFlowProblem
 export set_u0!
-export diffusion_problem, fpe_problem, landau_problem, maxwell_landau_normal_problem, maxwell_landau_mixture_problem, coulomb_landau_normal_problem, coulomb_landau_mixture_problem, coulomb_landau_rosenbluth_problem
+export diffusion_problem, fpe_problem, landau_problem
+export landau_problem_factory
 export Exact, Blob, SBTM
 export Logger
 export mlp, train_s!
@@ -73,7 +73,7 @@ export Experiment, GradFlowExperimentResult
 export run_experiments, save_results, train_nn, train_nns
 export save, load, model_filename, experiment_filename, experiment_result_filename, load_metric, load_all_experiment_runs, timer_filename, best_model
 export DEFAULT_TIMER, PLOT_WINDOW_SIZE, PLOT_LINE_WIDTH, PLOT_MARGIN, PLOT_FONT_SIZE
-export ALL_PROBLEMS, ALL_SOLVERS
+export ALL_SOLVERS
 
 export true_dist, have_true_dist, true_score, pdf, marginal_pdf
 export emp_mean, emp_cov, mean, cov
