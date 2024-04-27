@@ -38,6 +38,7 @@ function load_all_experiment_runs(problem_name, d, n, solver_name; kwargs...)
     dir = dirname(experiment_filename(problem_name, d, n, solver_name, 1; kwargs...))
     return load.(joinpath.(dir, readdir(dir)))
 end
+num_runs(args...; kwargs...) = length(load_all_experiment_runs(args...; kwargs...))
 
 ### model ###
 model_filename(problem_name, d, n; dir="data") = joinpath(dir, "models", lowercase(problem_name), "d_$(d)", "n_$(n).jld2")

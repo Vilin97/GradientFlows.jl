@@ -31,9 +31,9 @@ Return a function `problem(d, n, solver)` that creates a landau problem with the
 
 IC ∈ {"normal", "mixture"} : initial condition
 γ  ∈ {0, -3}               : power in collision kernel
-covariance_scale           : scale of the covariance matrix
+covariance_scale = 1       : scale of the covariance matrix
 """
-function landau_problem_factory(d; IC::String, γ::Number, covariance_scale::Int, kwargs...)
+function landau_problem_factory(d; IC::String, γ::Number, covariance_scale=1::Int, kwargs...)
     σ = covariance_scale
     δ = 0.2
     if IC == "normal"
@@ -56,7 +56,7 @@ function landau_problem_factory(d; IC::String, γ::Number, covariance_scale::Int
         t_end = 300.
     end
     kernel = γ == 0 ? "maxwell" : "coulomb"
-    name = "$(kernel)_landau_$(IC)_cov_$σ"
+    name = σ==1 ? "$(kernel)_landau_$(IC)" : "$(kernel)_landau_$(IC)_cov_$σ"
     
     return (d, n, solver_; kwargs...) -> landau_problem_aux(n, solver_; covariance=covariance, γ=γ, ρ0=ρ0, name=name, dt=dt, t_end=t_end, kwargs...)
 end

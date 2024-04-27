@@ -167,7 +167,8 @@ function plot_all(problem_name, d, ns, solver_names; save=true, dir="data",
         push!(plots, p)
         push!(plot_names, metric_name)
     end
-    plt_all = Plots.plot(plots..., plot_title="$problem_name, d=$d, $(ns[1])≤n≤$(ns[end]), dt=$dt", size=PLOT_WINDOW_SIZE, margin=PLOT_MARGIN, linewidth=PLOT_LINE_WIDTH, legendfontsize=PLOT_FONT_SIZE)
+    num_runs = num_runs(problem_name, d, ns[1], solver_names[1]; dir=dir)
+    plt_all = Plots.plot(plots..., plot_title="$problem_name, d=$d, $(ns[1])≤n≤$(ns[end]), dt=$dt, $num_runs runs", size=PLOT_WINDOW_SIZE, margin=PLOT_MARGIN, linewidth=PLOT_LINE_WIDTH, legendfontsize=PLOT_FONT_SIZE)
     
     ### save ###
     if save
