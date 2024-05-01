@@ -39,24 +39,24 @@ run_experiments(problems, ns, num_runs; verbose=true, dt=0.01, dir="data")
 
 Run experiments for all the problems and save the results.
     problems = [(problem, d), ...], where problem(d, n, solver; kwargs...)
-    ns = [n, ...]
-    num_runs = number of runs for each experiment
+    ns = [n, ...], number of particles
+    runs = run ids, e.g. 1:5 means five runs
     solvers = [Blob(), ...]
 """
-function run_experiments(problems, ns, num_runs, solvers; rng=StableRNG, verbose=1, dir="data", kwargs...)
+function run_experiments(problems, ns, runs, solvers; rng=StableRNG, verbose=1, dir="data", kwargs...)
 
     verbose > 0 && println("Generating data")
     timer = TimerOutput()
 
     for n in ns
         @timeit timer "n $n" for (problem, d) in problems
-            @timeit timer "d $d" for run in 1:num_runs
-                prob_ = problem(d, n, Exact(); rng=rng(10 * d + run))
+            @timeit timer "d $d" for run in runs
+                prob_ = problem(d, n, Exact(); rng=rng(100 * d + run))
                 problem_name = prob_.name
                 @timeit timer "$problem_name" for solver in solvers
                     prob = problem(d, n, solver; dir=dir, kwargs...)
                     set_u0!(prob, prob_.u0)
-                    if verbose > 0 && run == num_runs
+                    if verbose > 0 && run == runs[end]
                         @time "n=$(rpad(n,5)) $(rpad(problem_name, PROBLEM_NAME_WIDTH)) d=$(rpad(d,2)) run=$run solver=$solver" @timeit timer "$solver" experiment = Experiment(prob)
                     else
                         @timeit timer "$solver" experiment = Experiment(prob)
