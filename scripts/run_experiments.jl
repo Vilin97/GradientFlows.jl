@@ -7,7 +7,7 @@ for IC in ["normal", "mixture"], γ in [0, -3], d in [2, 3]
     push!(problems, (landau_problem_factory(d; IC=IC, γ=γ), d))
 end
 
-num_runs = 5
+runs = 6:10
 ns = 100 * 2 .^ (0:8)
 solvers = [SBTM(), Blob()]
 
@@ -15,7 +15,7 @@ solvers = [SBTM(), Blob()]
 # @trySendTelegramMessage train_nns(problems, 80000; nn_depth=1, verbose=2)
 
 ### generate data ###
-# @trySendTelegramMessage run_experiments(problems, ns, num_runs, solvers)
+# @trySendTelegramMessage run_experiments(problems, ns, runs, solvers)
 
 ### plot ###
 @trySendTelegramMessage plot_all(problems, ns, solvers)

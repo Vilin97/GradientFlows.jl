@@ -42,7 +42,7 @@ function marginal_pdf_plot(problem_name, d, n, solver_names; t_idx, xrange=range
         u_marginal = reshape(u[1, :], 1, :)
         plot!(p_marginal, xrange, x -> kde([x], u_marginal), label="$solver h=$(round.(kde_bandwidth(u_marginal)[1],digits=3))", lw=PLOT_LINE_WIDTH)
     end
-    plot!(p_marginal, xrange, x -> marginal_pdf(dist, x), label="true", lw=PLOT_LINE_WIDTH)
+    plot!(p_marginal, xrange, x -> marginal_pdf(dist, x), label="true", lw=PLOT_LINE_WIDTH, linestyle=:dash, color=PLOT_COLOR_TRUTH)
     return p_marginal
 end
 
@@ -58,7 +58,7 @@ function slice_pdf_plot(problem_name, d, n, solver_names; t_idx, xrange=range(-5
         u = hcat([exp.solution[t_idx] for exp in experiments]...)
         plot!(p_slice, xrange, x -> kde(slice(x), u), label="$solver h=$(round.((det(kde_bandwidth(u))^(1/d)), digits=3))", lw=PLOT_LINE_WIDTH)
     end
-    plot!(p_slice, xrange, x -> pdf(dist, slice(x)), label="true", lw=PLOT_LINE_WIDTH)
+    plot!(p_slice, xrange, x -> pdf(dist, slice(x)), label="true", lw=PLOT_LINE_WIDTH, linestyle=:dash, color=PLOT_COLOR_TRUTH)
     return p_slice
 end
 
@@ -78,40 +78,40 @@ function save_pdfs_over_n(problem_name, d, ns, solver_names; dir="data")
 end
 
 "metric(experiment) isa Vector of length(experiment.saveat)"
-function plot_metric_over_t(problem_name, d, n, solver_names, metric, metric_name, metric_math_name; kwargs...)
-    p = Plots.plot(title="$metric_name n=$n", xlabel="simulated time", ylabel=metric_math_name, margin=PLOT_MARGIN)
-    for solver_name in solver_names
+function plot_metric_over_t(problem_name, d, ns, solver_names, metric, metric_name, metric_math_name; kwargs...)
+    p = Plots.plot(title="$metric_name n = $ns", xlabel="simulated time", ylabel=metric_math_name, margin=PLOT_MARGIN)
+    for n in ns, solver_name in solver_names
         experiments = load_all_experiment_runs(problem_name, d, n, solver_name; kwargs...)
         saveat = round.(experiments[1].saveat, digits=3)
         metric_ = mean([metric(exp) for exp in experiments])
-        plot!(p, saveat, metric_, label=solver_name, lw=PLOT_LINE_WIDTH)
+        plot!(p, saveat, metric_, label="$solver_name, n=$n", lw=PLOT_LINE_WIDTH-1)
     end
     return p
 end
 
-function plot_score_error(problem_name, d, n, solver_names; kwargs...)
+function plot_score_error(problem_name, d, ns, solver_names; kwargs...)
     function score_error(experiment)
         true_score_values = [score(dist, u) for (dist, u) in zip(experiment.true_dist, experiment.solution)]
         return sum.(abs2, experiment.score_values .- true_score_values) ./ sum.(abs2, true_score_values)
     end
     metric_name = "score_error"
     metric_math_name = "∑ᵢ |s(xᵢ) - ∇log ρ*(xᵢ)|² / ∑ᵢ |∇log ρ*(xᵢ)|²"
-    return plot_metric_over_t(problem_name, d, n, solver_names, score_error, metric_name, metric_math_name; kwargs...)
+    return plot_metric_over_t(problem_name, d, ns, solver_names, score_error, metric_name, metric_math_name; kwargs...)
 end
 
-function plot_covariance_trajectory(problem_name, d, n, solver_names; row, column, kwargs...)
+function plot_covariance_trajectory(problem_name, d, ns, solver_names; row, column, kwargs...)
     cov_(experiment) = [emp_cov(u)[row, column] for u in experiment.solution]
-    plt = plot_metric_over_t(problem_name, d, n, solver_names, cov_, "covariance($row,$column)", "Σ$row$column"; kwargs...)
-    experiment = load(experiment_filename(problem_name, d, n, solver_names[1], 1; kwargs...))
-    plot!(plt, experiment.saveat, getindex.(experiment.true_cov, row, column), label="true", lw=PLOT_LINE_WIDTH, linestyle=:dash)
+    plt = plot_metric_over_t(problem_name, d, ns, solver_names, cov_, "covariance($row,$column)", "Σ$row$column"; kwargs...)
+    experiment = load(experiment_filename(problem_name, d, ns[1], solver_names[1], 1; kwargs...))
+    plot!(plt, experiment.saveat, getindex.(experiment.true_cov, row, column), label="true", lw=PLOT_LINE_WIDTH, linestyle=:dash, color=PLOT_COLOR_TRUTH)
     return plt
 end
 
-function plot_entropy_production_rate(problem_name, d, n, solver_names; kwargs...)
+function plot_entropy_production_rate(problem_name, d, ns, solver_names; kwargs...)
     metric_name = "entropy_production_rate"
     metric_math_name = "d/dt ∫ρ(x)logρ(x)dx ≈ ∑ᵢ v[s](xᵢ)⋅s(xᵢ) / n"
 entropy_production_rate(experiment) = [dot(experiment.velocity_values[i], experiment.score_values[i]) / size(experiment.solution[i], 2) for i in 1:length(experiment.score_values)]
-    return plot_metric_over_t(problem_name, d, n, solver_names, entropy_production_rate, metric_name, metric_math_name; kwargs...)
+    return plot_metric_over_t(problem_name, d, ns, solver_names, entropy_production_rate, metric_name, metric_math_name; kwargs...)
 end
 
 function plot_all(problem_name, d, ns, solver_names; save=true, dir="data",
@@ -124,6 +124,7 @@ function plot_all(problem_name, d, ns, solver_names; save=true, dir="data",
     any_experiment = load(experiment_filename(problem_name, d, ns[1], solver_names[1], 1; dir=dir))
     dt = any_experiment.dt
     have_true_distribution = have_true_dist(any_experiment)
+    ns_low_high = ns[[1,end]]
 
     ### plot ###
     plots = []
@@ -135,10 +136,9 @@ function plot_all(problem_name, d, ns, solver_names; save=true, dir="data",
         p_slice_start_low_n = slice_pdf_plot(problem_name, d, ns[1], solver_names, t_idx=1; dir=dir)
         p_slice_end_low_n = slice_pdf_plot(problem_name, d, ns[1], solver_names, t_idx=0; dir=dir)
         # scores
-        p_score_error = plot_score_error(problem_name, d, ns[end], solver_names; dir=dir)
-        p_score_error_low_n = plot_score_error(problem_name, d, ns[1], solver_names; dir=dir)
-        push!(plots, p_slice_start, p_slice_end, p_slice_start_low_n, p_slice_end_low_n, p_score_error, p_score_error_low_n)
-        push!(plot_names, "slice_start", "slice_end", "slice_start_low_n", "slice_end_low_n", "score_error", "score_error_low_n")
+        p_score_error = plot_score_error(problem_name, d, ns_low_high, solver_names; dir=dir)
+        push!(plots, p_slice_start, p_slice_end, p_slice_start_low_n, p_slice_end_low_n, p_score_error)
+        push!(plot_names, "slice_start", "slice_end", "slice_start_low_n", "slice_end_low_n", "score_error")
         if d > 3 # plot marginal pdfs only for d > 3
             p_marginal_start = marginal_pdf_plot(problem_name, d, ns[end], solver_names; t_idx=1, dir=dir)
             p_marginal_end = marginal_pdf_plot(problem_name, d, ns[end], solver_names; t_idx=0, dir=dir)
@@ -149,15 +149,12 @@ function plot_all(problem_name, d, ns, solver_names; save=true, dir="data",
         end
     end
     # covariance trajectory
-    p_cov_trajectory_1 = plot_covariance_trajectory(problem_name, d, ns[end], solver_names; row=1, column=1, dir=dir)
-    p_cov_trajectory_2 = plot_covariance_trajectory(problem_name, d, ns[end], solver_names; row=2, column=2, dir=dir)
-    p_cov_trajectory_1_low_n = plot_covariance_trajectory(problem_name, d, ns[1], solver_names; row=1, column=1, dir=dir)
-    p_cov_trajectory_2_low_n = plot_covariance_trajectory(problem_name, d, ns[1], solver_names; row=2, column=2, dir=dir)
+    p_cov_trajectory_1 = plot_covariance_trajectory(problem_name, d, ns_low_high, solver_names; row=1, column=1, dir=dir)
+    p_cov_trajectory_2 = plot_covariance_trajectory(problem_name, d, ns_low_high, solver_names; row=2, column=2, dir=dir)
     # entropy trajectory
-    entropy_plot = plot_entropy_production_rate(problem_name, d, ns[end], solver_names; dir=dir)
-    entropy_plot_low_n = plot_entropy_production_rate(problem_name, d, ns[1], solver_names; dir=dir)
-    push!(plots, p_cov_trajectory_1, p_cov_trajectory_2, p_cov_trajectory_1_low_n, p_cov_trajectory_2_low_n, entropy_plot, entropy_plot_low_n)
-    push!(plot_names, "cov_trajectory_1", "cov_trajectory_2", "cov_trajectory_1_low_n", "cov_trajectory_2_low_n", "entropy_production_rate", "entropy_production_rate_low_n")
+    entropy_plot = plot_entropy_production_rate(problem_name, d, ns_low_high, solver_names; dir=dir)
+    push!(plots, p_cov_trajectory_1, p_cov_trajectory_2, entropy_plot)
+    push!(plot_names, "cov_trajectory_1", "cov_trajectory_2", "entropy_production_rate")
     # other metrics, against n
     for metric in metrics
         metric_matrix, metric_math_name = load_metric(problem_name, d, ns, solver_names, metric; dir=dir)
@@ -167,8 +164,8 @@ function plot_all(problem_name, d, ns, solver_names; save=true, dir="data",
         push!(plots, p)
         push!(plot_names, metric_name)
     end
-    num_runs = num_runs(problem_name, d, ns[1], solver_names[1]; dir=dir)
-    plt_all = Plots.plot(plots..., plot_title="$problem_name, d=$d, $(ns[1])≤n≤$(ns[end]), dt=$dt, $num_runs runs", size=PLOT_WINDOW_SIZE, margin=PLOT_MARGIN, linewidth=PLOT_LINE_WIDTH, legendfontsize=PLOT_FONT_SIZE)
+    num_runs_ = GradientFlows.num_runs(problem_name, d, ns[1], solver_names[1]; dir=dir)
+    plt_all = Plots.plot(plots..., plot_title="$problem_name, d=$d, $(ns[1])≤n≤$(ns[end]), dt=$dt, $num_runs_ runs", size=PLOT_WINDOW_SIZE, margin=PLOT_MARGIN, linewidth=PLOT_LINE_WIDTH, legendfontsize=PLOT_FONT_SIZE)
     
     ### save ###
     if save
