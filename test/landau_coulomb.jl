@@ -10,7 +10,6 @@ for problem_f in [landau_problem_factory(d; IC=IC, γ=-3) for IC in ["normal", "
         experiment = Experiment(problem)
         result = GradFlowExperimentResult(experiment)
 
-        # This is a very loose bound
         @test result.true_cov_trace_error[1] < 0.1
         @test result.true_cov_norm_error[1] < 0.1
     end
