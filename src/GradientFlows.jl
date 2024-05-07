@@ -11,6 +11,8 @@ using TimerOutputs
 using JLD2
 using StableRNGs: StableRNG
 using Distributions
+using OptimalTransport: sinkhorn2
+using Distances: sqeuclidean, pairwise
 
 import Distributions: mean, cov, gradlogpdf, logpdf, pdf, rand
 import OrdinaryDiffEq.solve
@@ -53,6 +55,7 @@ include("solvers/sbtm.jl")
 include("analysis/empirical_moments.jl")
 include("analysis/kde.jl")
 include("analysis/Lp.jl")
+include("analysis/wasserstein_distance.jl")
 
 include("experiments/experiment.jl")
 include("experiments/experiment_result.jl")

@@ -1,4 +1,4 @@
-using GradientFlows, Plots, Polynomials, TimerOutputs, LinearAlgebra
+using GradientFlows, Plots, Polynomials, LinearAlgebra
 ENV["GKSwstype"] = "nul" # no GUI
 default(display_type=:inline)
 
@@ -114,12 +114,20 @@ entropy_production_rate(experiment) = [dot(experiment.velocity_values[i], experi
     return plot_metric_over_t(problem_name, d, ns, solver_names, entropy_production_rate, metric_name, metric_math_name; kwargs...)
 end
 
+function plot_w2(problem_name, d, ns, solver_names; kwargs...)
+    get_w2(experiment) = [w2(u, dist) for (u, dist) in zip(experiment.solution, experiment.true_dist)]
+    plot_metric_over_t(problem_name, d, ns, solver_names, get_w2, "wasserstein_2_distance", "W₂(ρᴺ, ρ*)"; kwargs...)
+end
+
+function plot_L2(problem_name, d, ns, solver_names; kwargs...)
+    get_L2(experiment) = [Lp_error(u, dist) for (u, dist) in zip(experiment.solution, experiment.true_dist)]
+    plot_metric_over_t(problem_name, d, ns, solver_names, get_L2, "L2_distance", "L²(ρᴺ, ρ*)"; kwargs...)
+end
+
 function plot_all(problem_name, d, ns, solver_names; save=true, dir="data",
     metrics=[
-        :update_score_time,
         :L2_error,
-        :true_cov_norm_error,
-        :true_cov_trace_error], kwargs...)
+        :true_cov_norm_error], kwargs...)
     println("Plotting $problem_name, d=$d")
     any_experiment = load(experiment_filename(problem_name, d, ns[1], solver_names[1], 1; dir=dir))
     dt = any_experiment.dt
@@ -137,8 +145,10 @@ function plot_all(problem_name, d, ns, solver_names; save=true, dir="data",
         p_slice_end_low_n = slice_pdf_plot(problem_name, d, ns[1], solver_names, t_idx=0; dir=dir)
         # scores
         p_score_error = plot_score_error(problem_name, d, ns_low_high, solver_names; dir=dir)
-        push!(plots, p_slice_start, p_slice_end, p_slice_start_low_n, p_slice_end_low_n, p_score_error)
-        push!(plot_names, "slice_start", "slice_end", "slice_start_low_n", "slice_end_low_n", "score_error")
+        p_L2 = plot_L2(problem_name, d, ns_low_high, solver_names; dir=dir)
+        p_w2 = plot_w2(problem_name, d, ns_low_high, solver_names; dir=dir)
+        push!(plots, p_slice_start, p_slice_end, p_slice_start_low_n, p_slice_end_low_n, p_score_error, p_L2, p_w2)
+        push!(plot_names, "slice_start", "slice_end", "slice_start_low_n", "slice_end_low_n", "score_error", "L2_distance", "wasserstein_2_distance")
         if d > 3 # plot marginal pdfs only for d > 3
             p_marginal_start = marginal_pdf_plot(problem_name, d, ns[end], solver_names; t_idx=1, dir=dir)
             p_marginal_end = marginal_pdf_plot(problem_name, d, ns[end], solver_names; t_idx=0, dir=dir)
