@@ -1,6 +1,6 @@
-using Telegram, Telegram.API, ConfigEnv
+using Telegram, Telegram.API, ConfigEnv, Dates
 
-function sendTelegramMessage(message::String = "Calculation finished")
+function sendTelegramMessage(message::String)
     dotenv() # populate ENV with the data from .env
     TelegramClient()
     sendMessage(text = message)
@@ -12,11 +12,12 @@ macro trySendTelegramMessage(expr)
     quote
         function_str = string($(Expr(:quote, expr)))
         try
+            sendTelegramMessage("$(now()) \n$function_str started .")
             elapsed = @elapsed begin
                 local value = $(esc(expr))
                 value
             end
-            sendTelegramMessage("$function_str finished in $(convert_time_to_string(elapsed)).")
+            sendTelegramMessage("$(now()) \n$function_str finished in $(convert_time_to_string(elapsed)).")
         catch e
             sendTelegramMessage("Error in $function_str.")
             rethrow(e)

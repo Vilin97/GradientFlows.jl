@@ -77,21 +77,21 @@ function save_pdfs_over_n(problem_name, d, ns, solver_names; dir="data")
     nothing
 end
 
-"metric(experiment) isa Vector of length(experiment.saveat)"
-function plot_metric_over_t(problem_name, d, ns, solver_names, metric, metric_name, metric_math_name; kwargs...)
+"metric(experiment, step) returns a Vector of metric values with given step"
+function plot_metric_over_t(problem_name, d, ns, solver_names, metric, metric_name, metric_math_name; step=1, kwargs...)
     p = Plots.plot(title="$metric_name n = $ns", xlabel="simulated time", ylabel=metric_math_name, margin=PLOT_MARGIN)
     for n in ns, solver_name in solver_names
         experiments = load_all_experiment_runs(problem_name, d, n, solver_name; kwargs...)
         saveat = round.(experiments[1].saveat, digits=3)
-        metric_ = mean([metric(exp) for exp in experiments])
-        plot!(p, saveat, metric_, label="$solver_name, n=$n", lw=PLOT_LINE_WIDTH-1)
+        metric_values = mean([metric(exp, step) for exp in experiments])
+        plot!(p, saveat[1:step:end], metric_values, label="$solver_name, n=$n", lw=PLOT_LINE_WIDTH-1)
     end
     return p
 end
 
 function plot_score_error(problem_name, d, ns, solver_names; kwargs...)
-    function score_error(experiment)
-        true_score_values = [score(dist, u) for (dist, u) in zip(experiment.true_dist, experiment.solution)]
+    function score_error(experiment, step)
+        true_score_values = [score(dist, u) for (dist, u) in zip(experiment.true_dist[1:step:end], experiment.solution[1:step:end])]
         return sum.(abs2, experiment.score_values .- true_score_values) ./ sum.(abs2, true_score_values)
     end
     metric_name = "score_error"
@@ -100,7 +100,7 @@ function plot_score_error(problem_name, d, ns, solver_names; kwargs...)
 end
 
 function plot_covariance_trajectory(problem_name, d, ns, solver_names; row, column, kwargs...)
-    cov_(experiment) = [emp_cov(u)[row, column] for u in experiment.solution]
+    cov_(experiment, step) = [emp_cov(u)[row, column] for u in experiment.solution[1:step:end]]
     plt = plot_metric_over_t(problem_name, d, ns, solver_names, cov_, "covariance($row,$column)", "Σ$row$column"; kwargs...)
     experiment = load(experiment_filename(problem_name, d, ns[1], solver_names[1], 1; kwargs...))
     plot!(plt, experiment.saveat, getindex.(experiment.true_cov, row, column), label="true", lw=PLOT_LINE_WIDTH, linestyle=:dash, color=PLOT_COLOR_TRUTH)
@@ -110,25 +110,25 @@ end
 function plot_entropy_production_rate(problem_name, d, ns, solver_names; kwargs...)
     metric_name = "entropy_production_rate"
     metric_math_name = "d/dt ∫ρ(x)logρ(x)dx ≈ ∑ᵢ v[s](xᵢ)⋅s(xᵢ) / n"
-entropy_production_rate(experiment) = [dot(experiment.velocity_values[i], experiment.score_values[i]) / size(experiment.solution[i], 2) for i in 1:length(experiment.score_values)]
+    entropy_production_rate(experiment, step) = [dot(experiment.velocity_values[i], experiment.score_values[i]) / size(experiment.solution[i], 2) for i in 1:step:length(experiment.score_values)]
     return plot_metric_over_t(problem_name, d, ns, solver_names, entropy_production_rate, metric_name, metric_math_name; kwargs...)
 end
 
 function plot_w2(problem_name, d, ns, solver_names; kwargs...)
-    get_w2(experiment) = [w2(u, dist) for (u, dist) in zip(experiment.solution, experiment.true_dist)]
-    plot_metric_over_t(problem_name, d, ns, solver_names, get_w2, "wasserstein_2_distance", "W₂(ρᴺ, ρ*)"; kwargs...)
+    get_w2(experiment, step) = [w2(u, dist) for (u, dist) in zip(experiment.solution[1:step:end], experiment.true_dist[1:step:end])]
+    plot_metric_over_t(problem_name, d, ns, solver_names, get_w2, "wasserstein_2_distance", "W₂(ρᴺ, ρ*)"; step=50, kwargs...)
 end
 
 function plot_L2(problem_name, d, ns, solver_names; kwargs...)
-    get_L2(experiment) = [Lp_error(u, dist) for (u, dist) in zip(experiment.solution, experiment.true_dist)]
-    plot_metric_over_t(problem_name, d, ns, solver_names, get_L2, "L2_distance", "L²(ρᴺ, ρ*)"; kwargs...)
+    get_L2(experiment, step) = [Lp_error(u, dist;p=2) for (u, dist) in zip(experiment.solution[1:step:end], experiment.true_dist[1:step:end])]
+    plot_metric_over_t(problem_name, d, ns, solver_names, get_L2, "L2_distance", "L²(ρᴺ, ρ*)"; step=50, kwargs...)
 end
 
 function plot_all(problem_name, d, ns, solver_names; save=true, dir="data",
     metrics=[
         :L2_error,
         :true_cov_norm_error], kwargs...)
-    println("Plotting $problem_name, d=$d")
+    @info "Plotting $problem_name, d=$d"
     any_experiment = load(experiment_filename(problem_name, d, ns[1], solver_names[1], 1; dir=dir))
     dt = any_experiment.dt
     have_true_distribution = have_true_dist(any_experiment)
@@ -145,8 +145,8 @@ function plot_all(problem_name, d, ns, solver_names; save=true, dir="data",
         p_slice_end_low_n = slice_pdf_plot(problem_name, d, ns[1], solver_names, t_idx=0; dir=dir)
         # scores
         p_score_error = plot_score_error(problem_name, d, ns_low_high, solver_names; dir=dir)
-        p_L2 = plot_L2(problem_name, d, ns_low_high, solver_names; dir=dir)
-        p_w2 = plot_w2(problem_name, d, ns_low_high, solver_names; dir=dir)
+        @time p_L2 = plot_L2(problem_name, d, ns_low_high, solver_names; dir=dir)
+        @time p_w2 = plot_w2(problem_name, d, ns_low_high, solver_names; dir=dir)
         push!(plots, p_slice_start, p_slice_end, p_slice_start_low_n, p_slice_end_low_n, p_score_error, p_L2, p_w2)
         push!(plot_names, "slice_start", "slice_end", "slice_start_low_n", "slice_end_low_n", "score_error", "L2_distance", "wasserstein_2_distance")
         if d > 3 # plot marginal pdfs only for d > 3

@@ -82,7 +82,7 @@ export ALL_SOLVERS
 export true_dist, have_true_dist, true_score, pdf, marginal_pdf
 export emp_mean, emp_cov, mean, cov
 export kde, kde_bandwidth
-export Lp_distance, Lp_error
+export Lp_distance, Lp_error, w2
 export score
 
 end

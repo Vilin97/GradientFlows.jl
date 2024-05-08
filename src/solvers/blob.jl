@@ -53,9 +53,9 @@ function update!(solver::Blob{S,F,A}, integrator) where {S,F,A<:BlobAllocMemCPU}
     if verbose > 0 && integrator.iter % 10 == 0
         if !isnothing(true_dist(integrator.p, integrator.t))
             test_loss = pretty(l2_error_normalized(score_values, true_score(integrator.p, integrator.t, integrator.u)), 7)
-            println("Time $(integrator.t) test loss = $test_loss")
+            @info "Time $(integrator.t) test loss = $test_loss"
         else
-            println("Time $(integrator.t)")
+            @info "Time $(integrator.t)"
         end
     end
     log!(logger, integrator)

@@ -1,6 +1,7 @@
 using GradientFlows
 include("plot.jl")
 include("telegram_alerts.jl")
+include("logging.jl")
 
 problems = []
 for IC in ["normal", "mixture"], γ in [0, -3], d in [2, 3]
@@ -18,4 +19,4 @@ solvers = [SBTM(), Blob()]
 # @trySendTelegramMessage run_experiments(problems, ns, runs, solvers)
 
 ### plot ###
-@trySendTelegramMessage plot_all(problems, ns, solvers)
+@log @trySendTelegramMessage plot_all(problems, ns, solvers)

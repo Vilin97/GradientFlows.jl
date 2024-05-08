@@ -38,8 +38,8 @@ end
 function train_s!(solver::SBTM, u, score_values)
     @unpack s, init_batch_size, init_loss_tolerance, init_max_iterations, verbose, optimiser_state = solver
 
-    verbose > 1 && println("Training NN for $(size(u, 2)) particles.")
-    verbose > 1 && println("Batch size = $init_batch_size, loss tolerance = $init_loss_tolerance, max iterations = $init_max_iterations. \n$s")
+    verbose > 1 && @info "Training NN for $(size(u, 2)) particles."
+    verbose > 1 && @info "Batch size = $init_batch_size, loss tolerance = $init_loss_tolerance, max iterations = $init_max_iterations. \n$s"
     data_loader = Flux.DataLoader((data=u, label=score_values), batchsize=min(size(u, 2), init_batch_size))
 
     iteration = 0
@@ -47,7 +47,7 @@ function train_s!(solver::SBTM, u, score_values)
     while iteration < init_max_iterations
         loss = l2_error_normalized(s(u), score_values)
         (loss < init_loss_tolerance) && break
-        verbose > 1 && epoch % 100 == 0 && println("Epoch $(lpad(epoch, 5)) iteration $(lpad(iteration, 6)) loss $loss")
+        verbose > 1 && epoch % 100 == 0 && @info "Epoch $(lpad(epoch, 5)) iteration $(lpad(iteration, 6)) loss $loss"
         epoch += 1
         for (x, y) in data_loader
             batch_loss, grads = withgradient(s -> l2_error_normalized(s(x), y), s)
@@ -59,7 +59,7 @@ function train_s!(solver::SBTM, u, score_values)
         end
     end
     final_loss = l2_error_normalized(s(u), score_values)
-    verbose > 0 && println("Trained NN in $iteration iterations. Loss = $final_loss.")
+    verbose > 0 && @info "Trained NN in $iteration iterations. Loss = $final_loss."
     nothing
 end
 
@@ -81,16 +81,16 @@ function update!(solver::SBTM, integrator)
         randn!(ζ)
         loss_value, grads = withgradient(s -> score_matching_loss(s, u, ζ, denoising_alpha, D), s)
         Flux.update!(optimiser_state, s, grads[1])
-        verbose > 1 && println("Epoch $(lpad(epoch, 2)), loss = $loss_value.")
+        verbose > 1 && @info "Epoch $(lpad(epoch, 2)), loss = $loss_value."
     end
     score_values .= s(u)
     if verbose > 0 && integrator.iter % 10 == 0
         train_loss = pretty(score_matching_loss(s, u, ζ, denoising_alpha), 7)
         if !isnothing(true_dist(integrator.p, integrator.t))
             test_loss = pretty(l2_error_normalized(score_values, true_score(prob, integrator.t, integrator.u)), 7)
-            println("Time $(integrator.t) test loss = $test_loss train loss = $train_loss")
+            @info "Time $(integrator.t) test loss = $test_loss train loss = $train_loss"
         else
-            println("Time $(integrator.t) train loss = $train_loss")
+            @info "Time $(integrator.t) train loss = $train_loss"
         end
     end
     nothing
