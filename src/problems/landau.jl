@@ -49,11 +49,11 @@ function landau_problem_factory(d; IC::String, γ::Number, covariance_scale=1::I
         return γ==0 ? Σ∞ - (Σ∞ - Σ₀)exp(-4d * params.B * t) : Σ∞
     end
     if γ == 0
-        dt = 0.01
-        t_end = 4.
+        dt = 0.02
+        t_end = 10.
     elseif γ==-3
         dt = 1.0
-        t_end = 300.
+        t_end = 300. # t_end = 40 is used in https://www.sciencedirect.com/science/article/pii/S2590055220300184
     end
     kernel = γ == 0 ? "maxwell" : "coulomb"
     name = σ==1 ? "$(kernel)_landau_$(IC)" : "$(kernel)_landau_$(IC)_cov_$σ"
@@ -67,9 +67,9 @@ function landau_problem_aux(n, solver_; covariance, γ, ρ0, name, dt::F, t_end:
     @assert(eltype(mean(ρ0)) == typeof(dt))
     t0 = F(0)
     params = (B=F(1 / 24),)
-    ρ(t, params) = t ≈ 0 ? ρ0 : MvNormal(mean(ρ0), covariance(t, params)) # if t > 0, steady-state, only accurate for large t
+    ρ(t, params) = t ≈ 0 ? ρ0 : MvNormal(mean(ρ0), covariance(999*t_end, params)) # if t > 0, steady-state, only accurate for large t
     f! = landau_f!(d, γ)
-    tspan = (t0, t0 + t_end) # t_end = 40 is used in https://www.sciencedirect.com/science/article/pii/S2590055220300184
+    tspan = (t0, t0 + t_end)
     u0 = rand(rng, ρ0, n)
     solver = initialize(solver_, u0, score(ρ0, u0), name; kwargs...)
     return GradFlowProblem(f!, ρ0, u0, ρ, tspan, dt, params, solver, name, landau_diffusion_coefficient, covariance)
