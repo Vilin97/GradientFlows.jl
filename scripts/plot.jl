@@ -115,13 +115,14 @@ function plot_entropy_production_rate(problem_name, d, ns, solver_names; kwargs.
 end
 
 function plot_w2(problem_name, d, ns, solver_names; kwargs...)
-    get_w2(experiment, step) = [w2(u, dist) for (u, dist) in zip(experiment.solution[1:step:end], experiment.true_dist[1:step:end])]
-    plot_metric_over_t(problem_name, d, ns, solver_names, get_w2, "wasserstein_2_distance", "W₂(ρᴺ, ρ*)"; step=50, kwargs...)
+    ε=0.2
+    get_w2(experiment, step) = [w2(u, dist; ε=ε) for (u, dist) in zip(experiment.solution[1:step:end], experiment.true_dist[1:step:end])]
+    plot_metric_over_t(problem_name, d, ns, solver_names, get_w2, "wasserstein_2_distance", "W₂(ρᴺ, ρ*), ε=$ε"; step=50, kwargs...)
 end
 
 function plot_L2(problem_name, d, ns, solver_names; kwargs...)
     get_L2(experiment, step) = [Lp_error(u, dist;p=2) for (u, dist) in zip(experiment.solution[1:step:end], experiment.true_dist[1:step:end])]
-    plot_metric_over_t(problem_name, d, ns, solver_names, get_L2, "L2_distance", "L²(ρᴺ, ρ*)"; step=50, kwargs...)
+    plot_metric_over_t(problem_name, d, ns, solver_names, get_L2, "L2_distance", "L²(ρᴺ, ρ*)"; step=20, kwargs...)
 end
 
 function plot_all(problem_name, d, ns, solver_names; save=true, dir="data",
