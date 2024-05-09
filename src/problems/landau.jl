@@ -10,12 +10,11 @@ LandauParams(d, B::T, C=one(T)) where {T} = LandauParams(d, B, C, t -> 1 - C * e
 "Make an isotropic landau problem with Maxwell kernel with the given dimension, number of particles, and solver."
 function landau_problem(d, n, solver_; dt::F=0.01, rng=DEFAULT_RNG, kwargs...) where {F}
     params = LandauParams(d, F(1 / 24))
-    # Choose the starting time `t0` so that P ≈ 0 and P ≥ 0.
-    t0 = round(log((params.d + 2) * params.C / 2) / (2params.B * (params.d - 1)), RoundUp, digits=1)
+    t0 = round(log((params.d + 2) * params.C / 2) / (2params.B * (params.d - 1))+0.5, RoundUp, digits=1)
     ρ(t, params) = PolyNormal(d, params.K(t))
     ρ0 = ρ(t0, params)
     f! = landau_f!(d)
-    tspan = (t0, t0 + 1)
+    tspan = (t0, t0 + 4)
     u0 = rand(rng, ρ0, n)
     name = "landau"
     solver = initialize(solver_, u0, score(ρ0, u0), name; kwargs...)
