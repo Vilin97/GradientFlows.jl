@@ -4,19 +4,19 @@ include("telegram_alerts.jl")
 include("logging.jl")
 
 problems = []
-for IC in ["normal", "mixture"], γ in [0, -3], d in [2, 3]
+for IC in ["normal", "mixture"], γ in [0, -3], d in [6]
     push!(problems, (landau_problem_factory(d; IC=IC, γ=γ), d))
 end
 
-runs = 6:10
+runs = 1:10
 ns = 100 * 2 .^ (0:8)
 solvers = [SBTM(), Blob()]
 
 ### train nn ###
-# @trySendTelegramMessage train_nns(problems, 80000; nn_depth=1, verbose=2)
+@log @trySendTelegramMessage train_nns(problems, 80000; nn_depth=1, verbose=2)
 
 ### generate data ###
-# @trySendTelegramMessage run_experiments(problems, ns, runs, solvers)
+@log @trySendTelegramMessage run_experiments(problems, ns, runs, solvers)
 
 ### plot ###
 @log @trySendTelegramMessage plot_all(problems, ns, solvers)

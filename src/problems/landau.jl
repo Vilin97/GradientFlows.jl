@@ -49,8 +49,8 @@ function landau_problem_factory(d; IC::String, γ::Number, covariance_scale=1::I
         return γ==0 ? Σ∞ - (Σ∞ - Σ₀)exp(-4d * params.B * t) : Σ∞
     end
     if γ == 0
-        dt = 0.02
-        t_end = 10.
+        dt = 0.01
+        t_end = 4.
     elseif γ==-3
         dt = 1.0
         t_end = 300. # t_end = 40 is used in https://www.sciencedirect.com/science/article/pii/S2590055220300184
@@ -91,6 +91,8 @@ function landau_f!(d, γ=0)
         return (args...) -> landau_3d_f!(args...; γ=γ)
     elseif d == 5
         return (args...) -> landau_5d_f!(args...; γ=γ)
+    elseif d == 6
+        return (args...) -> landau_6d_f!(args...; γ=γ)
     elseif d == 10
         return (args...) -> landau_10d_f!(args...; γ=γ)
     else
@@ -101,6 +103,7 @@ end
 landau_2d_f!(du, u, prob, t; γ) = landau_f_aux!(du, u, prob, Val(2); γ=γ)
 landau_3d_f!(du, u, prob, t; γ) = landau_f_aux!(du, u, prob, Val(3); γ=γ)
 landau_5d_f!(du, u, prob, t; γ) = landau_f_aux!(du, u, prob, Val(5); γ=γ)
+landau_6d_f!(du, u, prob, t; γ) = landau_f_aux!(du, u, prob, Val(6); γ=γ)
 landau_10d_f!(du, u, prob, t; γ) = landau_f_aux!(du, u, prob, Val(10); γ=γ)
 
 @generated function landau_f_aux!(du, u, prob, ::Val{d}; γ) where {d}
