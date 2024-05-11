@@ -13,6 +13,8 @@ using StableRNGs: StableRNG
 using Distributions
 using OptimalTransport: sinkhorn2
 using Distances: sqeuclidean, pairwise
+using Zygote: pullback 
+using Flux.OneHotArrays: onehot
 
 import Distributions: mean, cov, gradlogpdf, logpdf, pdf, rand
 import OrdinaryDiffEq.solve
@@ -51,6 +53,7 @@ include("solvers/logger.jl")
 include("solvers/exact.jl")
 include("solvers/blob.jl")
 include("solvers/sbtm.jl")
+include("solvers/asbtm.jl")
 
 include("analysis/empirical_moments.jl")
 include("analysis/kde.jl")
@@ -61,13 +64,13 @@ include("experiments/experiment.jl")
 include("experiments/experiment_result.jl")
 include("experiments/io.jl")
 
-const ALL_SOLVERS = [Exact(), SBTM(), Blob()]
+const ALL_SOLVERS = [Exact(), SBTM(), ASBTM(), Blob()]
 
 export GradFlowProblem
 export set_u0!
 export diffusion_problem, fpe_problem, landau_problem
 export landau_problem_factory
-export Exact, Blob, SBTM
+export Exact, Blob, SBTM, ASBTM
 export Logger
 export mlp, train_s!
 export name
