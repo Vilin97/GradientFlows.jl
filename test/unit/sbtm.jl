@@ -5,9 +5,6 @@ using Flux.OneHotArrays: onehot
 using Random: seed!
 
 divergence(s, u) = tr(jacobian(s, u)[1])
-approx_score_matching_loss(s, u, ζs, α) = mean(score_matching_loss(s, u, ζ, α) for ζ in ζs)
-true_score_matching_loss(s, u) = (sum(abs2, s(u)) + 2 * divergence(s, u)) / size(u, 2)
-
 rng = StableRNG(123)
 
 @testset "SBTM tests" begin
@@ -17,10 +14,9 @@ rng = StableRNG(123)
     score_values = score(dist, u)
 
     # test score_matching_loss
-    seed!(123)
     α = 0.4e0
-    s = mlp(d; depth=1)
-    true_loss = true_score_matching_loss(s, u)
+    s = mlp(d; depth=1, rng=rng)
+    true_loss = (sum(abs2, s(u)) + 2 * divergence(s, u)) / size(u, 2)
     approx_loss = mean(score_matching_loss(s, u, ζ, α) for ζ in [randn(rng, d, n) for _ in 1:1000])
     @test approx_loss ≈ true_loss rtol = 0.1
 
