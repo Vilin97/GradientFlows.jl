@@ -119,13 +119,13 @@ function update!(solver::ASBTM, integrator)
 end
 
 "= ∑ᵢ ∇⋅s(xᵢ)"
-function divergence(f, v)
+function divergence(f, v::AbstractMatrix)
     res = zero(eltype(v))
-    for vi in eachcol(v)
-        _, ∂f = pullback(f, vi)
-        res += sum(eachindex(vi)) do i
-            ∂f(onehot(i, eachindex(vi)))[1][i]
-        end
+    fv, ∂f = pullback(f, v)
+    for i in axes(v,1)
+        seed = zero.(fv)
+        seed[i,:] .= 1
+        res += sum(∂f(seed)[1][i,:])
     end
     return res
 end
