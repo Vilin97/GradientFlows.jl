@@ -146,10 +146,14 @@ function plot_all(problem_name, d, ns, solver_names; save=true, save_dir="data",
         p_slice_end_low_n = slice_pdf_plot(problem_name, d, ns[1], solver_names, t_idx=0; dir=dir)
         # scores
         p_score_error = plot_score_error(problem_name, d, ns_low_high, solver_names; dir=dir)
-        d < 5 && @time p_L2 = plot_L2(problem_name, d, ns_low_high, solver_names; dir=dir)
         @time p_w2 = plot_w2(problem_name, d, ns_low_high, solver_names; dir=dir)
-        push!(plots, p_slice_start, p_slice_end, p_slice_start_low_n, p_slice_end_low_n, p_score_error, p_L2, p_w2)
-        push!(plot_names, "slice_start", "slice_end", "slice_start_low_n", "slice_end_low_n", "score_error", "L2_distance", "wasserstein_2_distance")
+        push!(plots, p_slice_start, p_slice_end, p_slice_start_low_n, p_slice_end_low_n, p_score_error, p_w2)
+        push!(plot_names, "slice_start", "slice_end", "slice_start_low_n", "slice_end_low_n", "score_error", "wasserstein_2_distance")
+        if d < 5
+            @time p_L2 = plot_L2(problem_name, d, ns_low_high, solver_names; dir=dir)
+            push!(plots, p_L2)
+            push!(plot_names, "L2_distance")
+        end
         if d > 3 # plot marginal pdfs only for d > 3
             p_marginal_start = marginal_pdf_plot(problem_name, d, ns[end], solver_names; t_idx=1, dir=dir)
             p_marginal_end = marginal_pdf_plot(problem_name, d, ns[end], solver_names; t_idx=0, dir=dir)
