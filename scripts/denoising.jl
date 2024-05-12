@@ -3,15 +3,13 @@ using Flux.OneHotArrays: onehot
 
 score(ρ::MultivariateDistribution, u::AbstractArray{T,1}) where {T} = gradlogpdf(ρ, u)
 score(ρ::MultivariateDistribution, u::AbstractArray{T,2}) where {T} = reshape(hcat([score(ρ, @view u[:, i]) for i in axes(u, 2)]...), size(u))
-# divergence(s, u) = tr(jacobian(s, u)[1])
-function divergence(f, v)
+function divergence(f, v::AbstractMatrix)
     res = zero(eltype(v))
-    for vi in eachcol(v)
-        _, ∂f = pullback(f, vi)
-        res += sum(eachindex(vi)) do i
-            ∂fᵢ = ∂f(onehot(i, eachindex(vi)))
-            sum(x -> x[i], ∂fᵢ)
-        end
+    fv, ∂f = pullback(f, v)
+    for i in axes(v,1)
+        seed = zero.(fv)
+        seed[i,:] .= 1
+        res += sum(∂f(seed)[1][i,:])
     end
     return res
 end
@@ -111,7 +109,7 @@ function get_plots(train_losses, test_losses, true_train_losses; d, n, Δt)
     train_loss_ups = [i for i in 1:length(true_train_losses)-1 if true_train_losses[i+1] > true_train_losses[i]]
     total_epochs = sum(x -> length(x), losses[1])
 
-    plt = plot(train_losses, label="train loss", xlabel="epoch", ylabel="loss", title="Averaged loss, d=$d, n=$n, Δt=$Δt, $total_epochs total epochs", size=(800,400));
+    plt = plot(train_losses, label="train loss", xlabel="epoch", ylabel="loss", title="Score-match loss, d=$d, n=$n, Δt=$Δt, max_epochs=400, freq=5", size=(1200,800));
     scatter!(plt, train_loss_ups, [true_train_losses[i] for i in train_loss_ups], label="train loss up, #=$(length(train_loss_ups))", color=:red, markersize=1);
     plot!(plt, true_train_losses, label="true train loss")
     plot!(plt, test_losses ./ Δt, label="test loss / $Δt")
@@ -122,38 +120,4 @@ d=2; n=2000; Δt=0.01; t_end=0.5
 @time losses = get_losses(d, n, Δt, t_end)
 
 plt=get_plots(losses...;d=d,n=n,Δt=Δt)
-plot([t[end] for t in losses[2]])
-true_losses = losses[3]
-normalized = [l .- l[1] for l in true_losses]
-plot(normalized)
-
-
-
-
-function divergence1(f, v)
-    res = zero(eltype(v))
-    for vi in eachcol(v)
-        _, ∂f = pullback(f, vi)
-        res += sum(eachindex(vi)) do i
-            ∂fᵢ = ∂f(onehot(i, eachindex(vi)))
-            sum(x -> x[i], ∂fᵢ)
-        end
-    end
-    return res
-end
-function divergence2(f, v)
-    res = zero(eltype(v))
-    for vi in eachcol(v)
-        _, ∂f = pullback(f, vi)
-        res += sum(eachindex(vi)) do i
-            ∂f(onehot(i, eachindex(vi)))[1][i]
-        end
-    end
-    return res
-end
-x = randn(2,5000)
-s = Chain(Dense(2=>100, softsign), Dense(100=>2)) |> f64
-divergence(s,x) # compile
-@time divergence(s,x)
-divergence2(s,x) # compile
-@time divergence2(s,x)
+savefig(plt, "data/plots/score_plots/fpe_score_matching_loss_stoppping_stretegy_d_$(d)_n$(n).png")
