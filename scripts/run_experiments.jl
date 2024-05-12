@@ -19,7 +19,7 @@ solvers = [ASBTM(verbose=2)]
 # @log @trySendTelegramMessage train_nns([(landau_problem, d) for d in [2,3,6]], 80000; nn_depth=1, verbose=2)
 
 ### generate data ###
-@log @trySendTelegramMessage run_experiments(problems, ns, runs, solvers)
+# @log @trySendTelegramMessage run_experiments(problems, ns, runs, solvers)
 
 ### plot ###
-# @log @trySendTelegramMessage plot_all(problems, ns, solvers)
+@log @trySendTelegramMessage plot_all(problems, ns, [ASBTM(), SBTM(), Blob()];save_dir=joinpath("data", "asbtm"))
