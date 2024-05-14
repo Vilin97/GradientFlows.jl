@@ -17,8 +17,8 @@ struct SBTMAllocMem{M}
     ζ::M
 end
 
-function SBTM(s::Union{Chain,Nothing}; learning_rate=4e-4, epochs=25, denoising_alpha=0.4, init_batch_size=2^8, init_loss_tolerance=1e-4, init_max_iterations=10^5, allocated_memory=nothing, verbose=0, logger=Logger(1), optimiser_state=nothing)
-    return SBTM(nothing, s, Adam(learning_rate), epochs, denoising_alpha, init_batch_size, init_loss_tolerance, init_max_iterations, allocated_memory, verbose, logger, optimiser_state)
+function SBTM(s::Union{Chain,Nothing}; learning_rate=4e-4, epochs=25, denoising_alpha=0.4, init_batch_size=2^8, init_loss_tolerance=1e-4, init_max_iterations=10^5, verbose=0, logger=Logger(1), optimiser_state=nothing)
+    return SBTM(nothing, s, Adam(learning_rate), epochs, denoising_alpha, init_batch_size, init_loss_tolerance, init_max_iterations, nothing, verbose, logger, optimiser_state)
 end
 SBTM(; kwargs...) = SBTM(nothing; kwargs...)
 
@@ -37,7 +37,6 @@ end
 
 function train_s!(solver::SBTM, u, score_values)
     @unpack s, init_batch_size, init_loss_tolerance, init_max_iterations, verbose, optimiser_state = solver
-
     verbose > 1 && @info "Training NN for $(size(u, 2)) particles."
     verbose > 1 && @info "Batch size = $init_batch_size, loss tolerance = $init_loss_tolerance, max iterations = $init_max_iterations. \n$s"
     data_loader = Flux.DataLoader((data=u, label=score_values), batchsize=min(size(u, 2), init_batch_size))
@@ -76,10 +75,9 @@ function update!(solver::SBTM, integrator)
     u = integrator.u
     log!(logger, integrator)
 
-    D = prob.diffusion_coefficient(u, prob.params)
     for epoch in 1:epochs
         randn!(ζ)
-        loss_value, grads = withgradient(s -> score_matching_loss(s, u, ζ, denoising_alpha, D), s)
+        loss_value, grads = withgradient(s -> score_matching_loss(s, u, ζ, denoising_alpha), s)
         Flux.update!(optimiser_state, s, grads[1])
         verbose > 1 && @info "Epoch $(lpad(epoch, 2)), loss = $loss_value."
     end
@@ -99,6 +97,7 @@ end
 "Fisher divergence on CPU: ∑ᵢ (s(xᵢ) - yᵢ)² / ∑ᵢ |y|²"
 l2_error_normalized(y_hat, y) = sum(abs2, y_hat .- y) / sum(abs2, y)
 
+# TODO: this is not the correct denoising
 "≈ ( |√D s(u)|² + 2∇⋅Ds(u) ) / n"
 function score_matching_loss(s, u, ζ, α, D=1)
     denoise_val = dot(s(u .+ α .* ζ) .- s(u .- α .* ζ), D, ζ) / α
@@ -127,3 +126,18 @@ hidden_layer_dimensions(solver::SBTM) = [length(layer.bias) for layer in solver.
 name(solver::SBTM) = "sbtm"
 
 long_name(solver::SBTM) = "sbtm η=$(solver.optimiser.eta)"
+
+"train model to load it in later"
+function train_nn(problem, d, n, s; verbose=1, init_max_iterations=10^6, dir="data")
+    solver_ = SBTM(s, verbose=verbose, init_max_iterations=init_max_iterations)
+    prob = problem(d, n, solver_)
+    verbose > 0 && @info "Training NN for $(prob.name), d = $d, n = $n."
+    @time train_s!(prob.solver, prob.u0, score(prob.ρ0, prob.u0))
+    save(model_filename(prob.name, d, n; dir=dir), prob.solver.s)
+    nothing
+end
+function train_nns(problems, n; nn_depth, kwargs...)
+    for (problem, d) in problems
+        train_nn(problem, d, n, mlp(d, depth=nn_depth); kwargs...)
+    end
+end

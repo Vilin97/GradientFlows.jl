@@ -10,7 +10,7 @@ LandauParams(d, B::T, C=one(T)) where {T} = LandauParams(d, B, C, t -> 1 - C * e
 "Make an isotropic landau problem with Maxwell kernel with the given dimension, number of particles, and solver."
 function landau_problem(d, n, solver_; dt::F=0.01, rng=DEFAULT_RNG, kwargs...) where {F}
     params = LandauParams(d, F(1 / 24))
-    t0 = round(log((params.d + 2) * params.C / 2) / (2params.B * (params.d - 1))+0.5, RoundUp, digits=1)
+    t0 = round(log((params.d + 2) * params.C / 2) / (2params.B * (params.d - 1)), RoundUp, digits=1)
     ρ(t, params) = PolyNormal(d, params.K(t))
     ρ0 = ρ(t0, params)
     f! = landau_f!(d)
@@ -76,6 +76,7 @@ end
 
 ############ Helper functions ############
 
+# TODO: this should depend on γ
 "D = A∗u"
 function landau_diffusion_coefficient(u, params)
     d, n = size(u)

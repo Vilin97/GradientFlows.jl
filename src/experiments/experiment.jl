@@ -81,17 +81,3 @@ function run_experiments(problems, ns, runs, solvers; rng=StableRNG, verbose=1, 
     save(timer_filename(; dir=dir), timer)
     nothing
 end
-
-function train_nn(problem, d, n, s; verbose=1, init_max_iterations=10^5, dir="data")
-    solver_ = SBTM(s, verbose=verbose, init_max_iterations=init_max_iterations)
-    prob = problem(d, n, solver_)
-    verbose > 0 && @info "Training NN for $(prob.name), d = $d, n = $n."
-    @time train_s!(prob.solver, prob.u0, score(prob.ρ0, prob.u0))
-    save(model_filename(prob.name, d, n; dir=dir), prob.solver.s)
-    nothing
-end
-function train_nns(problems, n; nn_depth, kwargs...)
-    for (problem, d) in problems
-        train_nn(problem, d, n, mlp(d, depth=nn_depth); kwargs...)
-    end
-end
