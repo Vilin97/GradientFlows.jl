@@ -28,7 +28,7 @@ end
 StoppingStrategy(loss_eval_frequency) = StoppingStrategy(1000, 0.005/loss_eval_frequency, loss_eval_frequency)
 StoppingStrategy() = StoppingStrategy(5)
 
-function ASBTM(s::Union{Chain,Nothing}; learning_rate=1e-4, denoising_alpha=0.4, init_batch_size=2^8, init_loss_tolerance=1e-4, init_max_iterations=10^4, allocated_memory=nothing, verbose=0, logger=Logger(1), optimiser_state=nothing, stopping_strategy=StoppingStrategy())
+function ASBTM(s::Union{Chain,Nothing}; learning_rate=4e-4, denoising_alpha=0.4, init_batch_size=2^8, init_loss_tolerance=1e-4, init_max_iterations=10^4, allocated_memory=nothing, verbose=0, logger=Logger(1), optimiser_state=nothing, stopping_strategy=StoppingStrategy())
     return ASBTM(nothing, s, Adam(learning_rate), denoising_alpha, init_batch_size, init_loss_tolerance, init_max_iterations, allocated_memory, verbose, logger, optimiser_state, stopping_strategy)
 end
 ASBTM(; kwargs...) = ASBTM(nothing; kwargs...)
