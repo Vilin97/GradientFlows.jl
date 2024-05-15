@@ -1,6 +1,12 @@
 using Flux, Zygote, LinearAlgebra, Distributions, Random, Plots, JLD2
 using Flux.OneHotArrays: onehot
 
+const PLOT_WINDOW_SIZE = (3000, 1800)
+const PLOT_LINE_WIDTH = 4
+const PLOT_MARGIN = (13, :mm)
+const PLOT_FONT_SIZE = 15
+const PLOT_COLOR_TRUTH = :black
+
 score(ρ::MultivariateDistribution, u::AbstractArray{T,1}) where {T} = gradlogpdf(ρ, u)
 score(ρ::MultivariateDistribution, u::AbstractArray{T,2}) where {T} = reshape(hcat([score(ρ, @view u[:, i]) for i in axes(u, 2)]...), size(u))
 function divergence(f, v::AbstractMatrix)
@@ -77,7 +83,7 @@ function train_s!(s, u, dist; α=0.4, η=1e-4, verbose=1, stopping_strategy)
     return train_losses, test_losses, true_train_loss
 end
 # fpe
-function get_losses(d, n, Δt, t_end, stopping_strategy=StoppingStrategy())
+function get_losses(d, n, Δt, t_end; kwargs...)
     # Random.seed!(123)
     ρ(t) = MvNormal((1 - exp(-2t)) * I(d)) # true distribution
     t = 0.1
@@ -90,7 +96,7 @@ function get_losses(d, n, Δt, t_end, stopping_strategy=StoppingStrategy())
     # move particles
     while t < t_end
         # @show l2_error_normalized(s(u), score(ρ(t), u))
-        train_loss, test_loss, true_train_loss = train_s!(s, u, ρ(t); stopping_strategy=stopping_strategy)
+        train_loss, test_loss, true_train_loss = train_s!(s, u, ρ(t); kwargs...)
         # @show l2_error_normalized(s(u), score(ρ(t), u))
         push!(train_losses, train_loss)
         push!(test_losses, test_loss)
@@ -101,7 +107,7 @@ function get_losses(d, n, Δt, t_end, stopping_strategy=StoppingStrategy())
     return train_losses, test_losses, true_train_losses
 end
 
-function get_plots(train_losses, test_losses, true_train_losses; d, n, Δt)
+function get_plots(train_losses, test_losses, true_train_losses; title)
     # train_losses = exp_average.(train_losses, r)
     train_losses = vcat(train_losses...)
     test_losses = vcat(test_losses...)
@@ -109,15 +115,28 @@ function get_plots(train_losses, test_losses, true_train_losses; d, n, Δt)
     train_loss_ups = [i for i in 1:length(true_train_losses)-1 if true_train_losses[i+1] > true_train_losses[i]]
     total_epochs = sum(x -> length(x), losses[1])
 
-    plt = plot(train_losses, label="train loss", xlabel="epoch", ylabel="loss", title="Score-match loss, d=$d, n=$n, Δt=$Δt, max_epochs=400, freq=5", size=(1200,800));
-    scatter!(plt, train_loss_ups, [true_train_losses[i] for i in train_loss_ups], label="train loss up, #=$(length(train_loss_ups))", color=:red, markersize=1);
-    plot!(plt, true_train_losses, label="true train loss")
-    plot!(plt, test_losses ./ Δt, label="test loss / $Δt")
+    plt = plot(xlabel="epoch", ylabel="loss", title=title, margin=PLOT_MARGIN, lw=PLOT_LINE_WIDTH, legendfontsize=PLOT_FONT_SIZE, size=(1200,800))
+    plot!(plt, train_losses, label="train loss");
+    # scatter!(plt, train_loss_ups, [true_train_losses[i] for i in train_loss_ups], label="train loss up, #=$(length(train_loss_ups))", color=:red, markersize=1);
+    plot!(plt, true_train_losses, label="true train loss", lw=PLOT_LINE_WIDTH)
+    plot!(plt, test_losses ./ Δt, label="test loss / $Δt", lw=PLOT_LINE_WIDTH, color=PLOT_COLOR_TRUTH)
     return plt
 end
 
 d=2; n=2000; Δt=0.01; t_end=0.5
-@time losses = get_losses(d, n, Δt, t_end)
 
-plt=get_plots(losses...;d=d,n=n,Δt=Δt)
-savefig(plt, "data/plots/score_plots/fpe_score_matching_loss_stoppping_stretegy_d_$(d)_n$(n).png")
+@time losses0 = get_losses(d, n, Δt, t_end; η=4e-4, stopping_strategy=StoppingStrategy())
+plt0=get_plots(losses0...; title="Score-match loss on FPE, d=$d n=$n Δt=$Δt η=4⋅10⁻⁴, adaptive")
+savefig(plt0, "data/plots/score_plots/fpe_score_matching_loss_adaptive_high_lr_d_$(d)_n_$(n).png")
+
+@time losses1 = get_losses(d, n, Δt, t_end; stopping_strategy=StoppingStrategy())
+plt1=get_plots(losses1...; title="Score-match loss on FPE, d=$d n=$n Δt=$Δt η=10⁻⁴, adaptive")
+savefig(plt1, "data/plots/score_plots/fpe_score_matching_loss_adaptive_d_$(d)_n_$(n).png")
+
+@time losses2 = get_losses(d, n, Δt, t_end; stopping_strategy=StoppingStrategy(25,25,-1,10000))
+plt2=get_plots(losses2...; title="Score-match loss on FPE, d=$d n=$n Δt=$Δt η=10⁻⁴, non-adaptive")
+savefig(plt2, "data/plots/score_plots/fpe_score_matching_loss_non_adaptive_d_$(d)_n_$(n).png")
+
+@time losses3 = get_losses(d, n, Δt, t_end; η=4e-4, stopping_strategy=StoppingStrategy(25,25,-1,10000))
+plt3=get_plots(losses3...; title="Score-match loss on FPE, d=$d n=$n Δt=$Δt η=4⋅10⁻⁴, non-adaptive")
+savefig(plt3, "data/plots/score_plots/fpe_score_matching_loss_non_adaptive_high_lr_d_$(d)_n_$(n).png")
