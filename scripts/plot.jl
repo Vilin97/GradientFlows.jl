@@ -1,4 +1,4 @@
-using GradientFlows, Plots, Polynomials, LinearAlgebra
+using GradientFlows, Plots, Polynomials, LinearAlgebra, LaTeXStrings
 ENV["GKSwstype"] = "nul" # no GUI
 default(display_type=:inline)
 
@@ -14,7 +14,7 @@ function plot_metric_over_n(ns, trajectory_names, plot_title, metric_math_name, 
     p = Plots.plot(title=plot_title, xlabel="number of patricles, n", ylabel=metric_math_name, margin=PLOT_MARGIN)
     for (j, trajectory_name) in enumerate(trajectory_names)
         slope = round(log_slope(ns, metric_matrix[:, j]), digits=2)
-        Plots.plot!(p, ns, metric_matrix[:, j], label="$trajectory_name, log-slope=$slope", marker=:circle, yscale=scale, xscale=:log10, markerstrokewidth=0.4, lw=PLOT_LINE_WIDTH)
+        Plots.plot!(p, ns, metric_matrix[:, j], label="$trajectory_name, log-slope=$slope", marker=:circle, yscale=scale, xscale=:log10, markerstrokewidth=0.4, lw=PLOT_LINE_WIDTH, size=PLOT_SMALL_WINDOW_SIZE)
     end
     return p
 end
@@ -35,7 +35,7 @@ function marginal_pdf_plot(problem_name, d, n, solver_names; t_idx, xrange=range
     saveat = experiment.saveat
     t_idx = t_idx < 1 ? length(saveat) + t_idx : t_idx
     dist = experiment.true_dist[t_idx]
-    p_marginal = Plots.plot(xlabel="x", ylabel="Σᵢϕ(x - Xᵢ[1])/n", title="marginal density n=$n t=$(saveat[t_idx])", margin=PLOT_MARGIN)
+    p_marginal = Plots.plot(xlabel="x", ylabel="Σᵢϕ(x - Xᵢ[1])/n", title="marginal density n=$n t=$(saveat[t_idx])", margin=PLOT_MARGIN,  size=PLOT_SMALL_WINDOW_SIZE)
     for solver in solver_names
         experiments = load_all_experiment_runs(problem_name, d, n, solver; dir=dir)
         u = hcat([exp.solution[t_idx] for exp in experiments]...)
@@ -52,7 +52,7 @@ function slice_pdf_plot(problem_name, d, n, solver_names; t_idx, xrange=range(-5
     saveat = experiment.saveat
     t_idx = t_idx < 1 ? length(saveat) + t_idx : t_idx
     dist = experiment.true_dist[t_idx]
-    p_slice = Plots.plot(xlabel="x", ylabel="Σᵢϕ([x,0...] - Xᵢ)/n", title="slice density n=$n t=$(saveat[t_idx])", margin=PLOT_MARGIN)
+    p_slice = Plots.plot(xlabel="x", ylabel="Σᵢϕ([x,0...] - Xᵢ)/n", title="slice density n=$n t=$(saveat[t_idx])", margin=PLOT_MARGIN,  size=PLOT_SMALL_WINDOW_SIZE)
     for solver in solver_names
         experiments = load_all_experiment_runs(problem_name, d, n, solver; dir=dir)
         u = hcat([exp.solution[t_idx] for exp in experiments]...)
@@ -84,7 +84,7 @@ function plot_metric_over_t(problem_name, d, ns, solver_names, metric, metric_na
         experiments = load_all_experiment_runs(problem_name, d, n, solver_name; kwargs...)
         saveat = round.(experiments[1].saveat, digits=3)
         metric_values = mean([metric(exp, step) for exp in experiments])
-        plot!(p, saveat[1:step:end], metric_values, label="$solver_name, n=$n", lw=PLOT_LINE_WIDTH-1)
+        plot!(p, saveat[1:step:end], metric_values, label="$solver_name, n=$n", lw=PLOT_LINE_WIDTH, size=PLOT_SMALL_WINDOW_SIZE)
     end
     return p
 end
@@ -111,13 +111,24 @@ function plot_entropy_production_rate(problem_name, d, ns, solver_names; kwargs.
     metric_name = "entropy_production_rate"
     metric_math_name = "d/dt ∫ρ(x)logρ(x)dx ≈ ∑ᵢ v[s](xᵢ)⋅s(xᵢ) / n"
     entropy_production_rate(experiment, step) = [dot(experiment.velocity_values[i], experiment.score_values[i]) / size(experiment.solution[i], 2) for i in 1:step:length(experiment.score_values)]
+    # TODO: plot entropy instead of rate
+    # metric_name = "estimated entropy"
+    # metric_math_name = "Δt ∑ₜ ∑ᵢ vₜ[s](xᵢ)⋅sₜ(xᵢ) / n"
+    # entropy_production_rate(experiment, step) = experiment.dt .* cumsum([dot(experiment.velocity_values[i], experiment.score_values[i]) / size(experiment.solution[i], 2) for i in 1:step:length(experiment.score_values)])
     return plot_metric_over_t(problem_name, d, ns, solver_names, entropy_production_rate, metric_name, metric_math_name; kwargs...)
+    
 end
 
-function plot_w2(problem_name, d, ns, solver_names; kwargs...)
-    ε=0.2
-    get_w2(experiment, step) = [w2(u, dist; ε=ε) for (u, dist) in zip(experiment.solution[1:step:end], experiment.true_dist[1:step:end])]
-    plot_metric_over_t(problem_name, d, ns, solver_names, get_w2, "wasserstein_2_distance", "W₂(ρᴺ, ρ*), ε=$ε"; step=50, kwargs...)
+function plot_w2(problem_name, d, ns, solver_names; step=10, ε=0.2, kwargs...)
+    p = Plots.plot(title="Wasserstein dist n=$(ns[1]), $(ns[end])", xlabel="simulated time", ylabel=L"W_2(\rho^{%$(ns[1])}, \rho^{%$(ns[end])})", margin=PLOT_MARGIN)
+    for solver_name in solver_names
+        experiments_1 = load_all_experiment_runs(problem_name, d, ns[1], solver_name; kwargs...)
+        experiments_2 = load_all_experiment_runs(problem_name, d, ns[end], solver_name; kwargs...)
+        saveat = round.(experiments_1[1].saveat, digits=3)
+        metric_values = mean([[w2(u1, u2; ε=ε) for (u1,u2) in zip(exp1.solution[1:step:end], exp2.solution[1:step:end])] for (exp1, exp2) in zip(experiments_1, experiments_2)])
+        plot!(p, saveat[1:step:end], metric_values, label="$solver_name", lw=PLOT_LINE_WIDTH-1,size=PLOT_SMALL_WINDOW_SIZE)
+    end
+    return p
 end
 
 function plot_L2(problem_name, d, ns, solver_names; kwargs...)
@@ -128,7 +139,9 @@ end
 function plot_all(problem_name, d, ns, solver_names; save=true, save_dir="data", dir="data",
     metrics=[
         :L2_error,
-        :true_cov_norm_error], kwargs...)
+        :true_cov_norm_error,
+        :sample_cov_trace_error,
+        :sample_mean_error], kwargs...)
     @info "Plotting $problem_name, d=$d"
     any_experiment = load(experiment_filename(problem_name, d, ns[1], solver_names[1], 1; dir=dir))
     dt = any_experiment.dt
@@ -145,15 +158,15 @@ function plot_all(problem_name, d, ns, solver_names; save=true, save_dir="data",
         p_slice_start_low_n = slice_pdf_plot(problem_name, d, ns[1], solver_names, t_idx=1; dir=dir)
         p_slice_end_low_n = slice_pdf_plot(problem_name, d, ns[1], solver_names, t_idx=0; dir=dir)
         # scores
-        p_score_error = plot_score_error(problem_name, d, ns_low_high, solver_names; dir=dir)
-        @time p_w2 = plot_w2(problem_name, d, ns_low_high, solver_names; dir=dir)
-        push!(plots, p_slice_start, p_slice_end, p_slice_start_low_n, p_slice_end_low_n, p_score_error, p_w2)
-        push!(plot_names, "slice_start", "slice_end", "slice_start_low_n", "slice_end_low_n", "score_error", "wasserstein_2_distance")
-        if d < 5
-            @time p_L2 = plot_L2(problem_name, d, ns_low_high, solver_names; dir=dir)
-            push!(plots, p_L2)
-            push!(plot_names, "L2_distance")
-        end
+        p_score_error = plot_score_error(problem_name, d, ns[end], solver_names; dir=dir)
+        # @time p_w2 = plot_w2(problem_name, d, ns_low_high, solver_names; dir=dir)
+        push!(plots, p_slice_start, p_slice_end, p_slice_start_low_n, p_slice_end_low_n, p_score_error)#, p_w2)
+        push!(plot_names, "slice_start", "slice_end", "slice_start_low_n", "slice_end_low_n", "score_error")#, "wasserstein_2_distance")
+        # if d < 5
+        #     @time p_L2 = plot_L2(problem_name, d, ns_low_high, solver_names; dir=dir)
+        #     push!(plots, p_L2)
+        #     push!(plot_names, "L2_distance")
+        # end
         if d > 3 # plot marginal pdfs only for d > 3
             p_marginal_start = marginal_pdf_plot(problem_name, d, ns[end], solver_names; t_idx=1, dir=dir)
             p_marginal_end = marginal_pdf_plot(problem_name, d, ns[end], solver_names; t_idx=0, dir=dir)

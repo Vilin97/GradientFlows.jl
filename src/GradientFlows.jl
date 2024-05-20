@@ -27,6 +27,7 @@ const SOLVER_NAME_WIDTH = 5
 const PROBLEM_NAME_WIDTH = 25
 const n_WIDTH = 6
 const PLOT_WINDOW_SIZE = (3000, 1800)
+const PLOT_SMALL_WINDOW_SIZE = (600, 400)
 const PLOT_LINE_WIDTH = 4
 const PLOT_MARGIN = (13, :mm)
 const PLOT_FONT_SIZE = 15
@@ -79,7 +80,7 @@ export solve
 export Experiment, GradFlowExperimentResult
 export run_experiments, save_results, train_nn, train_nns
 export save, load, model_filename, experiment_filename, experiment_result_filename, load_metric, load_all_experiment_runs, num_runs, timer_filename, best_model
-export DEFAULT_TIMER, PLOT_WINDOW_SIZE, PLOT_LINE_WIDTH, PLOT_MARGIN, PLOT_FONT_SIZE, PLOT_COLOR_TRUTH
+export DEFAULT_TIMER, PLOT_WINDOW_SIZE, PLOT_SMALL_WINDOW_SIZE, PLOT_LINE_WIDTH, PLOT_MARGIN, PLOT_FONT_SIZE, PLOT_COLOR_TRUTH
 export ALL_SOLVERS
 
 export true_dist, have_true_dist, true_score, pdf, marginal_pdf
