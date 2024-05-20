@@ -136,7 +136,7 @@ function plot_L2(problem_name, d, ns, solver_names; kwargs...)
     plot_metric_over_t(problem_name, d, ns, solver_names, get_L2, "L2_distance", "L²(ρᴺ, ρ*)"; step=20, kwargs...)
 end
 
-function plot_all(problem_name, d, ns, solver_names; save=true, save_dir="data", dir="data",
+function plot_all(problem_name, d, ns, solver_names; save=true, save_dir=joinpath("data","plots"), dir="data",
     metrics=[
         :L2_error,
         :true_cov_norm_error,
