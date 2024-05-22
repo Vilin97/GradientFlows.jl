@@ -2,7 +2,7 @@ using GradientFlows
 
 problems = []
 ds = [2,3]
-# for IC in ["normal"], γ in [0, -3], d in ds
+# for IC in ["normal"], γ in [0], d in ds
 #     push!(problems, (landau_problem_factory(d; IC=IC, γ=γ), d))
 # end
 for d in ds
@@ -14,7 +14,7 @@ ns = 100 * 2 .^ (0:7)
 solvers = [SBTM(), Blob()]
 
 ### train nn ###
-@log @trySendTelegramMessage train_nns([(landau_problem, d) for d in ds], 80000; nn_depth=2, verbose=1)
+# @log @trySendTelegramMessage train_nns(problems, 80000; nn_depth=2, verbose=1)
 
 ### generate data ###
 @log @trySendTelegramMessage run_experiments(problems, ns, runs, solvers)

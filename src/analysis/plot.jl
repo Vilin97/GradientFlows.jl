@@ -30,34 +30,36 @@ function scatter_plot(problem_name, d, n, solver_names; num_samples=min(2000, n)
 end
 
 "experiment.saveat[t_idx] is the time at which to plot the pdf"
-function marginal_pdf_plot(problem_name, d, n, solver_names; t_idx, xrange=range(-5, 5, length=200), dir="data")
+function marginal_pdf_plot(problem_name, d, n, solver_names; t_idx, xrange=range(-5, 5, length=200), dir="data", bandwidth=kde_bandwidth, marginal_coordinate=1)
     experiment = load(experiment_filename(problem_name, d, n, solver_names[1], 1; dir=dir))
     saveat = experiment.saveat
     t_idx = t_idx < 1 ? length(saveat) + t_idx : t_idx
     dist = experiment.true_dist[t_idx]
-    p_marginal = Plots.plot(xlabel="x", ylabel="Σᵢϕ(x - Xᵢ[1])/n", title="marginal density n=$n t=$(saveat[t_idx])", margin=PLOT_MARGIN,  size=PLOT_SMALL_WINDOW_SIZE)
+    p_marginal = Plots.plot(xlabel="x", ylabel="Σᵢϕ(x - Xᵢ[1])/n", title="marginal density n=$n t=$(saveat[t_idx]) coordinate=$marginal_coordinate", margin=PLOT_MARGIN,  size=PLOT_SMALL_WINDOW_SIZE)
     for solver in solver_names
         experiments = load_all_experiment_runs(problem_name, d, n, solver; dir=dir)
-        u = hcat([exp.solution[t_idx] for exp in experiments]...)
-        u_marginal = reshape(u[1, :], 1, :)
-        plot!(p_marginal, xrange, x -> kde([x], u_marginal), label="$solver h=$(round.(kde_bandwidth(u_marginal)[1],digits=3))", lw=PLOT_LINE_WIDTH)
+        us = [reshape(exp.solution[t_idx][marginal_coordinate,:], 1, :) for exp in experiments]
+        bandwidths = [bandwidth(u) for u in us]
+        pdf_val(x) = mean([kde([x], u; h=bandwidth(u)) for u in us]) 
+        plot!(p_marginal, xrange, pdf_val, label="$solver h=$(round.(mean(bandwidths)[1], digits=3))", lw=PLOT_LINE_WIDTH)
     end
     plot!(p_marginal, xrange, x -> marginal_pdf(dist, x), label="true", lw=PLOT_LINE_WIDTH, linestyle=:dash, color=PLOT_COLOR_TRUTH)
     return p_marginal
 end
 
-function slice_pdf_plot(problem_name, d, n, solver_names; t_idx, xrange=range(-5, 5, length=200), dir="data", bandwidth=kde_bandwidth)
-    slice(x::Number) = [x, zeros(typeof(x), d - 1)...]
+function slice_pdf_plot(problem_name, d, n, solver_names; t_idx, xrange=range(-5, 5, length=200), dir="data", bandwidth=kde_bandwidth, slice_coordinate=1)
+    slice(x::Number) = [zeros(typeof(x), slice_coordinate-1)..., x, zeros(typeof(x), d - slice_coordinate)...]
     experiment = load(experiment_filename(problem_name, d, n, solver_names[1], 1; dir=dir))
     saveat = experiment.saveat
     t_idx = t_idx < 1 ? length(saveat) + t_idx : t_idx
     dist = experiment.true_dist[t_idx]
-    p_slice = Plots.plot(xlabel="x", ylabel="Σᵢϕ([x,0...] - Xᵢ)/n", title="slice density n=$n t=$(saveat[t_idx])", margin=PLOT_MARGIN,  size=PLOT_SMALL_WINDOW_SIZE)
+    p_slice = Plots.plot(xlabel="x", ylabel="Σᵢϕ([0..., x, 0...] - Xᵢ)/n", title="slice density n=$n t=$(saveat[t_idx]) coordinate=$slice_coordinate", margin=PLOT_MARGIN,  size=PLOT_SMALL_WINDOW_SIZE)
     for solver in solver_names
         experiments = load_all_experiment_runs(problem_name, d, n, solver; dir=dir)
-        u = hcat([exp.solution[t_idx] for exp in experiments]...)
-        h = bandwidth(u)
-        plot!(p_slice, xrange, x -> kde(slice(x), u; h=h), label="$solver h=$(round.(eigmax(h), digits=3))", lw=PLOT_LINE_WIDTH)
+        us = [exp.solution[t_idx] for exp in experiments]
+        bandwidths = [bandwidth(u) for u in us]
+        pdf_val(x) = mean([kde(slice(x), u; h=bandwidth(u)) for u in us]) 
+        plot!(p_slice, xrange, pdf_val, label="$solver h=$(round.(eigmax(mean(bandwidths)), digits=3))", lw=PLOT_LINE_WIDTH)
     end
     plot!(p_slice, xrange, x -> pdf(dist, slice(x)), label="true", lw=PLOT_LINE_WIDTH, linestyle=:dash, color=PLOT_COLOR_TRUTH)
     return p_slice
