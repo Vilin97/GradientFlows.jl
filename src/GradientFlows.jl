@@ -15,6 +15,7 @@ using OptimalTransport: sinkhorn2
 using Distances: sqeuclidean, pairwise
 using Zygote: pullback 
 using Flux.OneHotArrays: onehot
+using Plots, Polynomials, LinearAlgebra, LaTeXStrings, Logging, Dates, LoggingExtras, Telegram, Telegram.API, ConfigEnv
 
 import Distributions: mean, cov, gradlogpdf, logpdf, pdf, rand
 import OrdinaryDiffEq.solve
@@ -39,13 +40,13 @@ include("distributions/score.jl")
 include("distributions/normal.jl")
 include("distributions/mixture.jl")
 
-include("linalg.jl")
 
 include("problems/problem.jl")
 include("problems/diffusion.jl")
 include("problems/landau.jl")
 include("problems/fpe.jl")
 
+include("linalg.jl")
 include("solve.jl")
 
 include("solvers/solver.jl")
@@ -59,10 +60,13 @@ include("analysis/empirical_moments.jl")
 include("analysis/kde.jl")
 include("analysis/Lp.jl")
 include("analysis/wasserstein_distance.jl")
+include("analysis/plot.jl")
 
 include("experiments/experiment.jl")
 include("experiments/experiment_result.jl")
-include("experiments/io.jl")
+include("io/save_load.jl")
+include("io/logging.jl")
+include("io/telegram_alerts.jl")
 
 const ALL_SOLVERS = [Exact(), SBTM(), ASBTM(), Blob()]
 

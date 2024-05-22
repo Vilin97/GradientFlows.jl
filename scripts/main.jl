@@ -1,7 +1,4 @@
 using GradientFlows
-include("plot.jl")
-include("telegram_alerts.jl")
-include("logging.jl")
 
 problems = []
 ds = [3]
