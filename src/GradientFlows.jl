@@ -91,5 +91,7 @@ export emp_mean, emp_cov, mean, cov
 export kde, kde_bandwidth
 export Lp_distance, Lp_error, w2
 export score
+export plot_metric_over_n, scatter_plot, marginal_pdf_plot, slice_pdf_plot, plot_score_error, plot_covariance_trajectory, plot_entropy_production_rate, plot_w2, plot_L2, plot_all
+export @log, @trySendTelegramMessage
 
 end
