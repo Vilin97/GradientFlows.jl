@@ -10,7 +10,7 @@ end
 "Compute Lp error of a particle solution."
 function Lp_error(u::AbstractMatrix, true_pdf::Function; xlim=nothing, kwargs...)
     d = size(u, 1)
-    empirical_pdf(x) = kde(x, u; kwargs...)
+    empirical_pdf(x) = kde(x, u)
     xlim_ = isnothing(xlim) ? maximum(abs.(u)) : eltype(u)(xlim)
     return Lp_distance(empirical_pdf, true_pdf; d=d, xlim=xlim_, kwargs...)
 end

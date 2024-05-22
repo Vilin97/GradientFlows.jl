@@ -46,7 +46,7 @@ function marginal_pdf_plot(problem_name, d, n, solver_names; t_idx, xrange=range
     return p_marginal
 end
 
-function slice_pdf_plot(problem_name, d, n, solver_names; t_idx, xrange=range(-5, 5, length=200), dir="data")
+function slice_pdf_plot(problem_name, d, n, solver_names; t_idx, xrange=range(-5, 5, length=200), dir="data", bandwidth=kde_bandwidth)
     slice(x::Number) = [x, zeros(typeof(x), d - 1)...]
     experiment = load(experiment_filename(problem_name, d, n, solver_names[1], 1; dir=dir))
     saveat = experiment.saveat
@@ -56,7 +56,8 @@ function slice_pdf_plot(problem_name, d, n, solver_names; t_idx, xrange=range(-5
     for solver in solver_names
         experiments = load_all_experiment_runs(problem_name, d, n, solver; dir=dir)
         u = hcat([exp.solution[t_idx] for exp in experiments]...)
-        plot!(p_slice, xrange, x -> kde(slice(x), u), label="$solver h=$(round.((det(kde_bandwidth(u))^(1/d)), digits=3))", lw=PLOT_LINE_WIDTH)
+        h = bandwidth(u)
+        plot!(p_slice, xrange, x -> kde(slice(x), u; h=h), label="$solver h=$(round.(eigmax(h), digits=3))", lw=PLOT_LINE_WIDTH)
     end
     plot!(p_slice, xrange, x -> pdf(dist, slice(x)), label="true", lw=PLOT_LINE_WIDTH, linestyle=:dash, color=PLOT_COLOR_TRUTH)
     return p_slice
@@ -111,10 +112,6 @@ function plot_entropy_production_rate(problem_name, d, ns, solver_names; kwargs.
     metric_name = "entropy_production_rate"
     metric_math_name = "d/dt ∫ρ(x)logρ(x)dx ≈ ∑ᵢ v[s](xᵢ)⋅s(xᵢ) / n"
     entropy_production_rate(experiment, step) = [dot(experiment.velocity_values[i], experiment.score_values[i]) / size(experiment.solution[i], 2) for i in 1:step:length(experiment.score_values)]
-    # TODO: plot entropy instead of rate
-    # metric_name = "estimated entropy"
-    # metric_math_name = "Δt ∑ₜ ∑ᵢ vₜ[s](xᵢ)⋅sₜ(xᵢ) / n"
-    # entropy_production_rate(experiment, step) = experiment.dt .* cumsum([dot(experiment.velocity_values[i], experiment.score_values[i]) / size(experiment.solution[i], 2) for i in 1:step:length(experiment.score_values)])
     return plot_metric_over_t(problem_name, d, ns, solver_names, entropy_production_rate, metric_name, metric_math_name; kwargs...)
     
 end

@@ -97,7 +97,7 @@ end
 "Fisher divergence on CPU: ∑ᵢ (s(xᵢ) - yᵢ)² / ∑ᵢ |y|²"
 l2_error_normalized(y_hat, y) = sum(abs2, y_hat .- y) / sum(abs2, y)
 
-# TODO: this is not the correct denoising
+# TODO: this is not the correct denoising if D depends on space
 "≈ ( |√D s(u)|² + 2∇⋅Ds(u) ) / n"
 function score_matching_loss(s, u, ζ, α, D=1)
     denoise_val = dot(s(u .+ α .* ζ) .- s(u .- α .* ζ), D, ζ) / α
