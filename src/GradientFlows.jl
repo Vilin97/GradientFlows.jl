@@ -38,7 +38,6 @@ include("distributions/poly_normal.jl")
 include("distributions/score.jl")
 include("distributions/normal.jl")
 include("distributions/mixture.jl")
-include("distributions/rosenbluth.jl")
 
 include("linalg.jl")
 
