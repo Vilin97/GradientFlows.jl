@@ -5,7 +5,7 @@ function kde_bandwidth(u)
     Σ .* n^(-2 / (d + 4))
 end
 
-kde(x, u; h) = kde(x, u, h)
+kde(x, u; h=kde_bandwidth(u)) = kde(x, u, h)
 kde(x, u, h::Number) = kde(x, u, h*I(size(u,1)))
 function kde(x, u, h::AbstractMatrix)
     res = zero(eltype(u))
