@@ -35,7 +35,7 @@ mean_conserved(experiment::Experiment) = !have_true_dist(experiment) || (mean(ex
 cov_trace_conserved(experiment::Experiment) = !have_true_dist(experiment) || (tr(cov(experiment.true_dist[end])) ≈ tr(cov(experiment.true_dist[1])))
 
 """
-run_experiments(problems, ns, num_runs; verbose=true, dt=0.01, dir="data")
+function run_experiments(problems, ns, runs, solvers; rng=StableRNG, verbose=1, model_dir="data", dir="data", kwargs...)
 
 Run experiments for all the problems and save the results.
     problems = [(problem, d), ...], where problem(d, n, solver; kwargs...)
@@ -43,7 +43,7 @@ Run experiments for all the problems and save the results.
     runs = run ids, e.g. 1:5 means five runs
     solvers = [Blob(), ...]
 """
-function run_experiments(problems, ns, runs, solvers; rng=StableRNG, verbose=1, dir="data", kwargs...)
+function run_experiments(problems, ns, runs, solvers; rng=StableRNG, verbose=1, model_dir="data", dir="data", kwargs...)
 
     verbose > 0 && (@info "Generating data")
     timer = TimerOutput()
@@ -54,7 +54,7 @@ function run_experiments(problems, ns, runs, solvers; rng=StableRNG, verbose=1, 
                 prob_ = problem(d, n, Exact(); rng=rng(100 * d + run))
                 problem_name = prob_.name
                 @timeit timer "$problem_name" for solver in solvers
-                    prob = problem(d, n, solver; dir=dir, kwargs...)
+                    prob = problem(d, n, solver; dir=model_dir, kwargs...)
                     set_u0!(prob, prob_.u0)
                     if verbose > 0 && run == runs[end]
                         @info "n=$(rpad(n,5)) $(rpad(problem_name, PROBLEM_NAME_WIDTH)) d=$(rpad(d,2)) run=$run solver=$solver"

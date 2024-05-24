@@ -14,7 +14,7 @@ function landau_problem(d, n, solver_; dt::F=0.01, rng=DEFAULT_RNG, kwargs...) w
     ρ(t, params) = PolyNormal(d, params.K(t))
     ρ0 = ρ(t0, params)
     f! = landau_f!(d)
-    tspan = (t0, t0 + 4)
+    tspan = (t0, t0 + 10)
     u0 = rand(rng, ρ0, n)
     name = "landau"
     solver = initialize(solver_, u0, score(ρ0, u0), name; kwargs...)

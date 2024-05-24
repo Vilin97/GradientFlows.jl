@@ -135,6 +135,10 @@ function plot_L2(problem_name, d, ns, solver_names; kwargs...)
     plot_metric_over_t(problem_name, d, ns, solver_names, get_L2, "L2_distance", "L²(ρᴺ, ρ*)"; step=20, kwargs...)
 end
 
+"""
+    plot_all(problem_name, d, ns, solver_names; save=true, save_dir=joinpath("data","plots"), dir="data",
+    metrics=..., kwargs...)
+"""
 function plot_all(problem_name, d, ns, solver_names; save=true, save_dir=joinpath("data","plots"), dir="data",
     metrics=[
         :L2_error,
@@ -157,7 +161,7 @@ function plot_all(problem_name, d, ns, solver_names; save=true, save_dir=joinpat
         p_slice_start_low_n = slice_pdf_plot(problem_name, d, ns[1], solver_names, t_idx=1; dir=dir)
         p_slice_end_low_n = slice_pdf_plot(problem_name, d, ns[1], solver_names, t_idx=0; dir=dir)
         # scores
-        p_score_error = plot_score_error(problem_name, d, ns[end], solver_names; dir=dir)
+        p_score_error = plot_score_error(problem_name, d, ns_low_high, solver_names; dir=dir)
         # @time p_w2 = plot_w2(problem_name, d, ns_low_high, solver_names; dir=dir)
         push!(plots, p_slice_start, p_slice_end, p_slice_start_low_n, p_slice_end_low_n, p_score_error)#, p_w2)
         push!(plot_names, "slice_start", "slice_end", "slice_start_low_n", "slice_end_low_n", "score_error")#, "wasserstein_2_distance")
@@ -196,15 +200,15 @@ function plot_all(problem_name, d, ns, solver_names; save=true, save_dir=joinpat
     
     ### save ###
     if save
-        mkpath(joinpath(save_dir, "plots", "all"))
-        path = joinpath(save_dir, "plots", problem_name, "d_$d")
+        mkpath(joinpath(save_dir, "all"))
+        path = joinpath(save_dir, problem_name, "d_$d")
         mkpath(path)
         saveplot(plt, plot_name) = savefig(plt, joinpath(path, plot_name))
         
         for (plt, name) in zip(plots, plot_names)
             saveplot(plt, name)
         end
-        savefig(plt_all, joinpath(save_dir, "plots", "all", "$(problem_name)_d_$d"))
+        savefig(plt_all, joinpath(save_dir, "all", "$(problem_name)_d_$d"))
         # saveplot(scatter_plot(problem_name, d, ns[end], solver_names; dir=dir), "scatter")
         # save_pdfs_over_n(problem_name, d, ns, solver_names; dir=dir)
     end

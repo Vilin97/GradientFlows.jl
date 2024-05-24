@@ -16,6 +16,7 @@ using Distances: sqeuclidean, pairwise
 using Zygote: pullback 
 using Flux.OneHotArrays: onehot
 using Plots, Polynomials, LinearAlgebra, LaTeXStrings, Logging, Dates, LoggingExtras, Telegram, Telegram.API, ConfigEnv
+using Plots: plot, savefig, scatter
 
 import Distributions: mean, cov, gradlogpdf, logpdf, pdf, rand
 import OrdinaryDiffEq.solve
