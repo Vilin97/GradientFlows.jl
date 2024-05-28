@@ -13,7 +13,7 @@ for ((problem, d), model) in zip(problems, models)
 end
 
 # generate data
-run_experiments(problems, ns, num_runs, solvers; verbose=1, dir=dir)
+run_experiments(problems, ns, num_runs, solvers; verbose=1, dir=dir, model_dir=dir)
 
 # test that errors are small
 metrics = [:L2_error, :true_mean_error, :true_cov_trace_error, :true_cov_norm_error]
