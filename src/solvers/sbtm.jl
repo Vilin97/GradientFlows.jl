@@ -109,9 +109,15 @@ function mlp(d::Int; depth, width=100, activation=softsign, rng=DEFAULT_RNG)
     if depth == 0
         return Chain(Dense(d => d, init=Flux.glorot_normal(rng))) |> f64
     end
+    if depth == 1
+        return Chain(
+            Dense(d => width, activation, init=Flux.glorot_normal(rng)),
+            Dense(width => d, init=Flux.glorot_normal(rng))
+        ) |> f64
+    end
     return Chain(
         Dense(d => width, activation, init=Flux.glorot_normal(rng)),
-        repeat([Dense(width => width, activation, init=Flux.glorot_normal(rng))], depth - 1)...,
+        [Dense(width => width, activation, init=Flux.glorot_normal(rng)) for _ in 1:depth-1]...,
         Dense(width => d, init=Flux.glorot_normal(rng))
     ) |> f64
 end
