@@ -38,7 +38,7 @@ function make_checkerboard(n::Int, noise::Float64, rows::Int, columns::Int)
     return samples
 end
 
-# Example usage:
+# draw samples from a checkerboard pattern:
 n = 2000
 noise = 0.0
 rows = 3
@@ -97,7 +97,7 @@ end
 layer_dimensions(s) = [2,[length(layer.bias) for layer in s.layers[1:end-1]]...,2]
 plt1=plot(plots[[1,2,4,8]]..., size = (2000, 2000), plot_title="Score approximation with NN $(layer_dimensions(s))")
 plots[end]
-GradientFlows.save("data/models/checkerboard_3/d_2/n_2000.jld2", s)
+# GradientFlows.save("data/models/checkerboard_3/d_2/n_2000.jld2", s)
 
 
 "s ≈ ∇log p, where p is the target density"
