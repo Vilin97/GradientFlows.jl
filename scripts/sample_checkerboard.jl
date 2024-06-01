@@ -8,12 +8,12 @@
 using Random
 using Distributions
 
-function make_checkerboard(n::Int, noise::Float64, rows::Int, columns::Int)
+function make_gaussian_checkerboard(n::Int, rows::Int, columns::Int, noise)
     samples = zeros(2, n)
     cell_width = 1.0 / columns
     cell_height = 1.0 / rows
 
-    count = 0
+    count = 1
     while count < n
         # Choose a random cell
         cell_x = rand(1:columns)
@@ -21,62 +21,57 @@ function make_checkerboard(n::Int, noise::Float64, rows::Int, columns::Int)
 
         # Check if the cell is white in the checkerboard pattern
         if (cell_x + cell_y) % 2 == 0
-            # Choose a random point within the cell
-            point_x = (cell_x - 1) * cell_width + rand() * cell_width
-            point_y = (cell_y - 1) * cell_height + rand() * cell_height
-
-            # Add Gaussian noise
-            noise_x = rand(Normal(0, noise))
-            noise_y = rand(Normal(0, noise))
-
-            samples[1, count + 1] = point_x + noise_x
-            samples[2, count + 1] = point_y + noise_y
+            # sample from a gaussian centered at the center of the cell
+            μ = [(cell_x - 0.5) * cell_width, (cell_y - 0.5) * cell_height]
+            Σ = diagm([noise * cell_width, noise * cell_height])
+            samples[:, count] = rand(MvNormal(μ, Σ))
             count += 1
         end
     end
-
     return samples
 end
 
 # draw samples from a checkerboard pattern:
-n = 2000
-noise = 0.0
-rows = 3
-columns = 3
+n = 5000
+noise = 0.01
+rows = 5
+columns = 5
 
-samples = make_checkerboard(n, noise, rows, columns)
+samples = make_gaussian_checkerboard(n, rows, columns, noise)
 
 # Display the generated samples
 using Plots
 scatter(samples[1, :], samples[2, :], alpha=0.6, markersize=2, label="Samples", xlabel="x", ylabel="y", title="Checkerboard Samples")
 
-### train NN
 using LinearAlgebra
-function plot_vector_field(s, samples; mesh_size=21)
-    x = range(0, 1, length=mesh_size)
-    y = range(0, 1, length=mesh_size)
-    sxy = [s([x_, y_]) for x_ in x, y_ in y]
+function plot_vector_field(s, samples; mesh_size=21, lims=(0.2,0.8),alpha=0.3)
+    sc = s |> cpu
+    samplesc = samples |> cpu
+    x = range(lims..., length=mesh_size)
+    y = range(lims..., length=mesh_size)
+    sxy = [sc([x_, y_]) for x_ in x, y_ in y]
     sxy = reshape(sxy, :)
     # normalize sxy so that the longest arrow is 1/mesh_size
-    sxy = sxy ./ maximum(norm.(sxy)) / mesh_size
+    sxy = sxy ./ (2*maximum(norm.(sxy))) / mesh_size
     sx = [v[1] for v in sxy]
     sy = [v[2] for v in sxy]
     xx = reshape(repeat(x, 1, mesh_size), :)
     yy = reshape(repeat(y', mesh_size, 1), :)
-
+    
     quiver(xx, yy, quiver=(sx, sy), label="score approximation")
-    scatter!(samples[1, :], samples[2, :], alpha=0.6, markersize=2, label="Samples")
+    scatter!(samplesc[1, :], samplesc[2, :], alpha=alpha, markersize=2, label="Samples")
 end
 
+### train NN
 using Flux, JLD2
 using GradientFlows
-u = samples
-s = mlp(2;depth=4)
-ζ = similar(u)
-optimiser = ADAM(1e-3)
+u = samples |> gpu
+s = mlp(2;depth=3) |> gpu
+ζ = similar(u) |> gpu
+optimiser = ADAM(3e-4)
 optimiser_state = Flux.setup(optimiser, s)
 epochs = 1000
-denoising_alpha = 0.2
+denoising_alpha = 0.2f0
 verbose = 2
 plots = []
 plt = plot_vector_field(s, u);
@@ -95,8 +90,12 @@ for epoch in 1:epochs
     end
 end
 layer_dimensions(s) = [2,[length(layer.bias) for layer in s.layers[1:end-1]]...,2]
-plt1=plot(plots[[1,2,4,8]]..., size = (2000, 2000), plot_title="Score approximation with NN $(layer_dimensions(s))")
-plots[end]
+plt1=plot(plots[[1,3,6,10]]..., size = (2000, 2000), plot_title="Score approximation with NN $(layer_dimensions(s))")
+plt = plot_vector_field(s, u;alpha=0.1);
+plot!(plt, title="Score approximation at epoch $epochs")
+s = GradientFlows.load("data/models/checkerboard_3/d_2/n_2000.jld2")
+plot_vector_field(s, samples)
+
 # GradientFlows.save("data/models/checkerboard_3/d_2/n_2000.jld2", s)
 
 

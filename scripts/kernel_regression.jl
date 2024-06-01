@@ -1,5 +1,5 @@
 # Kernel regression with a 2d checkerboard pattern
-using KernelFunctions
+using KernelFunctions, Distances
 using LinearAlgebra
 using Distributions
 
