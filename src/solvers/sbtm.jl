@@ -17,7 +17,7 @@ struct SBTMAllocMem{M}
     ζ::M
 end
 
-function SBTM(s::Union{Chain,Nothing}; learning_rate=4e-4, epochs=25, denoising_alpha=0.4, init_batch_size=2^8, init_loss_tolerance=1e-4, init_max_iterations=10^5, verbose=0, logger=Logger(1), optimiser_state=nothing)
+function SBTM(s::Union{Chain,Nothing}; learning_rate=4e-4, epochs=25, denoising_alpha=0.4, init_batch_size=2^8, init_loss_tolerance=1e-4, init_max_iterations=10^5, verbose=0, logger=Logger(1), optimiser_state=isnothing(s) ? nothing : Flux.setup(Adam(learning_rate), s))
     return SBTM(nothing, s, Adam(learning_rate), epochs, denoising_alpha, init_batch_size, init_loss_tolerance, init_max_iterations, nothing, verbose, logger, optimiser_state)
 end
 SBTM(; kwargs...) = SBTM(nothing; kwargs...)
@@ -50,11 +50,9 @@ function train_s!(solver::SBTM, u, score_values)
         epoch += 1
         for (x, y) in data_loader
             batch_loss, grads = withgradient(s -> l2_error_normalized(s(x), y), s)
-            if iteration >= init_max_iterations
-                break
-            end
-            iteration += 1
             Flux.update!(optimiser_state, s, grads[1])
+            iteration >= init_max_iterations && break
+            iteration += 1
         end
     end
     final_loss = l2_error_normalized(s(u), score_values)
